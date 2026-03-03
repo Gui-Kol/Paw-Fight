@@ -15,13 +15,11 @@ import com.pawfight.game.commun.phisics.CreateHitBox;
 
 import java.util.List;
 
-public class Player {
+public class EntityTemplate {
     //Atributos da entidade
-    private static final int VIDA_BASE = 10;   // Vida
+    private static final int VIDA = 10;   // Vida
     private static final int FORCA = 1;   // Forca
     private static final int VELOCIDADE = 800;   // pixels/segundo
-    private int vida;   // Vida
-
 
     // Constantes
     private static final int TAMANHO_PX = 64;       // tamanho fixo do sprite
@@ -54,11 +52,9 @@ public class Player {
     private int dx, dy;
 
     // Construtor
-    public Player(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
+    public EntityTemplate(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         this.dx = dx;
         this.dy = dy;
-
-        vida = VIDA_BASE;
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
@@ -142,8 +138,8 @@ public class Player {
             ? -(HITBOX_OFFSET_X)
             : HITBOX_OFFSET_X;
 
-        dx = (int) (hitBox.x - (TAMANHO_PX - HITBOX_SIZE) / 2f - offsetX);
-        dy = (int) (hitBox.y - HITBOX_OFFSET_Y);
+        dx = (int)(hitBox.x - (TAMANHO_PX - HITBOX_SIZE) / 2f - offsetX);
+        dy = (int)(hitBox.y - HITBOX_OFFSET_Y);
     }
 
     // Animação
@@ -180,31 +176,12 @@ public class Player {
         camera.update();
     }
 
-    //Receber dano
-    public void dano(int forca) {
-        this.vida -= forca;
-    }
-
     // Getters e Setters
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
-    }
-
-    public OrthographicCamera getCamera() {
-        return camera;
-    }
-
-    public Rectangle getHitBox() {
-        return hitBox;
-    }
-
-    public boolean isOlhandoEsquerda() {
-        return olhandoEsquerda;
-    }
+    public int getDx() { return dx; }
+    public int getDy() { return dy; }
+    public OrthographicCamera getCamera() { return camera; }
+    public Rectangle getHitBox() { return hitBox; }
+    public boolean isOlhandoEsquerda() { return olhandoEsquerda; }
 
     public void setPosition(int x, int y) {
         this.dx = x;

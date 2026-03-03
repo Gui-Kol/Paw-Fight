@@ -1,4 +1,4 @@
-package com.pawfight.game.commun;
+package com.pawfight.game.commun.Hud;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.pawfight.game.commun.font.FontFactory;
-import com.pawfight.game.entity.player.Player;
 
 import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
 
@@ -26,21 +25,18 @@ public class Hud {
     }
 
     public void draw(Batch batch, int x, int y, boolean olhandoEsquerda) {
-        if (HITBOX_ISVISIBLE) {
-            batch.begin();
-
-            // usa câmera de HUD (coordenadas de tela)
-            batch.setProjectionMatrix(hudCamera.combined);
-            font.setColor(Color.WHITE);
-
-            desenharCoordenadas(batch, x, y);
-            desenharDirecaoOlhar(batch, olhandoEsquerda);
-
-            batch.end();
+        if (!HITBOX_ISVISIBLE) {
+            return;
         }
+        // usa câmera de HUD (coordenadas de tela)
+        batch.setProjectionMatrix(hudCamera.combined);
+        font.setColor(Color.WHITE);
+
+        desenharCoordenadas(batch, x, y);
+        desenharDirecaoOlhar(batch, olhandoEsquerda);
     }
 
-    public void coodenada(Batch batch, int x, int y, boolean olhandoEsquerda){
+    public void coodenada(Batch batch, int x, int y, boolean olhandoEsquerda) {
 
     }
 
@@ -71,5 +67,20 @@ public class Hud {
         font.draw(batch, layoutOlhando, posX, posY);
     }
 
+    public void mostrarMensagemEmBaixo(Batch batch, String mensagem) {
+        GlyphLayout layout = new GlyphLayout();
+        layout.setText(font, mensagem);
 
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+
+        float posX = (screenWidth - layout.width) / 2f;
+        float posY = (screenHeight + layout.height) / 8f;
+
+        font.draw(batch, layout, posX, posY);
+    }
+
+    public OrthographicCamera getHudCamera() {
+        return hudCamera;
+    }
 }

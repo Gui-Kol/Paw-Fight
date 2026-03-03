@@ -8,7 +8,6 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ public class TilemapHitboxFactory {
                 TiledMapTileLayer.Cell cell = layer.getCell(x, y);
                 if (cell != null) {
                     Rectangle rect = new Rectangle(
-                        x * tileWidth ,
+                        x * tileWidth,
                         y * tileHeight,
                         tileWidth,
                         tileHeight

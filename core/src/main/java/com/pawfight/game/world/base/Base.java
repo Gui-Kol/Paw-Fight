@@ -12,7 +12,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.Hud;
+import com.pawfight.game.commun.Hud.Hud;
 import com.pawfight.game.commun.animation.ScreenTransition;
 import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.Player;
@@ -24,6 +24,7 @@ public class Base implements Screen {
     TilemapHitboxFactory tilemapHitboxFactory;
 
     //Base
+    private EntradaPortais entradaPortais;
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
 
@@ -51,6 +52,8 @@ public class Base implements Screen {
 
         background = new Texture("menu/menu.png");
 
+        entradaPortais = new EntradaPortais(new ScreenTransition(game));
+
         hud = new Hud();
 
         tilemapHitboxFactory = new TilemapHitboxFactory();
@@ -70,34 +73,36 @@ public class Base implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // pega todas as paredes da camada "HitBox"
+        List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createTileLayerHitboxes(map, "EntradaPortalAreia", 16, 16);
         List<Rectangle> paredes = tilemapHitboxFactory.createTileLayerHitboxes(map, "Colisao", 16, 16);
 
-        // Atualiza player e câmera com colisão
         player.update(delta, paredes);
         player.updateCamera();
 
-        // Renderiza mapa
         renderer.setView(player.getCamera());
         renderer.render();
 
-        // Renderiza player
+        // --- Renderiza mundo (player + mapa) ---
         batch.setProjectionMatrix(player.getCamera().combined);
         batch.begin();
         player.draw(batch);
         batch.end();
 
-        // Renderiza hitbox e HUD
+        // --- Renderiza HUD (mensagem + interface) ---
+        batch.setProjectionMatrix(hud.getHudCamera().combined); // usa câmera fixa da HUD
+        batch.begin();
+        entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game); // mensagem centralizada
+        hud.draw(batch, player.getDx(), player.getDy(), player.isOlhandoEsquerda());
+        batch.end();
+
+        // --- Renderiza hitboxes ---
         shapeRenderer.setProjectionMatrix(player.getCamera().combined);
-        //HitBox Paredes
-        tilemapHitboxFactory.draw(shapeRenderer,player.getCamera(),paredes);
+        tilemapHitboxFactory.draw(shapeRenderer, player.getCamera(), paredes);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         player.drawHitbox(shapeRenderer);
-        hud.draw(batch, player.getDx(), player.getDy(), player.isOlhandoEsquerda());
-
-
         shapeRenderer.end();
     }
+
 
 
 

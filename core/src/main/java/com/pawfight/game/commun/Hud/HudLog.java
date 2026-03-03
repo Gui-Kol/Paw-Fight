@@ -1,6 +1,6 @@
-package com.pawfight.game.commun;
+package com.pawfight.game.commun.Hud;
 
-public class Log {
+public class HudLog {
 
     public void logar(){
         System.out.println();
