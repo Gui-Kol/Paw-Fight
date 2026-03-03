@@ -10,12 +10,19 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.commun.Hud;
 import com.pawfight.game.commun.animation.ScreenTransition;
+import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.Player;
 
+import java.util.List;
+
 public class Base implements Screen {
+    //Phisics
+    TilemapHitboxFactory tilemapHitboxFactory;
+
     //Base
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
@@ -45,6 +52,8 @@ public class Base implements Screen {
         background = new Texture("menu/menu.png");
 
         hud = new Hud();
+
+        tilemapHitboxFactory = new TilemapHitboxFactory();
     }
 
     @Override
@@ -61,27 +70,35 @@ public class Base implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Atualiza player e câmera
-        player.update(delta, 3180, 2400);
+        // pega todas as paredes da camada "HitBox"
+        List<Rectangle> paredes = tilemapHitboxFactory.createTileLayerHitboxes(map, "Colisao", 16, 16);
+
+        // Atualiza player e câmera com colisão
+        player.update(delta, paredes);
         player.updateCamera();
 
-        // Renderiza mapa com câmera
+        // Renderiza mapa
         renderer.setView(player.getCamera());
         renderer.render();
 
-        // Renderiza player com câmera
+        // Renderiza player
         batch.setProjectionMatrix(player.getCamera().combined);
         batch.begin();
         player.draw(batch);
         batch.end();
 
-        // Renderiza hitbox separadamente
+        // Renderiza hitbox e HUD
         shapeRenderer.setProjectionMatrix(player.getCamera().combined);
+        //HitBox Paredes
+        tilemapHitboxFactory.draw(shapeRenderer,player.getCamera(),paredes);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        player.drawHitbox(shapeRenderer, batch);
-        hud.draw(batch, player.getDx(), player.getDy());
+        player.drawHitbox(shapeRenderer);
+        hud.draw(batch, player.getDx(), player.getDy(), player.isOlhandoEsquerda());
+
+
         shapeRenderer.end();
     }
+
 
 
     @Override
