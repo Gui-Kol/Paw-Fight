@@ -3,12 +3,32 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
         "": {
             "scaleInDock": 1
+        },
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx": {
+            "scale": 2,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 377,
+                "y": 436.5
+            }
+        },
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx#Agua": {
+            "scaleInDock": 2
+        },
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx#HitBox": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx#Interface": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx#solo": {
+            "scaleInDock": 1.5
         }
     },
     "last.imagePath": "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/fonts",
@@ -17,10 +37,13 @@
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "map.width": 200,
+    "mapScene.enableWorlds": true,
     "openFiles": [
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx"
     ],
     "project": "base-project.tiled-project",
     "recentFiles": [
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {

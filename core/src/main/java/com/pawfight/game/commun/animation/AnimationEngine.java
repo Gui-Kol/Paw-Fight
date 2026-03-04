@@ -5,8 +5,21 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AnimationEngine {
+    private Texture texture;
+    private int numFrames;
+    private float frameDuration;
+    private boolean reverse;
+    private boolean olhandoEsquerda;
 
-    public Animation<TextureRegion> animar(Texture texture, int numFrames, float frameDuration, boolean reverse, boolean olhandoEsquerda) {
+
+    public Animation<TextureRegion> animar(SpriteDefinition spriteDefinition) {
+        this.texture = spriteDefinition.texture();
+        this.numFrames = spriteDefinition.numFrame();
+        this.frameDuration = spriteDefinition.frameDuration();
+        this.reverse = spriteDefinition.reverse();
+        this.olhandoEsquerda = spriteDefinition.olhandoEsquerda();
+
+
         // Divide o spritesheet em regiões
         TextureRegion[][] tmp = TextureRegion.split(
             texture,

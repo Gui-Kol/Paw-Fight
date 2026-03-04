@@ -1,7 +1,6 @@
 package com.pawfight.game.commun.phisics;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.entity.player.Player;
 
 import java.util.List;
 
@@ -15,12 +14,12 @@ public class ChecarColisao {
         }
         return false;
     }
-                                                    //INIMIGOS
-    public static void danoSeColidir(Player player, List colisores){
-        if (houveColisao(player.getHitBox(),colisores)){
-           // player.dano(colisores.get(1).getDano());
-        }
-    }
+
+//    public static void danoSeColidir(Player player, List<Rectangle> colisores, List<EnemyTemplate> entitys){
+//        if (houveColisao(player.getHitBox(),colisores)){
+//           player.dano(entitys.get(1).getForca());
+//        }
+//    }
 
     public static void ajustarPosicaoSeBaterParede(Rectangle playerHitbox, float nextX, float nextY, List<Rectangle> paredes) {
         // Testa colisão no eixo X

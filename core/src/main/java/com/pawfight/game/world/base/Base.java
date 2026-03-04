@@ -82,25 +82,24 @@ public class Base implements Screen {
         renderer.setView(player.getCamera());
         renderer.render();
 
-        // --- Renderiza mundo (player + mapa) ---
+        //configs shape e batch
+        shapeRenderer.setProjectionMatrix(player.getCamera().combined);
         batch.setProjectionMatrix(player.getCamera().combined);
-        batch.begin();
-        player.draw(batch);
-        batch.end();
+
+
+        // --- Renderiza mundo (player + mapa) ---
+        player.draw(batch, shapeRenderer);
 
         // --- Renderiza HUD (mensagem + interface) ---
         batch.setProjectionMatrix(hud.getHudCamera().combined); // usa câmera fixa da HUD
         batch.begin();
         entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game); // mensagem centralizada
-        hud.draw(batch, player.getDx(), player.getDy(), player.isOlhandoEsquerda());
+        hud.draw(batch, player);
         batch.end();
 
         // --- Renderiza hitboxes ---
-        shapeRenderer.setProjectionMatrix(player.getCamera().combined);
         tilemapHitboxFactory.draw(shapeRenderer, player.getCamera(), paredes);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        player.drawHitbox(shapeRenderer);
-        shapeRenderer.end();
+
     }
 
 

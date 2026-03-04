@@ -19,7 +19,6 @@ import java.util.List;
 public class EntradaPortais {
     private Hud hud;
     private boolean entrarPortalAreia = false;
-    private BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
 
     // Referência para transição de tela
     private ScreenTransition screenTransition;

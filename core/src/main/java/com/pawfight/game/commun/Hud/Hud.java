@@ -3,10 +3,12 @@ package com.pawfight.game.commun.Hud;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.pawfight.game.commun.animation.SpriteDefinition;
+import com.pawfight.game.commun.animation.AnimationEngine;
 import com.pawfight.game.commun.font.FontFactory;
+import com.pawfight.game.entity.player.Player;
 
 import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
 
@@ -14,6 +16,11 @@ public class Hud {
     private BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
     private GlyphLayout layoutCoord = new GlyphLayout();
     private GlyphLayout layoutOlhando = new GlyphLayout();
+    private AnimationEngine animationEngine;
+    private Animation<TextureRegion> coracaoAnimation;
+    private SpriteDefinition coracaoDefinition;
+
+    Texture coracao;
 
     // câmera fixa para HUD
     private OrthographicCamera hudCamera;
@@ -22,22 +29,25 @@ public class Hud {
         hudCamera = new OrthographicCamera();
         hudCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         hudCamera.update();
+        coracao = new Texture("Hud/coracao.png");
+        coracaoDefinition = new SpriteDefinition(coracao,5, 0.5f, false, false);
+        animationEngine = new AnimationEngine();
     }
 
-    public void draw(Batch batch, int x, int y, boolean olhandoEsquerda) {
+    public void draw(Batch batch, Player player) {
         if (!HITBOX_ISVISIBLE) {
             return;
         }
+        int x = player.getDx();
+        int y = player.getDy();
+
         // usa câmera de HUD (coordenadas de tela)
         batch.setProjectionMatrix(hudCamera.combined);
         font.setColor(Color.WHITE);
 
         desenharCoordenadas(batch, x, y);
-        desenharDirecaoOlhar(batch, olhandoEsquerda);
-    }
-
-    public void coodenada(Batch batch, int x, int y, boolean olhandoEsquerda) {
-
+        desenharDirecaoOlhar(batch, player.isOlhandoEsquerda());
+        desenharCoracao(batch,player.getVida(),player.getVidaBase());
     }
 
     private void desenharCoordenadas(Batch batch, int x, int y) {
@@ -52,6 +62,24 @@ public class Hud {
 
         font.draw(batch, layoutCoord, posX, posY);
     }
+    private void desenharCoracao(Batch batch, int vidaAtual, int vidaMaxima) {
+        coracaoAnimation = animationEngine.animar(coracaoDefinition);
+
+        int tamanho = 128;
+        float posX = 20;
+        float posY = Gdx.graphics.getHeight() - tamanho;
+
+        float porcentagemVida = (float) vidaAtual / vidaMaxima;
+
+        int frameIndex = (int) ((1 - porcentagemVida) * (coracaoAnimation.getKeyFrames().length - 1));
+
+        frameIndex = Math.max(0, Math.min(frameIndex, coracaoAnimation.getKeyFrames().length - 1));
+
+        batch.draw(coracaoAnimation.getKeyFrames()[frameIndex], posX, posY, tamanho, tamanho);
+    }
+
+
+
 
     private void desenharDirecaoOlhar(Batch batch, boolean olhandoEsquerda) {
         String direcaoOlhar = olhandoEsquerda ? "esquerda" : "direita";
