@@ -89,9 +89,13 @@ public class TilemapHitboxFactory {
     public List<Rectangle> createTileLayerHitboxes(TiledMap map, String layerName, int tileWidth, int tileHeight) {
         List<Rectangle> hitboxes = new ArrayList<>();
 
+        // pega apenas a layer com o nome especificado
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
-        if (layer == null) return hitboxes;
+        if (!(layer instanceof TiledMapTileLayer)) {
+            return hitboxes; // se não existir ou não for layer de tile, retorna vazio
+        }
 
+        // percorre apenas os tiles dessa layer
         for (int x = 0; x < layer.getWidth(); x++) {
             for (int y = 0; y < layer.getHeight(); y++) {
                 TiledMapTileLayer.Cell cell = layer.getCell(x, y);
@@ -106,8 +110,10 @@ public class TilemapHitboxFactory {
                 }
             }
         }
+
         return hitboxes;
     }
+
 
 
     public void draw(ShapeRenderer shapeRenderer, OrthographicCamera camera, List<Rectangle> hitBoxes) {

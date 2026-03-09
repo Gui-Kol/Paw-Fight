@@ -43,7 +43,7 @@ public class EntradaPortais {
     public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
         batch.setProjectionMatrix(hud.getHudCamera().combined);
         if (entrarPortal(player,entradaPortal,batch)){
-            screenTransition.start(new Home(game));
+            screenTransition.start(new MundoAreia(game,player));
             return true;
         }else {
             return false;

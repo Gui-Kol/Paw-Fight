@@ -3,6 +3,7 @@ package com.pawfight.game.world.mundo_areia;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.commun.Hud.DesenharMiniMapa;
 import com.pawfight.game.commun.Hud.Hud;
 import com.pawfight.game.commun.LayerRenderer;
 import com.pawfight.game.commun.phisics.ChecarColisao;
@@ -20,6 +21,7 @@ public class MundoAreia extends WorldTemplate {
     private Room currentRoom;
     private Hud hud;
     private Set<String> salasVisitadas = new HashSet<>();
+    private DesenharMiniMapa desenharMiniMapa;
 
 
     public MundoAreia(PawFight game, PlayerTemplate player) {
@@ -32,6 +34,7 @@ public class MundoAreia extends WorldTemplate {
         currentRoom = rooms.get(0); // começa na primeira sala
 
         hud = player.getHud();
+        desenharMiniMapa = new DesenharMiniMapa();
     }
 
     @Override
@@ -39,7 +42,7 @@ public class MundoAreia extends WorldTemplate {
         super.render(delta);
         checkPortas();        // verifica colisão com portas
         int indiceAtual = rooms.indexOf(currentRoom);
-        hud.desenharSalaAtual(indiceAtual,currentRoom.getType(),batch);
+        desenharMiniMapa.desenharSalaAtual(indiceAtual,currentRoom.getType(),batch);
     }
 
 
@@ -73,7 +76,10 @@ public class MundoAreia extends WorldTemplate {
         layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
 
         // chamada correta do minimapa
-        hud.desenharMiniMapa(batch, shapeRenderer, salasVisitadas, currentRoom, roomGenerator.getRoomMap());
+        if (shapeRenderer.isDrawing()){
+            shapeRenderer.end();
+        }
+        desenharMiniMapa.desenharMiniMapa(hud.getHudCamera(),batch, shapeRenderer, salasVisitadas, currentRoom, roomGenerator.getRoomMap());
     }
 
     @Override
@@ -97,24 +103,29 @@ public class MundoAreia extends WorldTemplate {
     private void moverParaSala(int x, int y) {
         Room room = roomGenerator.getRoomMap().get(x + "," + y);
         if (room != null) {
+            if (map != null) {
+                map.dispose();
+                layerRenderer.dispose();
+            }
             currentRoom = room;
             map = new TmxMapLoader().load(getMapPath());
             layerRenderer = new LayerRenderer(map);
 
             salasVisitadas.add(x + "," + y); // registra sala visitada
         }
+        System.out.println(room.hasNorth());
     }
-
-
 
     private void checkPortas() {
         Rectangle playerBox = player.getHitBox();
 
+        // Porta cima
         if (currentRoom.hasNorth()) {
             Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() + 1));
             if (destino != null) {
                 List<Rectangle> portaCima = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaCima",16,16);
-                if (ChecarColisao.houveColisao(playerBox, portaCima)) {
+                // só considera colisão se a sala realmente tem conexão
+                if (!portaCima.isEmpty() && ChecarColisao.houveColisao(playerBox, portaCima)) {
                     moverParaSala(destino.getX(), destino.getY());
                     player.setLocal(430, 120);
                     return;
@@ -122,51 +133,44 @@ public class MundoAreia extends WorldTemplate {
             }
         }
 
-        // Porta cima → sair embaixo da próxima sala
-        if (currentRoom.hasNorth()) {
-            List<Rectangle> portaCima = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaCima",16,16);
-            if (ChecarColisao.houveColisao(playerBox, portaCima)) {
-                moverParaSala(currentRoom.getX(), currentRoom.getY() + 1);
-                // posição próxima à porta de baixo da nova sala
-                player.setLocal(430, 120);
-                return;
-            }
-        }
-
-        // Porta baixo → sair em cima da sala anterior
+        // Porta baixo
         if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth()) {
-            List<Rectangle> portaBaixo = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaBaixo",16,16);
-            if (ChecarColisao.houveColisao(playerBox, portaBaixo)) {
-                moverParaSala(currentRoom.getX(), currentRoom.getY() - 1);
-                // posição próxima à porta de cima da nova sala
-                player.setLocal(350, 840);
-                return;
+            Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() - 1));
+            if (destino != null) {
+                List<Rectangle> portaBaixo = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaBaixo",16,16);
+                if (!portaBaixo.isEmpty() && ChecarColisao.houveColisao(playerBox, portaBaixo)) {
+                    moverParaSala(destino.getX(), destino.getY());
+                    player.setLocal(350, 840);
+                    return;
+                }
             }
         }
 
-        // Porta esquerda → sair na direita da próxima sala
+        // Porta esquerda
         if (currentRoom.hasWest()) {
-            List<Rectangle> portaEsq = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaEsquerda",16,16);
-            if (ChecarColisao.houveColisao(playerBox, portaEsq)) {
-                moverParaSala(currentRoom.getX() - 1, currentRoom.getY());
-                // posição próxima à porta direita da nova sala
-                player.setLocal(820, 420);
-                return;
+            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() - 1) + "," + currentRoom.getY());
+            if (destino != null) {
+                List<Rectangle> portaEsq = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaEsquerda",16,16);
+                if (!portaEsq.isEmpty() && ChecarColisao.houveColisao(playerBox, portaEsq)) {
+                    moverParaSala(destino.getX(), destino.getY());
+                    player.setLocal(820, 420);
+                    return;
+                }
             }
         }
 
-        // Porta direita → sair na esquerda da próxima sala
+        // Porta direita
         if (currentRoom.hasEast()) {
-            List<Rectangle> portaDir = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaDireita",16,16);
-            if (ChecarColisao.houveColisao(playerBox, portaDir)) {
-                moverParaSala(currentRoom.getX() + 1, currentRoom.getY());
-                // posição próxima à porta esquerda da nova sala
-                player.setLocal(70, 420);
+            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + 1) + "," + currentRoom.getY());
+            if (destino != null) {
+                List<Rectangle> portaDir = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaDireita",16,16);
+                if (!portaDir.isEmpty() && ChecarColisao.houveColisao(playerBox, portaDir)) {
+                    moverParaSala(destino.getX(), destino.getY());
+                    player.setLocal(70, 420);
+                }
             }
         }
     }
-
-
 
 
     @Override

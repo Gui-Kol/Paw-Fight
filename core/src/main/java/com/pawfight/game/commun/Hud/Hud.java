@@ -22,8 +22,6 @@ public class Hud {
     private BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
     private GlyphLayout layoutCoord = new GlyphLayout();
     private GlyphLayout layoutOlhando = new GlyphLayout();
-    private GlyphLayout layoutNumSalaAtual = new GlyphLayout();
-    private GlyphLayout layoutTypeSalaAtual = new GlyphLayout();
     private AnimationEngine animationEngine;
     private Animation<TextureRegion> coracaoAnimation;
     private SpriteDefinition coracaoDefinition;
@@ -52,6 +50,7 @@ public class Hud {
         // usa câmera de HUD (coordenadas de tela)
         batch.setProjectionMatrix(hudCamera.combined);
         font.setColor(Color.WHITE);
+
 
         desenharLevel(batch, playerTemplate.getLevel(), shapeRenderer);
         desenharCoracao(batch, playerTemplate.getVida(), playerTemplate.getVidaBase());
@@ -140,114 +139,7 @@ public class Hud {
         font.draw(batch, layoutOlhando, posX, posY);
     }
 
-    public void desenharSalaAtual(int atual, RoomType type, Batch batch) {
-        if (HITBOX_ISVISIBLE) {
-            batch.begin();
-            layoutNumSalaAtual.setText(font, String.valueOf(atual));
-            layoutTypeSalaAtual.setText(font, type.toString());
 
-            float screenWidth = Gdx.graphics.getWidth();
-            float screenHeight = Gdx.graphics.getHeight();
-
-            float posX = screenWidth - layoutNumSalaAtual.width - 10;
-            float posXType = screenWidth - layoutTypeSalaAtual.width - 10;
-            float posY = screenHeight - 80; // um pouco abaixo das coordenadas
-
-            font.draw(batch, layoutNumSalaAtual, posX, posY);
-            font.draw(batch, layoutTypeSalaAtual, posXType, posY - 40);
-            batch.end();
-        }
-    }
-    // dentro da classe Hud
-    private static final int SEPARACAO = 20; // distância entre quadrados no minimapa
-
-    public void desenharMiniMapa(Batch batch, ShapeRenderer shapeRenderer, Set<String> salasVisitadas, Room currentRoom, Map<String, Room> roomMap) {
-        shapeRenderer.setProjectionMatrix(hudCamera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
-        int tamanho = 10; // tamanho de cada quadrado
-        int offsetX = 50;
-        int offsetY = 50;
-
-        for (String key : salasVisitadas) {
-            String[] coords = key.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
-
-            float posX = offsetX + x * SEPARACAO;
-            float posY = offsetY + y * SEPARACAO;
-
-            float centroX = posX + tamanho / 2f;
-            float centroY = posY + tamanho / 2f;
-
-            Room room = roomMap.get(key);
-            if (room != null) {
-                shapeRenderer.setColor(Color.WHITE);
-
-                if (room.hasNorth()) {
-                    String destinoKey = x + "," + (y + 1);
-                    if (salasVisitadas.contains(destinoKey)) {
-                        float destX = offsetX + x * SEPARACAO;
-                        float destY = offsetY + (y + 1) * SEPARACAO;
-                        float destCentroX = destX + tamanho / 2f;
-                        float destCentroY = destY + tamanho / 2f;
-                        shapeRenderer.line(centroX, centroY, destCentroX, destCentroY);
-                    }
-                }
-                if (room.hasSouth()) {
-                    String destinoKey = x + "," + (y - 1);
-                    if (salasVisitadas.contains(destinoKey)) {
-                        float destX = offsetX + x * SEPARACAO;
-                        float destY = offsetY + (y - 1) * SEPARACAO;
-                        float destCentroX = destX + tamanho / 2f;
-                        float destCentroY = destY + tamanho / 2f;
-                        shapeRenderer.line(centroX, centroY, destCentroX, destCentroY);
-                    }
-                }
-                if (room.hasEast()) {
-                    String destinoKey = (x + 1) + "," + y;
-                    if (salasVisitadas.contains(destinoKey)) {
-                        float destX = offsetX + (x + 1) * SEPARACAO;
-                        float destY = offsetY + y * SEPARACAO;
-                        float destCentroX = destX + tamanho / 2f;
-                        float destCentroY = destY + tamanho / 2f;
-                        shapeRenderer.line(centroX, centroY, destCentroX, destCentroY);
-                    }
-                }
-                if (room.hasWest()) {
-                    String destinoKey = (x - 1) + "," + y;
-                    if (salasVisitadas.contains(destinoKey)) {
-                        float destX = offsetX + (x - 1) * SEPARACAO;
-                        float destY = offsetY + y * SEPARACAO;
-                        float destCentroX = destX + tamanho / 2f;
-                        float destCentroY = destY + tamanho / 2f;
-                        shapeRenderer.line(centroX, centroY, destCentroX, destCentroY);
-                    }
-                }
-            }
-        }
-
-        shapeRenderer.end();
-
-        batch.begin();
-        for (String key : salasVisitadas) {
-            String[] coords = key.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
-
-            float posX = offsetX + x * SEPARACAO;
-            float posY = offsetY + y * SEPARACAO;
-
-            if (currentRoom.getX() == x && currentRoom.getY() == y) {
-                font.setColor(Color.YELLOW);
-            } else {
-                font.setColor(Color.WHITE);
-            }
-
-            font.draw(batch, "■", posX, posY);
-        }
-        batch.end();
-    }
 
 
     public void mostrarMensagemEmBaixo(Batch batch, String mensagem) {
