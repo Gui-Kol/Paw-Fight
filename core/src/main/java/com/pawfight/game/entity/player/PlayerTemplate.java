@@ -10,28 +10,44 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.commun.animation.SpriteDefinition;
+import com.pawfight.game.commun.CommunVariable;
+import com.pawfight.game.commun.Hud.Hud;
 import com.pawfight.game.commun.animation.AnimationEngine;
+import com.pawfight.game.commun.animation.SpriteDefinition;
 import com.pawfight.game.commun.phisics.ChecarColisao;
 import com.pawfight.game.commun.phisics.CreateHitBox;
+import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
+import com.pawfight.game.commun.Hud.StatusMenu;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
 
 public abstract class PlayerTemplate {
     // Atributos comuns
-    protected int vidaBase = 10;
-    protected static final int VELOCIDADE = 800;
-    protected int vida = vidaBase;
-    protected int forca = 1;
+    protected int pontosDisponiveis;
+    protected int xp;
+    protected int xpNecessario;
+    protected int vidaBase;
+    protected int velocidade;
+    protected int vida;
+    protected int forca;
+    protected int level;
     protected boolean morto = false;
     protected boolean hurt = false;
     protected boolean moving = false;
+    protected boolean drawHitBoxes = false;
 
     protected float stateTime = 0f;
     protected float hurtTime = 0f;
     protected static final float HURT_DURATION = 0.5f;
 
     // Spritesheets e animações
+    private boolean menuAberto;
+    private boolean pause;
+    protected StatusMenu statusMenu;
+    protected TilemapHitboxFactory tilemapHitboxFactory;
     protected SpriteDefinition idleDefinition;
     protected SpriteDefinition walkDefinition;
     protected SpriteDefinition deadDefinition;
@@ -48,13 +64,15 @@ public abstract class PlayerTemplate {
     protected boolean olhandoEsquerda = false;
 
     // Constantes
-    protected static final int TAMANHO_PX = 64;       // tamanho fixo do sprite
+    protected static int TAMANHO_PX = 64;       // tamanho fixo do sprite
     // Configuração da hitbox (você pode alterar livremente)
-    protected static final int HITBOX_SIZE = 20;       // tamanho da hitbox (largura e altura)
-    protected static final int HITBOX_OFFSET_X = -10;   // deslocamento horizontal (esquerda/direita)
-    protected static final int HITBOX_OFFSET_Y = 0;  // deslocamento vertical (abaixar ou subir)
+    protected static int HITBOX_SIZE = 20;       // tamanho da hitbox (largura e altura)
+    protected static int HITBOX_OFFSET_X = -10;   // deslocamento horizontal (esquerda/direita)
+    protected static int HITBOX_OFFSET_Y = 0;  // deslocamento vertical (abaixar ou subir)
 
     // Posição e colisão
+    protected List<Rectangle> listColisores;
+    protected ChecarColisao checarColisao;
     protected int dx, dy;
     protected final Rectangle hitBox;
     protected final CreateHitBox createHitBox = new CreateHitBox();
@@ -63,9 +81,12 @@ public abstract class PlayerTemplate {
     protected final float mapWidth;
     protected final float mapHeight;
     protected final OrthographicCamera camera;
+    protected final Hud hud;
 
     // Métodos abstratos (cada player define os seus)
-    public abstract void dispose();
+    public abstract void texture();
+
+    public abstract String getName();
 
     //Movimentacao
     float nextY;
@@ -73,12 +94,25 @@ public abstract class PlayerTemplate {
     float speed;
 
 
-
     public PlayerTemplate(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         this.dx = dx;
         this.dy = dy;
 
-        vida = vidaBase;
+        pontosDisponiveis = 0;
+
+        xp = 0;
+        xpNecessario = 200;
+        forca = 1;
+        level = 1;
+
+        menuAberto = false;
+        pause = false;
+
+        hud = new Hud();
+
+        tilemapHitboxFactory = new TilemapHitboxFactory();
+        listColisores = new ArrayList<>();
+        statusMenu = new StatusMenu(this);
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
@@ -99,29 +133,33 @@ public abstract class PlayerTemplate {
         mapWidth = tileWidth * numTilesX;
         mapHeight = tileHeight * numTilesY;
 
+        checarColisao = new ChecarColisao();
+
         camera.position.set(dx, dy, 0);
         camera.position.x = MathUtils.clamp(camera.position.x, camera.viewportWidth / 2f, mapWidth - camera.viewportWidth / 2f);
         camera.position.y = MathUtils.clamp(camera.position.y, camera.viewportHeight / 2f, mapHeight - camera.viewportHeight / 2f);
         camera.update();
+        texture();
     }
 
-
     // Atualização
-    public void update(float delta, List<Rectangle> paredes) {
-        if (!isMorto()) {
+    public void update(float delta) {
+        if (pause){
+            pauseControl();
+            return;
+        }
+        if (!morto) {
 
-            moveEntity(delta, paredes);
+            entityControl(delta);
 
             // Se estiver olhando para a esquerda, inverte o offset horizontal
-            int offsetX = olhandoEsquerda
-                ? -(HITBOX_OFFSET_X)
-                : HITBOX_OFFSET_X;
+            int offsetX = olhandoEsquerda ? -(HITBOX_OFFSET_X) : HITBOX_OFFSET_X;
 
             hitBox.setPosition(
                 dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
                 dy + HITBOX_OFFSET_Y
             );
-
+            texture();
         }
         stateTime += delta;
         if (hurt) {
@@ -131,13 +169,15 @@ public abstract class PlayerTemplate {
                 hurtTime = 0f;
             }
         }
-
+        checarColisao();
+        updateCamera();
+        texture();
     }
 
     // Movimento
-    protected void moveEntity(float delta, List<Rectangle> paredes) {
+    protected void moveEntityControl(float delta) {
         moving = false;
-        speed = VELOCIDADE * delta;
+        speed = velocidade * delta;
 
         nextX = hitBox.x;
         nextY = hitBox.y;
@@ -160,17 +200,71 @@ public abstract class PlayerTemplate {
             nextY -= speed;
             moving = true;
         }
-
-        // Verifica colisão separada por eixo
-        ChecarColisao.ajustarPosicaoSeBaterParede(hitBox, nextX, nextY, paredes);
-
-        int offsetX = olhandoEsquerda
-            ? -(HITBOX_OFFSET_X)
-            : HITBOX_OFFSET_X;
-
-        dx = (int) (hitBox.x - (TAMANHO_PX - HITBOX_SIZE) / 2f - offsetX);
-        dy = (int) (hitBox.y - HITBOX_OFFSET_Y);
     }
+
+    //Controles Gerais
+    public void entityControl(float delta) {
+        moveEntityControl(delta);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+            if (drawHitBoxes) {
+                drawHitBoxes = false;
+            } else {
+                drawHitBoxes = true;
+            }
+            System.out.println("Exibindo detalhes: " + HITBOX_ISVISIBLE);
+            CommunVariable.setHitboxIsvisible(drawHitBoxes);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
+                xpUp(2000);
+            }
+        }
+        pauseControl();
+    }
+
+    //Controle para pausar
+    public void pauseControl(){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            statusMenu.criarMenu();
+            menuAberto = !menuAberto;
+            pause = menuAberto;
+        }
+    }
+
+    public void xpUp(int xpGanho) {
+        xp += xpGanho;
+        while (xp >= level * xpNecessario) {
+            xp -= level * xpNecessario;
+            levelUp();
+
+            if (level % 5 == 0) {
+                xpNecessario += 200;
+                System.out.println(xpNecessario);
+            }
+        }
+    }
+
+    private void levelUp() {
+        level += 1;
+        pontosDisponiveis += 1;
+    }
+
+    public void checarColisao() {
+        checarColisao.checarColisaoSeparadoEixo(listColisores, this);
+    }
+
+
+    public void adicionarColisaoPorLevel(List<Rectangle> colisores, int levelNecessario) {
+        if (level < levelNecessario) {
+            listColisores.addAll(colisores);
+        }
+    }
+
+    public void adicionarColisao(List<Rectangle> colisores, ShapeRenderer shapeRenderer) {
+        listColisores.addAll(colisores);
+    }
+
 
     // Animação
     protected TextureRegion animaAtual() {
@@ -178,7 +272,7 @@ public abstract class PlayerTemplate {
         walkAnimation = animationEngine.animar(walkDefinition);
         hurtAnimation = animationEngine.animar(hurtDefinition);
         deadAnimation = animationEngine.animar(deadDefinition);
-        if (isMorto()) {
+        if (morto) {
             if (deadAnimation.isAnimationFinished(stateTime)) {
                 return deadAnimation.getKeyFrames()[deadAnimation.getKeyFrames().length - 1];
             } else {
@@ -193,13 +287,18 @@ public abstract class PlayerTemplate {
 
     // Renderização
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        batch.setProjectionMatrix(camera.combined);
+
         batch.begin();
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
         batch.end();
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         createHitBox.drawHitBox(shapeRenderer, hitBox);
-        shapeRenderer.end();
+        if (menuAberto){
+            statusMenu.draw(batch, hud.getHudCamera());
+        }
+        hud.draw(batch, this, shapeRenderer);
     }
 
     // Métodos comuns já implementados
@@ -219,16 +318,25 @@ public abstract class PlayerTemplate {
         camera.update();
     }
 
-    public boolean isMorto() {
-        return morto;
+    public void dispose() {
+        idleSheet.dispose();
+        walkSheet.dispose();
+        deadSheet.dispose();
+        hurtSheet.dispose();
+        statusMenu.dispose();
     }
 
-    public boolean isHurt() {
-        return hurt;
+    public void clearList(){
+        listColisores.clear();
     }
 
-    public int getVida() {
-        return vida;
+
+    public int getPontosDisponiveis() {
+        return pontosDisponiveis;
+    }
+
+    public int getXp() {
+        return xp;
     }
 
     public int getVidaBase() {
@@ -239,193 +347,112 @@ public abstract class PlayerTemplate {
         return forca;
     }
 
-    public Rectangle getHitBox() {
-        return hitBox;
-    }
-
-    public OrthographicCamera getCamera() {
-        return camera;
+    public void setForca(int forca) {
+        this.forca = forca;
     }
 
     public int getDx() {
         return dx;
     }
 
-    public int getDy() {
-        return dy;
-    }
-
-    public void setPosition(int x, int y) {
-        this.dx = x;
-        this.dy = y;
-        hitBox.setPosition(x, y);
-    }
-
-    public boolean isOlhandoEsquerda() {
-        return olhandoEsquerda;
-    }
-
-    public void setVida(int vida) {
-        this.vida = vida;
-    }
-
-    public void setForca(int forca) {
-        this.forca = forca;
-    }
-
-    public void setMorto(boolean morto) {
-        this.morto = morto;
-    }
-
-    public void setHurt(boolean hurt) {
-        this.hurt = hurt;
-    }
-
-    public boolean isMoving() {
-        return moving;
-    }
-
-    public void setMoving(boolean moving) {
-        this.moving = moving;
-    }
-
-    public float getStateTime() {
-        return stateTime;
-    }
-
-    public void setStateTime(float stateTime) {
-        this.stateTime = stateTime;
-    }
-
-    public float getHurtTime() {
-        return hurtTime;
-    }
-
-    public void setHurtTime(float hurtTime) {
-        this.hurtTime = hurtTime;
-    }
-
-    public SpriteDefinition getIdleDefinition() {
-        return idleDefinition;
-    }
-
-    public void setIdleDefinition(SpriteDefinition idleDefinition) {
-        this.idleDefinition = idleDefinition;
-    }
-
-    public SpriteDefinition getWalkDefinition() {
-        return walkDefinition;
-    }
-
-    public void setWalkDefinition(SpriteDefinition walkDefinition) {
-        this.walkDefinition = walkDefinition;
-    }
-
-    public SpriteDefinition getDeadDefinition() {
-        return deadDefinition;
-    }
-
-    public void setDeadDefinition(SpriteDefinition deadDefinition) {
-        this.deadDefinition = deadDefinition;
-    }
-
-    public SpriteDefinition getHurtDefinition() {
-        return hurtDefinition;
-    }
-
-    public void setHurtDefinition(SpriteDefinition hurtDefinition) {
-        this.hurtDefinition = hurtDefinition;
-    }
-
-    public Texture getIdleSheet() {
-        return idleSheet;
-    }
-
-    public void setIdleSheet(Texture idleSheet) {
-        this.idleSheet = idleSheet;
-    }
-
-    public Texture getWalkSheet() {
-        return walkSheet;
-    }
-
-    public void setWalkSheet(Texture walkSheet) {
-        this.walkSheet = walkSheet;
-    }
-
-    public Texture getDeadSheet() {
-        return deadSheet;
-    }
-
-    public void setDeadSheet(Texture deadSheet) {
-        this.deadSheet = deadSheet;
-    }
-
-    public Texture getHurtSheet() {
-        return hurtSheet;
-    }
-
-    public void setHurtSheet(Texture hurtSheet) {
-        this.hurtSheet = hurtSheet;
-    }
-
-    public Animation<TextureRegion> getHurtAnimation() {
-        return hurtAnimation;
-    }
-
-    public void setHurtAnimation(Animation<TextureRegion> hurtAnimation) {
-        this.hurtAnimation = hurtAnimation;
-    }
-
-    public Animation<TextureRegion> getIdleAnimation() {
-        return idleAnimation;
-    }
-
-    public void setIdleAnimation(Animation<TextureRegion> idleAnimation) {
-        this.idleAnimation = idleAnimation;
-    }
-
-    public Animation<TextureRegion> getWalkAnimation() {
-        return walkAnimation;
-    }
-
-    public void setWalkAnimation(Animation<TextureRegion> walkAnimation) {
-        this.walkAnimation = walkAnimation;
-    }
-
-    public Animation<TextureRegion> getDeadAnimation() {
-        return deadAnimation;
-    }
-
-    public void setDeadAnimation(Animation<TextureRegion> deadAnimation) {
-        this.deadAnimation = deadAnimation;
-    }
-
-    public AnimationEngine getAnimationEngine() {
-        return animationEngine;
-    }
-
-    public void setOlhandoEsquerda(boolean olhandoEsquerda) {
-        this.olhandoEsquerda = olhandoEsquerda;
-    }
-
     public void setDx(int dx) {
         this.dx = dx;
+    }
+
+    public int getDy() {
+        return dy;
     }
 
     public void setDy(int dy) {
         this.dy = dy;
     }
 
-    public CreateHitBox getCreateHitBox() {
-        return createHitBox;
+    public OrthographicCamera getCamera() {
+        return camera;
     }
 
-    public float getMapWidth() {
-        return mapWidth;
+    public Rectangle getHitBox() {
+        return hitBox;
     }
 
-    public float getMapHeight() {
-        return mapHeight;
+    public int getVida() {
+        return vida;
+    }
+
+    public int getXpNecessario() {
+        return xpNecessario;
+    }
+
+    public int getVelocidade() {
+        return velocidade;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public boolean isOlhandoEsquerda() {
+        return olhandoEsquerda;
+    }
+
+    public static int getTamanhoPx() {
+        return TAMANHO_PX;
+    }
+
+    public static int getHitboxSize() {
+        return HITBOX_SIZE;
+    }
+
+    public static int getHitboxOffsetX() {
+        return HITBOX_OFFSET_X;
+    }
+
+    public static int getHitboxOffsetY() {
+        return HITBOX_OFFSET_Y;
+    }
+
+    public float getNextY() {
+        return nextY;
+    }
+
+    public float getNextX() {
+        return nextX;
+    }
+
+    public void vidaBaseUp(int pontosGastos) {
+        vidaBase += 1;
+        vida = vidaBase;
+        gastouPontos(pontosGastos);
+    }
+
+    public void forcaUp(int pontosGastos) {
+        forca += 1;
+        gastouPontos(pontosGastos);
+    }
+
+    private void gastouPontos(int pontosGastos) {
+        pontosDisponiveis -= pontosGastos;
+    }
+
+    public void velocidadeUp(int pontosGastos) {
+        velocidade += 20;
+        gastouPontos(pontosGastos);
+    }
+
+    public void setLocal(float x, float y) {
+        this.dx = (int)(x);
+        this.dy = (int)(y);
+
+        int offsetX = olhandoEsquerda ? -(HITBOX_OFFSET_X) : HITBOX_OFFSET_X;
+        hitBox.setPosition(
+            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
+            dy + HITBOX_OFFSET_Y
+        );
+
+        updateCamera();
+    }
+
+    public Hud getHud() {
+        return hud;
     }
 }

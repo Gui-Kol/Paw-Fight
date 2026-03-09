@@ -16,7 +16,7 @@ public class ScreenTransition {
 
     public ScreenTransition(PawFight game) {
         this.game = game;
-        fadeTexture = new Texture("menu/transaction.png"); // textura preta
+        fadeTexture = new Texture("menu/dark_back_groud.png"); // textura preta
     }
 
     public void start(Screen nextScreen) {

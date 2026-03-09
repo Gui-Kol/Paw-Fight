@@ -1,9 +1,6 @@
 package com.pawfight.game;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -57,4 +54,14 @@ public class PawFight extends Game {
         batch.dispose();
         image.dispose();
     }
+//    @Override
+//    public void setScreen(Screen newScreen) {
+//        Screen oldScreen = getScreen();
+//        super.setScreen(newScreen);
+//        if (oldScreen != null) {
+//            oldScreen.dispose(); // descarta com segurança após a troca
+//        }
+//    }
+
+
 }

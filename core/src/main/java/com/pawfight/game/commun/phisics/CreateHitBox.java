@@ -18,8 +18,10 @@ public class CreateHitBox {
 
     public void drawHitBox(ShapeRenderer shapeRenderer, Rectangle hitbox) {
         if (HITBOX_ISVISIBLE) {
-            shapeRenderer.setColor(Color.GREEN);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(Color.RED);
             shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+            shapeRenderer.end();
         }
     }
 }

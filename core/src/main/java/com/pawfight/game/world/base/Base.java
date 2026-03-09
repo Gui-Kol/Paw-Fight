@@ -1,140 +1,65 @@
 package com.pawfight.game.world.base;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.Hud.Hud;
-import com.pawfight.game.commun.animation.ScreenTransition;
-import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
-import com.pawfight.game.entity.player.Player;
+import com.pawfight.game.world.WorldTemplate;
 
 import java.util.List;
 
-public class Base implements Screen {
-    //Phisics
-    TilemapHitboxFactory tilemapHitboxFactory;
-
-    //Base
-    private EntradaPortais entradaPortais;
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer renderer;
-
-    //MudarFase
-    private ScreenTransition screenTransition;
-
-    //Entidades
-    private Player player;
-
-    //Mundo
-    private Hud hud;
-    private ShapeRenderer shapeRenderer;
-    private Texture background;
-    private PawFight game;
-    private SpriteBatch batch;
-    private Music backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/time_for_adventure.wav"));
-
+public class Base extends WorldTemplate {
 
     public Base(PawFight game) {
-        this.game = game;
-        batch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-
-        player = new Player(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-
-        background = new Texture("menu/menu.png");
-
-        entradaPortais = new EntradaPortais(new ScreenTransition(game));
-
-        hud = new Hud();
-
-        tilemapHitboxFactory = new TilemapHitboxFactory();
+        super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
     }
 
     @Override
-    public void show() {
-        map = new TmxMapLoader().load("world/base/base.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map);
-
-
-
+    protected String getMapPath() {
+        return "world/base/base.tmx";
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if (player == null) {
+            escolherPersonagem.draw();
+            player = escolherPersonagem.update();
+            return;
+        }
 
-        List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createTileLayerHitboxes(map, "EntradaPortalAreia", 16, 16);
-        List<Rectangle> paredes = tilemapHitboxFactory.createTileLayerHitboxes(map, "Colisao", 16, 16);
-
-        player.update(delta, paredes);
-        player.updateCamera();
-
-        renderer.setView(player.getCamera());
-        renderer.render();
-
-        //configs shape e batch
-        shapeRenderer.setProjectionMatrix(player.getCamera().combined);
-        batch.setProjectionMatrix(player.getCamera().combined);
-
-
-        // --- Renderiza mundo (player + mapa) ---
-        player.draw(batch, shapeRenderer);
-
-        // --- Renderiza HUD (mensagem + interface) ---
-        batch.setProjectionMatrix(hud.getHudCamera().combined); // usa câmera fixa da HUD
-        batch.begin();
-        entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game); // mensagem centralizada
-        hud.draw(batch, player);
-        batch.end();
-
-        // --- Renderiza hitboxes ---
-        tilemapHitboxFactory.draw(shapeRenderer, player.getCamera(), paredes);
-
-    }
-
-
-
-
-    @Override
-    public void resize(int width, int height) {
-        player.getCamera().viewportWidth = width;
-        player.getCamera().viewportHeight = height;
-        player.getCamera().update();
+        super.render(delta);
     }
 
     @Override
-    public void pause() {
-
+    protected void renderLayers() {
+        layerRenderer.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
     }
 
     @Override
-    public void resume() {
-
+    protected void renderLayersUp() {
+        layerRenderer.renderLayer("DetalhesMapaCima", player.getCamera());
     }
 
-    @Override
-    public void hide() {
-
-    }
 
     @Override
-    public void dispose() {
-        batch.dispose();
-        shapeRenderer.dispose();
-        background.dispose();
-        backMusic.dispose();
-        map.dispose();
-        renderer.dispose();
-        player.dispose();
+    protected void checkPortals() {
+        // Aqui você define os portais que existem nessa base
+        List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
+        List<Rectangle> entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
+
+        if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game)) {
+            entrouPortal = true;
+        }
+        if (entradaPortais.entrarPortalNeve(player, entradaPortalNeve, batch, game)) {
+            entrouPortal = true;
+        }
+
+        // Exemplo de portão com requisito de nível
+        List<Rectangle> portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
+        List<Rectangle> portaoNeveMenssagem = tilemapHitboxFactory.createHitboxes(map, "PortaoNeveMenssagem");
+
+        if (player.getLevel() < 5) {
+            tilemapHitboxFactory.drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
+            portoes.menssagemPortao(player, portaoNeveMenssagem, batch, "Level 5 necessario!");
+        }
+        player.adicionarColisaoPorLevel(portaoNeve, 5);
     }
 }

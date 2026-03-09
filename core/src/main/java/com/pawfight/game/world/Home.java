@@ -12,24 +12,22 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.animation.CreateButton;
+import com.pawfight.game.commun.Hud.CreateButton;
 import com.pawfight.game.commun.animation.ScreenTransition;
 import com.pawfight.game.world.base.Base;
 
 public class Home implements Screen {
-    //MudarFase
     private ScreenTransition screenTransition;
 
     // Texturas para os estados do botão
     private Texture normalTexture = new Texture("menu/new_game_normal.png");
-    private Texture hoverTexture = new Texture("menu/new_game_houver.png");
+    private Texture hoverTexture = new Texture("menu/new_game_hover.png");
     private Texture pressedTexture = new Texture("menu/new_game_pressed.png");
 
     private ImageButton newGameButton;
     private CreateButton createButton;
     private Stage stage;
 
-    //Mundo
     private PawFight game;
     private SpriteBatch batch;
     private Texture background;
@@ -49,7 +47,6 @@ public class Home implements Screen {
             }
         }, 2f);
 
-        // inicializa o Stage e o helper de botão
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
         createButton = new CreateButton();
@@ -68,16 +65,19 @@ public class Home implements Screen {
         stage.act(delta);
         stage.draw();
 
-
         screenTransition.update(delta);
         screenTransition.render(batch);
     }
+
     @Override
     public void show() {
         if (newGameButton == null) {
-            newGameButton = createButton.create(Gdx.graphics.getWidth()/2 - normalTexture.getWidth(), Gdx.graphics.getHeight()/3, 200, 80,
+            // Agora passamos o stage corretamente
+            newGameButton = createButton.create(stage,
+                Gdx.graphics.getWidth()/2 - 100, // centraliza horizontalmente
+                Gdx.graphics.getHeight()/3,     // posição vertical
+                200, 80,
                 normalTexture, hoverTexture, pressedTexture);
-            stage = createButton.getStage();
 
             newGameButton.addListener(new ClickListener() {
                 @Override
@@ -85,11 +85,8 @@ public class Home implements Screen {
                     botaoNewGameApertado();
                 }
             });
-
-            stage.addActor(newGameButton);
         }
     }
-
 
     public void botaoNewGameApertado() {
         screenTransition.start(new Base(game));
@@ -102,14 +99,10 @@ public class Home implements Screen {
     }
 
     @Override
-    public void pause() {
-
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-
-    }
+    public void resume() {}
 
     @Override
     public void hide() {
