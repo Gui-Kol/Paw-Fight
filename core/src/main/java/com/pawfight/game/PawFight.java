@@ -19,10 +19,6 @@ public class PawFight extends Game {
         batch = new SpriteBatch();
         image = new Texture("menu/BackGroundPawFight.png");
 
-        // Tela Cheia
-        Graphics.DisplayMode displayMode = Gdx.graphics.getDisplayMode();
-        Gdx.graphics.setFullscreenMode(displayMode);
-
         // Inicializa transição
         transition = new ScreenTransition(this);
 
@@ -54,14 +50,5 @@ public class PawFight extends Game {
         batch.dispose();
         image.dispose();
     }
-//    @Override
-//    public void setScreen(Screen newScreen) {
-//        Screen oldScreen = getScreen();
-//        super.setScreen(newScreen);
-//        if (oldScreen != null) {
-//            oldScreen.dispose(); // descarta com segurança após a troca
-//        }
-//    }
-
 
 }

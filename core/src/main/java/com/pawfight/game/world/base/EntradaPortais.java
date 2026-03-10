@@ -13,6 +13,7 @@ import com.pawfight.game.world.Home;
 import com.pawfight.game.world.mundo_areia.MundoAreia;
 
 import java.util.List;
+import java.util.TimerTask;
 
 public class EntradaPortais {
     private Hud hud;
@@ -41,22 +42,23 @@ public class EntradaPortais {
     }
 
     public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
+        if (player == null || entradaPortal == null || batch == null || game == null || screenTransition == null) {
+            Gdx.app.error("EntradaPortais", "Objeto null em entrarPortalAreia.");
+            return false;
+        }
         batch.setProjectionMatrix(hud.getHudCamera().combined);
-        if (entrarPortal(player,entradaPortal,batch)){
-            screenTransition.start(new MundoAreia(game,player));
+        if (entrarPortal(player, entradaPortal, batch)) {
+            MundoAreia mundoAreia = new MundoAreia(game, player);
+            mundoAreia.preLoad();
+
+            screenTransition.start(mundoAreia);
             return true;
-        }else {
+        } else {
             return false;
         }
     }
     public boolean entrarPortalNeve(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
-        batch.setProjectionMatrix(hud.getHudCamera().combined);
-        if (entrarPortal(player,entradaPortal,batch)){
-            screenTransition.start(new MundoAreia(game, player));
-            return true;
-        }else {
-            return false;
-        }
+        return false; // Implementação futura para o portal de neve
     }
 
     public void entrou(SpriteBatch batch){

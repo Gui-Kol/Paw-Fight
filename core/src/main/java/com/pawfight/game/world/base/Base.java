@@ -29,6 +29,11 @@ public class Base extends WorldTemplate {
     }
 
     @Override
+    protected void preLoad() {
+
+    }
+
+    @Override
     protected void renderLayers() {
         layerRenderer.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
     }

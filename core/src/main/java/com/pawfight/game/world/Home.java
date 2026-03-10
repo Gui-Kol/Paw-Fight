@@ -36,16 +36,25 @@ public class Home implements Screen {
     public Home(PawFight game) {
         this.game = game;
         batch = new SpriteBatch();
-        background = new Texture("menu/menu.png");
+        try {
+            background = new Texture("menu/menu.png");
+        } catch (Exception e) {
+            Gdx.app.error("Home", "Erro ao carregar background: " + e.getMessage(), e);
+        }
 
-        backMusic.setLooping(true);
-        backMusic.setVolume(0.1f);
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                backMusic.play();
-            }
-        }, 2f);
+        try {
+            backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/time_for_adventure.wav"));
+            backMusic.setLooping(true);
+            backMusic.setVolume(0.1f);
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    backMusic.play();
+                }
+            }, 2f);
+        } catch (Exception e) {
+            Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
+        }
 
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
@@ -72,19 +81,23 @@ public class Home implements Screen {
     @Override
     public void show() {
         if (newGameButton == null) {
-            // Agora passamos o stage corretamente
-            newGameButton = createButton.create(stage,
-                Gdx.graphics.getWidth()/2 - 100, // centraliza horizontalmente
-                Gdx.graphics.getHeight()/3,     // posição vertical
-                200, 80,
-                normalTexture, hoverTexture, pressedTexture);
+            try {
+                // Agora passamos o stage corretamente
+                newGameButton = createButton.create(stage,
+                    Gdx.graphics.getWidth()/2 - 100, // centraliza horizontalmente
+                    Gdx.graphics.getHeight()/3,     // posição vertical
+                    200, 80,
+                    normalTexture, hoverTexture, pressedTexture);
 
-            newGameButton.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    botaoNewGameApertado();
-                }
-            });
+                newGameButton.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        botaoNewGameApertado();
+                    }
+                });
+            } catch (Exception e) {
+                Gdx.app.error("Home", "Erro ao criar botão: " + e.getMessage(), e);
+            }
         }
     }
 

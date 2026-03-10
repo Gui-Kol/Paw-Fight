@@ -69,6 +69,7 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void show() {
+        preLoad(); // Chame preLoad aqui para subclasses
         map = new TmxMapLoader().load(getMapPath());
         layerRenderer = new LayerRenderer(map);
         backMusic.setLooping(true);
@@ -91,6 +92,7 @@ public abstract class WorldTemplate implements Screen {
             pause();
         }
     }
+    protected abstract void preLoad();
 
     protected void updatePlayer(float delta) {
         List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");

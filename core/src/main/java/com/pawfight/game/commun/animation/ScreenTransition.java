@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 
 public class ScreenTransition {
@@ -24,6 +25,15 @@ public class ScreenTransition {
         this.transitioning = true;
         this.fadingOut = true;
         this.alpha = 0f;
+    }
+
+    public void startWithDelay(Screen nextScreen, int delaySecunds) {
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                start(nextScreen);
+            }
+        }, delaySecunds);
     }
 
     public void update(float delta) {

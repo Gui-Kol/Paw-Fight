@@ -1,10 +1,10 @@
 package com.pawfight.game.world.mundo_areia;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.commun.Hud.DesenharMiniMapa;
-import com.pawfight.game.commun.Hud.Hud;
 import com.pawfight.game.commun.LayerRenderer;
 import com.pawfight.game.commun.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -19,8 +19,7 @@ public class MundoAreia extends WorldTemplate {
     private List<Room> rooms;
     private RoomGenerator roomGenerator;
     private Room currentRoom;
-    private Hud hud;
-    private Set<String> salasVisitadas = new HashSet<>();
+    private Set<String> salasVisitadas;
     private DesenharMiniMapa desenharMiniMapa;
 
 
@@ -28,63 +27,116 @@ public class MundoAreia extends WorldTemplate {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
         setPlayer(player);
         player.setLocal(500, 100);
-
+        salasVisitadas = new HashSet<>();
         roomGenerator = new RoomGenerator();
-        rooms = roomGenerator.generate(10); // gera 10 salas
-        currentRoom = rooms.get(0); // começa na primeira sala
-
-        hud = player.getHud();
         desenharMiniMapa = new DesenharMiniMapa();
+        try {
+            map = new TmxMapLoader().load(getMapPath());
+            layerRenderer = new LayerRenderer(map);
+            Gdx.app.log("MundoAreia", "Mapa carregado com sucesso: " + getMapPath());
+        } catch (Exception e) {
+            Gdx.app.error("MundoAreia", "Erro ao carregar mapa: " + e.getMessage(), e);
+        }
+    }
+    @Override
+    public void preLoad(){
+        try {
+            rooms = roomGenerator.generate(10);
+            if (rooms == null || rooms.isEmpty()) {
+                throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
+            }
+            currentRoom = rooms.get(0); // começa na primeira sala
+            Gdx.app.log("MundoAreia", "Salas geradas com sucesso: " + rooms.size());
+        } catch (Exception e) {
+            Gdx.app.error("MundoAreia", "Erro ao gerar salas: " + e.getMessage(), e);
+            currentRoom = new Room(0, 0, RoomType.SPAWN);
+        }
     }
 
     @Override
     public void render(float delta) {
-        super.render(delta);
-        checkPortas();        // verifica colisão com portas
-        int indiceAtual = rooms.indexOf(currentRoom);
-        desenharMiniMapa.desenharSalaAtual(indiceAtual,currentRoom.getType(),batch);
+        if (currentRoom == null || map == null) {
+            Gdx.app.error("MundoAreia", "currentRoom ou map é null, pulando render.");
+            return;
+        }
+        try {
+            super.render(delta);
+            int indiceAtual = rooms.indexOf(currentRoom);
+            desenharMiniMapa.desenharSalaAtual(indiceAtual, currentRoom.getType(), batch);
+        } catch (Exception e) {
+            Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);
+        }
     }
 
 
     @Override
     protected void renderLayers() {
-        List<String> layers = new ArrayList<>();
-        layers.add("Sub");
-        layers.add("Solo");
-        layers.add("ParedeLayer");
+        if (map == null || currentRoom == null) {
+            Gdx.app.error("MundoAreia", "map ou currentRoom é null em renderLayers.");
+            return;
+        }
+        try {
+            List<String> layers = new ArrayList<>();
+            String[] baseLayers = {"Sub", "Solo", "ParedeLayer"};
+            for (String layer : baseLayers) {
+                if (map.getLayers().get(layer) != null) {
+                    layers.add(layer);
+                } else {
+                    Gdx.app.error("MundoAreia", "Camada base não encontrada: " + layer);
+                }
+            }
 
-        if (currentRoom.hasNorth()) {
-            layers.add("PortaCima");
+            if (currentRoom.hasNorth() && map.getLayers().get("PortaCima") != null) {
+                layers.add("PortaCima");
+            }
+            if (currentRoom.hasWest() && map.getLayers().get("PortaEsquerda") != null) {
+                layers.add("PortaEsquerda");
+            }
+            if (currentRoom.hasEast() && map.getLayers().get("PortaDireita") != null) {
+                layers.add("PortaDireita");
+            }
+            layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
+        } catch (Exception e) {
+            Gdx.app.error("MundoAreia", "Erro em renderLayers: " + e.getMessage(), e);
         }
-        if (currentRoom.hasWest()) {
-            layers.add("PortaEsquerda");
-        }
-        if (currentRoom.hasEast()) {
-            layers.add("PortaDireita");
-        }
-        layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
     }
-
 
     @Override
     protected void renderLayersUp() {
-        List<String> layers = new ArrayList<>();
-        layers.add("Up");
-        if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth()) {
-            layers.add("PortaBaixo");
+        if (map == null || currentRoom == null) {
+            Gdx.app.error("MundoAreia", "map ou currentRoom é null em renderLayersUp.");
+            return;
         }
-        layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
+        try {
+            List<String> layers = new ArrayList<>();
+            if (map.getLayers().get("Up") != null) {
+                layers.add("Up");
+            } else {
+                Gdx.app.error("MundoAreia", "Camada Up não encontrada.");
+            }
+            if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth() && map.getLayers().get("PortaBaixo") != null) {
+                layers.add("PortaBaixo");
+            }
+            layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
 
-        // chamada correta do minimapa
-        if (shapeRenderer.isDrawing()){
-            shapeRenderer.end();
+            // chamada correta do minimapa
+            if (shapeRenderer != null && shapeRenderer.isDrawing()) {
+                shapeRenderer.end();
+            }
+            if (desenharMiniMapa != null) {
+                desenharMiniMapa.desenharMiniMapa(player.getHud().getHudCamera(), batch, shapeRenderer, salasVisitadas, currentRoom, roomGenerator.getRoomMap());
+            }
+        } catch (Exception e) {
+            Gdx.app.error("MundoAreia", "Erro em renderLayersUp: " + e.getMessage(), e);
         }
-        desenharMiniMapa.desenharMiniMapa(hud.getHudCamera(),batch, shapeRenderer, salasVisitadas, currentRoom, roomGenerator.getRoomMap());
     }
 
     @Override
     protected String getMapPath() {
-        // Decide o mapa baseado no tipo da sala atual
+        if (currentRoom == null) {
+            Gdx.app.error("MundoAreia", "currentRoom é null em getMapPath, usando padrão.");
+            return "world/mundo_areia/SPAWN.tmx";
+        }
         switch (currentRoom.getType()) {
             case BOSS:
                 return "world/mundo_areia/BOSS.tmx";
@@ -100,36 +152,66 @@ public class MundoAreia extends WorldTemplate {
                 return "world/mundo_areia/INIMIGOS.tmx";
         }
     }
+
     private void moverParaSala(int x, int y) {
+        if (roomGenerator == null) {
+            Gdx.app.error("MundoAreia", "roomGenerator é null em moverParaSala.");
+            return;
+        }
         Room room = roomGenerator.getRoomMap().get(x + "," + y);
         if (room != null) {
             if (map != null) {
                 map.dispose();
-                layerRenderer.dispose();
+                if (layerRenderer != null) {
+                    layerRenderer.dispose();
+                }
             }
-            currentRoom = room;
-            map = new TmxMapLoader().load(getMapPath());
-            layerRenderer = new LayerRenderer(map);
-
-            salasVisitadas.add(x + "," + y); // registra sala visitada
+            try {
+                currentRoom = room;
+                map = new TmxMapLoader().load(getMapPath());
+                layerRenderer = new LayerRenderer(map);
+                salasVisitadas.add(x + "," + y);
+                Gdx.app.log("MundoAreia", "Sala mudada com sucesso para: " + x + "," + y);
+            } catch (Exception e) {
+                Gdx.app.error("MundoAreia", "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
+            }
+        } else {
+            Gdx.app.error("MundoAreia", "Erro: Sala não encontrada em " + x + "," + y);
         }
-        System.out.println(room.hasNorth());
+        if (room != null) {
+            Gdx.app.log("MundoAreia", "Room hasNorth: " + room.hasNorth());
+        }
     }
 
-    private void checkPortas() {
+
+    @Override
+    protected void checkPortals() {
+        if (player == null || currentRoom == null || map == null || roomGenerator == null) {
+            Gdx.app.error("MundoAreia", "Objeto null em checkPortas: player, currentRoom, map ou roomGenerator.");
+            return;
+        }
         Rectangle playerBox = player.getHitBox();
 
         // Porta cima
         if (currentRoom.hasNorth()) {
             Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() + 1));
             if (destino != null) {
-                List<Rectangle> portaCima = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaCima",16,16);
-                // só considera colisão se a sala realmente tem conexão
-                if (!portaCima.isEmpty() && ChecarColisao.houveColisao(playerBox, portaCima)) {
-                    moverParaSala(destino.getX(), destino.getY());
-                    player.setLocal(430, 120);
-                    return;
+                try {
+                    if (map.getLayers().get("PortaCima") != null) {
+                        List<Rectangle> portaCima = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaCima", 16, 16);
+                        if (!portaCima.isEmpty() && ChecarColisao.houveColisao(playerBox, portaCima)) {
+                            moverParaSala(destino.getX(), destino.getY());
+                            player.setLocal(430, 120);
+                            return;
+                        }
+                    } else {
+                        Gdx.app.error("MundoAreia", "Camada PortaCima não encontrada no mapa.");
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("MundoAreia", "Erro ao verificar porta cima: " + e.getMessage(), e);
                 }
+            } else {
+                Gdx.app.error("MundoAreia", "Erro: Destino norte não encontrado para sala atual.");
             }
         }
 
@@ -137,12 +219,22 @@ public class MundoAreia extends WorldTemplate {
         if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth()) {
             Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() - 1));
             if (destino != null) {
-                List<Rectangle> portaBaixo = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaBaixo",16,16);
-                if (!portaBaixo.isEmpty() && ChecarColisao.houveColisao(playerBox, portaBaixo)) {
-                    moverParaSala(destino.getX(), destino.getY());
-                    player.setLocal(350, 840);
-                    return;
+                try {
+                    if (map.getLayers().get("PortaBaixo") != null) {
+                        List<Rectangle> portaBaixo = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaBaixo", 16, 16);
+                        if (!portaBaixo.isEmpty() && ChecarColisao.houveColisao(playerBox, portaBaixo)) {
+                            moverParaSala(destino.getX(), destino.getY());
+                            player.setLocal(350, 840);
+                            return;
+                        }
+                    } else {
+                        Gdx.app.error("MundoAreia", "Camada PortaBaixo não encontrada no mapa.");
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("MundoAreia", "Erro ao verificar porta baixo: " + e.getMessage(), e);
                 }
+            } else {
+                Gdx.app.error("MundoAreia", "Erro: Destino sul não encontrado para sala atual.");
             }
         }
 
@@ -150,12 +242,22 @@ public class MundoAreia extends WorldTemplate {
         if (currentRoom.hasWest()) {
             Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() - 1) + "," + currentRoom.getY());
             if (destino != null) {
-                List<Rectangle> portaEsq = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaEsquerda",16,16);
-                if (!portaEsq.isEmpty() && ChecarColisao.houveColisao(playerBox, portaEsq)) {
-                    moverParaSala(destino.getX(), destino.getY());
-                    player.setLocal(820, 420);
-                    return;
+                try {
+                    if (map.getLayers().get("PortaEsquerda") != null) {
+                        List<Rectangle> portaEsq = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaEsquerda", 16, 16);
+                        if (!portaEsq.isEmpty() && ChecarColisao.houveColisao(playerBox, portaEsq)) {
+                            moverParaSala(destino.getX(), destino.getY());
+                            player.setLocal(820, 420);
+                            return;
+                        }
+                    } else {
+                        Gdx.app.error("MundoAreia", "Camada PortaEsquerda não encontrada no mapa.");
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("MundoAreia", "Erro ao verificar porta esquerda: " + e.getMessage(), e);
                 }
+            } else {
+                Gdx.app.error("MundoAreia", "Erro: Destino oeste não encontrado para sala atual.");
             }
         }
 
@@ -163,17 +265,23 @@ public class MundoAreia extends WorldTemplate {
         if (currentRoom.hasEast()) {
             Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + 1) + "," + currentRoom.getY());
             if (destino != null) {
-                List<Rectangle> portaDir = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaDireita",16,16);
-                if (!portaDir.isEmpty() && ChecarColisao.houveColisao(playerBox, portaDir)) {
-                    moverParaSala(destino.getX(), destino.getY());
-                    player.setLocal(70, 420);
+                try {
+                    if (map.getLayers().get("PortaDireita") != null) {
+                        List<Rectangle> portaDir = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaDireita", 16, 16);
+                        if (!portaDir.isEmpty() && ChecarColisao.houveColisao(playerBox, portaDir)) {
+                            moverParaSala(destino.getX(), destino.getY());
+                            player.setLocal(70, 420);
+                        }
+                    } else {
+                        Gdx.app.error("MundoAreia", "Camada PortaDireita não encontrada no mapa.");
+                    }
+                } catch (Exception e) {
+                    Gdx.app.error("MundoAreia", "Erro ao verificar porta direita: " + e.getMessage(), e);
                 }
+            } else {
+                Gdx.app.error("MundoAreia", "Erro: Destino leste não encontrado para sala atual.");
             }
         }
     }
-
-
-    @Override
-    protected void checkPortals() {}
 
 }
