@@ -9,6 +9,7 @@ import com.pawfight.game.commun.LayerRenderer;
 import com.pawfight.game.commun.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.base.Base;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,44 +18,73 @@ import java.util.Set;
 
 public class MundoAreia extends WorldTemplate {
     private List<Room> rooms;
-    private RoomGenerator roomGenerator;
+    private final RoomGenerator roomGenerator;
     private Room currentRoom;
-    private Set<String> salasVisitadas;
-    private DesenharMiniMapa desenharMiniMapa;
-
+    private final Set<String> salasVisitadas;
+    private final DesenharMiniMapa desenharMiniMapa;
+    private boolean errorFinal = false;
 
     public MundoAreia(PawFight game, PlayerTemplate player) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
+        roomGenerator = new RoomGenerator();
         setPlayer(player);
         player.setLocal(500, 100);
         salasVisitadas = new HashSet<>();
-        roomGenerator = new RoomGenerator();
         desenharMiniMapa = new DesenharMiniMapa();
-        try {
-            map = new TmxMapLoader().load(getMapPath());
-            layerRenderer = new LayerRenderer(map);
-            Gdx.app.log("MundoAreia", "Mapa carregado com sucesso: " + getMapPath());
-        } catch (Exception e) {
-            Gdx.app.error("MundoAreia", "Erro ao carregar mapa: " + e.getMessage(), e);
+
+        int tentativas = 0;
+        boolean sucesso = false;
+
+        while (!sucesso && tentativas < 3) { // tenta no máximo 3 vezes
+            try {
+                gerarRooms(); // garante currentRoom
+                if (currentRoom != null) {
+                    map = new TmxMapLoader().load(getMapPath());
+                    layerRenderer = new LayerRenderer(map);
+                    Gdx.app.log("MundoAreia", "Mapa carregado com sucesso: " + getMapPath());
+                    sucesso = true; // se chegou aqui, deu certo
+                }
+            } catch (Exception e) {
+                tentativas++;
+                Gdx.app.error("MundoAreia", "Erro ao carregar mapa (tentativa " + tentativas + "): " + e.getMessage(), e);
+                if (tentativas >= 3) {
+                    Gdx.app.error("MundoAreia", "Falha definitiva após 3 tentativas.");
+                    screenTransition.start(new Base(game));
+                    errorFinal = true;
+                }
+            }
         }
     }
-    @Override
-    public void preLoad(){
+
+
+
+    private void gerarRooms() {
         try {
             rooms = roomGenerator.generate(10);
             if (rooms == null || rooms.isEmpty()) {
                 throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
             }
-            currentRoom = rooms.get(0); // começa na primeira sala
+            currentRoom = rooms.get(0); // inicializa primeiro
+            salasVisitadas.add(currentRoom.getX() + "," + currentRoom.getY()); // só usa depois
             Gdx.app.log("MundoAreia", "Salas geradas com sucesso: " + rooms.size());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro ao gerar salas: " + e.getMessage(), e);
-            currentRoom = new Room(0, 0, RoomType.SPAWN);
         }
     }
 
+
+
+    @Override
+    public void preLoad() {
+    }
+
+
     @Override
     public void render(float delta) {
+        if (errorFinal) {
+            screenTransition.update(Gdx.graphics.getDeltaTime());
+            screenTransition.render(batch);
+        }
         if (currentRoom == null || map == null) {
             Gdx.app.error("MundoAreia", "currentRoom ou map é null, pulando render.");
             return;
@@ -133,24 +163,14 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     protected String getMapPath() {
-        if (currentRoom == null) {
-            Gdx.app.error("MundoAreia", "currentRoom é null em getMapPath, usando padrão.");
-            return "world/mundo_areia/SPAWN.tmx";
-        }
-        switch (currentRoom.getType()) {
-            case BOSS:
-                return "world/mundo_areia/BOSS.tmx";
-            case INIMIGOS:
-                return "world/mundo_areia/INIMIGOS.tmx";
-            case INIMIGOS_FORTES:
-                return "world/mundo_areia/INIMIGOS_FORTES.tmx";
-            case TESOURO:
-                return "world/mundo_areia/TESOURO.tmx";
-            case SPAWN:
-                return "world/mundo_areia/SPAWN.tmx";
-            default:
-                return "world/mundo_areia/INIMIGOS.tmx";
-        }
+
+        return switch (currentRoom.getType()) {
+            case BOSS -> "world/mundo_areia/BOSS.tmx";
+            case INIMIGOS -> "world/mundo_areia/INIMIGOS.tmx";
+            case INIMIGOS_FORTES -> "world/mundo_areia/INIMIGOS_FORTES.tmx";
+            case TESOURO -> "world/mundo_areia/TESOURO.tmx";
+            case SPAWN -> "world/mundo_areia/SPAWN.tmx";
+        };
     }
 
     private void moverParaSala(int x, int y) {
