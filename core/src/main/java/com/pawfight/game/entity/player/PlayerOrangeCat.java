@@ -40,4 +40,29 @@ public class PlayerOrangeCat extends PlayerTemplate{
     public String getName() {
         return "Orange Cat";
     }
+
+    @Override
+    public void ataqueBasico() {
+
+    }
+
+    @Override
+    public void ataqueEspecial() {
+
+    }
+
+    @Override
+    public void usarHabilidadeEspecial() {
+
+    }
+
+    @Override
+    public int calcularDefesa() {
+        return 0;
+    }
+
+    @Override
+    public boolean podeEsquivar() {
+        return false;
+    }
 }

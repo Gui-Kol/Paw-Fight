@@ -42,4 +42,29 @@ public class PlayerDove extends PlayerTemplate {
     public String getName() {
         return "Dove";
     }
+
+    @Override
+    public void ataqueBasico() {
+
+    }
+
+    @Override
+    public void ataqueEspecial() {
+
+    }
+
+    @Override
+    public void usarHabilidadeEspecial() {
+
+    }
+
+    @Override
+    public int calcularDefesa() {
+        return 0;
+    }
+
+    @Override
+    public boolean podeEsquivar() {
+        return false;
+    }
 }

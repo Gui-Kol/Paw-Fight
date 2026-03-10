@@ -43,4 +43,29 @@ public class PlayerBlackBird extends PlayerTemplate{
     public String getName() {
         return "Black Bird";
     }
+
+    @Override
+    public void ataqueBasico() {
+
+    }
+
+    @Override
+    public void ataqueEspecial() {
+
+    }
+
+    @Override
+    public void usarHabilidadeEspecial() {
+
+    }
+
+    @Override
+    public int calcularDefesa() {
+        return 0;
+    }
+
+    @Override
+    public boolean podeEsquivar() {
+        return false;
+    }
 }

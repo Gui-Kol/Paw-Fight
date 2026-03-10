@@ -12,12 +12,12 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.commun.CommunVariable;
 import com.pawfight.game.commun.Hud.Hud;
+import com.pawfight.game.commun.Hud.StatusMenu;
 import com.pawfight.game.commun.animation.AnimationEngine;
 import com.pawfight.game.commun.animation.SpriteDefinition;
 import com.pawfight.game.commun.phisics.ChecarColisao;
 import com.pawfight.game.commun.phisics.CreateHitBox;
 import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
-import com.pawfight.game.commun.Hud.StatusMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +38,9 @@ public abstract class PlayerTemplate {
     protected boolean hurt = false;
     protected boolean moving = false;
     protected boolean drawHitBoxes = false;
+
+    // Atributos de combate
+    protected int defesa;
 
     protected float stateTime;
     protected float hurtTime = 0f;
@@ -88,6 +91,16 @@ public abstract class PlayerTemplate {
 
     public abstract String getName();
 
+    public abstract void ataqueBasico();
+
+    public abstract void ataqueEspecial();
+
+    public abstract void usarHabilidadeEspecial();
+
+    public abstract int calcularDefesa();
+
+    public abstract boolean podeEsquivar();
+
     //Movimentacao
     float nextY;
     float nextX;
@@ -103,6 +116,7 @@ public abstract class PlayerTemplate {
         xp = 0;
         xpNecessario = 200;
         forca = 1;
+        defesa = 0;
         level = 1;
 
         menuAberto = false;
@@ -144,7 +158,7 @@ public abstract class PlayerTemplate {
 
     // Atualização
     public void update(float delta) {
-        if (pause){
+        if (pause) {
             pauseControl();
             return;
         }
@@ -215,6 +229,17 @@ public abstract class PlayerTemplate {
             Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + HITBOX_ISVISIBLE);
             CommunVariable.setHitboxIsvisible(drawHitBoxes);
         }
+
+        // Controles de combate
+        ataqueBasico();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            ataqueEspecial();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            usarHabilidadeEspecial();
+        }
+
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
                 xpUp(2000);
@@ -224,7 +249,7 @@ public abstract class PlayerTemplate {
     }
 
     //Controle para pausar
-    public void pauseControl(){
+    public void pauseControl() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             statusMenu.criarMenu();
             menuAberto = !menuAberto;
@@ -266,6 +291,11 @@ public abstract class PlayerTemplate {
     }
 
 
+    public void receberDano(int dano) {
+        int danoFinal = Math.max(1, dano - calcularDefesa());
+        dano(danoFinal);
+    }
+
     // Animação
     protected TextureRegion animaAtual() {
         idleAnimation = animationEngine.animar(idleDefinition);
@@ -295,7 +325,7 @@ public abstract class PlayerTemplate {
         batch.end();
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         createHitBox.drawHitBox(shapeRenderer, hitBox);
-        if (menuAberto){
+        if (menuAberto) {
             statusMenu.draw(batch, hud.getHudCamera());
         }
         hud.draw(batch, this, shapeRenderer);
@@ -326,7 +356,7 @@ public abstract class PlayerTemplate {
         statusMenu.dispose();
     }
 
-    public void clearList(){
+    public void clearList() {
         listColisores.clear();
     }
 
@@ -439,9 +469,14 @@ public abstract class PlayerTemplate {
         gastouPontos(pontosGastos);
     }
 
+    public void defesaUp(int pontosGastos) {
+        defesa += 1;
+        gastouPontos(pontosGastos);
+    }
+
     public void setLocal(float x, float y) {
-        this.dx = (int)(x);
-        this.dy = (int)(y);
+        this.dx = (int) (x);
+        this.dy = (int) (y);
 
         // Reseta estado de pausa e menu
         pause = false;
@@ -462,5 +497,9 @@ public abstract class PlayerTemplate {
 
     public boolean isMorto() {
         return morto;
+    }
+
+    public int getDefesa() {
+        return defesa;
     }
 }
