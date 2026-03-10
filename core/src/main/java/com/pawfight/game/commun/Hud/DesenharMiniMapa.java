@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.commun.font.FontFactory;
-import com.pawfight.game.world.mundo_areia.Room;
-import com.pawfight.game.world.mundo_areia.RoomType;
+import com.pawfight.game.world.room.Room;
+import com.pawfight.game.world.room.RoomType;
 
 import java.util.Map;
 import java.util.Set;
@@ -159,5 +159,9 @@ public class DesenharMiniMapa {
             font.draw(batch, "■", posX, posY);
         }
         batch.end();
+    }
+
+    public void dispose() {
+        font.dispose();
     }
 }

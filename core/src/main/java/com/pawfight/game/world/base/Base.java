@@ -1,15 +1,28 @@
 package com.pawfight.game.world.base;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.commun.animation.ScreenTransition;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.List;
 
 public class Base extends WorldTemplate {
+    private final EntradaPortais entradaPortais;
+    private final EscolherPersonagem escolherPersonagem;
+    private final ScreenTransition screenTransition;
+    private boolean entrouPortal;
+    private final Portoes portoes;
 
     public Base(PawFight game) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
+        Gdx.app.log("Base", "Iniciando Base...");
+        screenTransition = new ScreenTransition(game);
+        entradaPortais = new EntradaPortais(screenTransition);
+        escolherPersonagem = new EscolherPersonagem();
+        entrouPortal = false;
+        portoes = new Portoes();
     }
 
     @Override
@@ -22,15 +35,17 @@ public class Base extends WorldTemplate {
         if (player == null) {
             escolherPersonagem.draw();
             player = escolherPersonagem.update();
+            if (player != null) {
+                Gdx.app.log("Base", "Personagem escolhido: " + player.getName());
+            }
             return;
         }
 
-        super.render(delta);
-    }
-
-    @Override
-    protected void preLoad() {
-
+        if (!entrouPortal) {
+            super.render(delta);
+        } else {
+            entradaPortais.entrou(batch);
+        }
     }
 
     @Override
@@ -46,25 +61,36 @@ public class Base extends WorldTemplate {
 
     @Override
     protected void checkPortals() {
-        // Aqui você define os portais que existem nessa base
-        List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
-        List<Rectangle> entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
+        try {
+            List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
+            List<Rectangle> entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
 
-        if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game)) {
-            entrouPortal = true;
-        }
-        if (entradaPortais.entrarPortalNeve(player, entradaPortalNeve, batch, game)) {
-            entrouPortal = true;
-        }
+            if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, game)) {
+                entrouPortal = true;
+            }
+            if (entradaPortais.entrarPortalNeve(player, entradaPortalNeve, batch, game)) {
+                entrouPortal = true;
+            }
 
-        // Exemplo de portão com requisito de nível
-        List<Rectangle> portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
-        List<Rectangle> portaoNeveMenssagem = tilemapHitboxFactory.createHitboxes(map, "PortaoNeveMenssagem");
+            List<Rectangle> portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
+            List<Rectangle> portaoNeveMenssagem = tilemapHitboxFactory.createHitboxes(map, "PortaoNeveMenssagem");
 
-        if (player.getLevel() < 5) {
-            tilemapHitboxFactory.drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
-            portoes.menssagemPortao(player, portaoNeveMenssagem, batch, "Level 5 necessario!");
+            if (player.getLevel() < 5) {
+                tilemapHitboxFactory.drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
+                portoes.menssagemPortao(player, portaoNeveMenssagem, batch, "Level 5 necessario!");
+            }
+            player.adicionarColisaoPorLevel(portaoNeve, 5);
+        } catch (Exception e) {
+            Gdx.app.error("Base", "Erro ao verificar portais: " + e.getMessage());
         }
-        player.adicionarColisaoPorLevel(portaoNeve, 5);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        escolherPersonagem.dispose();
+        if (screenTransition != null) {
+            screenTransition.dispose();
+        }
     }
 }

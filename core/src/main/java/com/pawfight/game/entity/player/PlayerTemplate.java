@@ -39,7 +39,7 @@ public abstract class PlayerTemplate {
     protected boolean moving = false;
     protected boolean drawHitBoxes = false;
 
-    protected float stateTime = 0f;
+    protected float stateTime;
     protected float hurtTime = 0f;
     protected static final float HURT_DURATION = 0.5f;
 
@@ -212,7 +212,7 @@ public abstract class PlayerTemplate {
             } else {
                 drawHitBoxes = true;
             }
-            System.out.println("Exibindo detalhes: " + HITBOX_ISVISIBLE);
+            Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + HITBOX_ISVISIBLE);
             CommunVariable.setHitboxIsvisible(drawHitBoxes);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
@@ -240,7 +240,7 @@ public abstract class PlayerTemplate {
 
             if (level % 5 == 0) {
                 xpNecessario += 200;
-                System.out.println(xpNecessario);
+                Gdx.app.log("PlayerTemplate", "XP necessário para próximo nível: " + xpNecessario);
             }
         }
     }
@@ -443,6 +443,10 @@ public abstract class PlayerTemplate {
         this.dx = (int)(x);
         this.dy = (int)(y);
 
+        // Reseta estado de pausa e menu
+        pause = false;
+        menuAberto = false;
+
         int offsetX = olhandoEsquerda ? -(HITBOX_OFFSET_X) : HITBOX_OFFSET_X;
         hitBox.setPosition(
             dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
@@ -454,5 +458,9 @@ public abstract class PlayerTemplate {
 
     public Hud getHud() {
         return hud;
+    }
+
+    public boolean isMorto() {
+        return morto;
     }
 }

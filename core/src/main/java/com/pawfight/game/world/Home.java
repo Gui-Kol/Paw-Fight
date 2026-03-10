@@ -3,6 +3,7 @@ package com.pawfight.game.world;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -61,6 +62,7 @@ public class Home implements Screen {
         createButton = new CreateButton();
 
         screenTransition = new ScreenTransition(game);
+        Gdx.app.log("Home", "Iniciando Home...");
     }
 
     @Override
@@ -102,7 +104,7 @@ public class Home implements Screen {
     }
 
     public void botaoNewGameApertado() {
-        screenTransition.start(new Base(game));
+        screenTransition.startFadeTransaction(new Base(game), 1.5f, Color.BLACK,false);
         backMusic.stop();
     }
 
@@ -130,5 +132,8 @@ public class Home implements Screen {
         background.dispose();
         if (backMusic != null) backMusic.dispose();
         if (stage != null) stage.dispose();
+        if (screenTransition != null) {
+            screenTransition.dispose();
+        }
     }
 }

@@ -10,11 +10,6 @@ import com.pawfight.game.commun.animation.AnimationEngine;
 import com.pawfight.game.commun.animation.SpriteDefinition;
 import com.pawfight.game.commun.font.FontFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.world.mundo_areia.Room;
-import com.pawfight.game.world.mundo_areia.RoomType;
-
-import java.util.Map;
-import java.util.Set;
 
 import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
 

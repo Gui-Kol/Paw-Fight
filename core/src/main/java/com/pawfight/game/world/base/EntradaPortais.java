@@ -2,6 +2,7 @@ package com.pawfight.game.world.base;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
@@ -14,11 +15,9 @@ import com.pawfight.game.world.mundo_areia.MundoAreia;
 import java.util.List;
 
 public class EntradaPortais {
-    private Hud hud;
+    private final Hud hud;
     private boolean entrouPortal = false;
-
-    // Referência para transição de tela
-    private ScreenTransition screenTransition;
+    private final ScreenTransition screenTransition;
 
     public EntradaPortais(ScreenTransition screenTransition) {
         this.screenTransition = screenTransition;
@@ -28,37 +27,40 @@ public class EntradaPortais {
     public boolean entrarPortal(PlayerTemplate player, List<Rectangle> entradaPortalAreia, SpriteBatch batch) {
         if (ChecarColisao.houveColisao(player.getHitBox(), entradaPortalAreia)) {
             String mensagem = "Aperte ENTER para entrar";
-
             hud.mostrarMensagemEmBaixo(batch, mensagem);
 
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                 entrouPortal = true;
             }
-
-
         }
         return entrouPortal;
     }
 
     public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
         try {
-
             if (player == null || entradaPortal == null || batch == null || game == null || screenTransition == null) {
                 Gdx.app.error("EntradaPortais", "Objeto null em entrarPortalAreia.");
                 return false;
             }
-            batch.setProjectionMatrix(hud.getHudCamera().combined);
-            if (entrarPortal(player, entradaPortal, batch)) {
-                MundoAreia mundoAreia = new MundoAreia(game, player);
-                mundoAreia.preLoad();
 
-                screenTransition.start(mundoAreia);
+            batch.setProjectionMatrix(hud.getHudCamera().combined);
+
+            if (entrarPortal(player, entradaPortal, batch)) {
+                // Reseta estado do player
+                player.clearList();
+
+                // Cria MundoAreia (gera salas)
+                MundoAreia mundoAreia = new MundoAreia(game, player);
+
+                // screenTransition, com efeito de Fade
+                screenTransition.startFadeTransaction(mundoAreia, 2f, Color.BLACK,false);
                 return true;
             } else {
                 return false;
             }
-        }catch (Exception e){
-            Gdx.app.error("EntradaPortais", "Erro ao tentar entrar no portal de areia: " + e.getMessage());
+        } catch (Exception e) {
+            Gdx.app.error("EntradaPortais", "Erro ao tentar entrar no portal de areia: " + e.getMessage(), e);
+            e.printStackTrace();
             return false;
         }
     }

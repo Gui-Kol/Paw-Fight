@@ -1,6 +1,7 @@
 package com.pawfight.game;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -25,9 +26,12 @@ public class PawFight extends Game {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                transition.start(new Home(game));
+                transition.startFadeTransaction(new Home(game),1f, Color.BLACK,false);
+                image = new Texture("menu/dark_back_groud.png");
             }
         }, 2.5f);
+
+        Gdx.app.log("PawFight", "Iniciando jogo...");
     }
 
     @Override
@@ -49,6 +53,8 @@ public class PawFight extends Game {
     public void dispose() {
         batch.dispose();
         image.dispose();
+        if (transition != null) {
+            transition.dispose();
+        }
     }
-
 }

@@ -1,4 +1,4 @@
-package com.pawfight.game.world.mundo_areia;
+package com.pawfight.game.world.room;
 
 public enum RoomType {
     BOSS,

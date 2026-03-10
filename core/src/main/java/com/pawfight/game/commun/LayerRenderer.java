@@ -1,5 +1,6 @@
 package com.pawfight.game.commun;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -20,7 +21,7 @@ public class LayerRenderer {
     public void renderLayer(String layerName, OrthographicCamera camera) {
         MapLayer layer = map.getLayers().get(layerName);
         if (layer == null) {
-            System.out.println("Layer '" + layerName + "' não encontrado!");
+            Gdx.app.error("LayerRenderer", layerName + " não encontrado!");
             return;
         }
 
