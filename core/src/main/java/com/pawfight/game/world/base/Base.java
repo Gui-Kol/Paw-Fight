@@ -20,7 +20,7 @@ public class Base extends WorldTemplate {
         Gdx.app.log("Base", "Iniciando Base...");
         screenTransition = new ScreenTransition(game);
         entradaPortais = new EntradaPortais(screenTransition);
-        escolherPersonagem = new EscolherPersonagem();
+        escolherPersonagem = new EscolherPersonagem(game);
         entrouPortal = false;
         portoes = new Portoes();
     }

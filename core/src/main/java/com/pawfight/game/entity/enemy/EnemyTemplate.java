@@ -13,6 +13,7 @@ public abstract class EnemyTemplate {
     protected int dx, dy;
     protected boolean morto = false;
     protected boolean hurt = false;
+    protected boolean miniBoss;
     protected float hurtTime = 0f;
     protected static final float HURT_DURATION = 0.3f;
     protected float stateTime;
@@ -50,6 +51,8 @@ public abstract class EnemyTemplate {
     public abstract void texture();
 
     public abstract String getTipo();
+
+    public abstract void miniBoss();
 
     // Métodos comuns
     public void update(float delta) {

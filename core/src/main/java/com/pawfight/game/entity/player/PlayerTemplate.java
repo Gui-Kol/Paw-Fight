@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Timer;
+import com.pawfight.game.PawFight;
+import com.pawfight.game.SaveDataPlayer;
 import com.pawfight.game.commun.CommunVariable;
 import com.pawfight.game.commun.Hud.Hud;
 import com.pawfight.game.commun.Hud.StatusMenu;
@@ -25,6 +28,9 @@ import java.util.List;
 import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
 
 public abstract class PlayerTemplate {
+    //Moedas
+    protected int moedas;
+
     // Atributos comuns
     protected int pontosDisponiveis;
     protected int xp;
@@ -156,6 +162,48 @@ public abstract class PlayerTemplate {
         texture();
     }
 
+    public SaveDataPlayer toSaveData() {
+        SaveDataPlayer data = new SaveDataPlayer();
+        data.nomePersonagem = getName(); // cada player define o nome
+        data.vidaBase = this.vidaBase;
+        data.velocidade = this.velocidade;
+        data.vida = this.vida;
+        data.forca = this.forca;
+        data.level = this.level;
+        data.xp = this.xp;
+        data.xpNecessario = this.xpNecessario;
+        data.moedas = this.moedas;
+        data.pontosDisponiveis = this.pontosDisponiveis;
+        data.defesa = this.defesa;
+        return data;
+    }
+
+    public void loadSaveData(SaveDataPlayer data) {
+        this.vidaBase = data.vidaBase;
+        this.velocidade = data.velocidade;
+        this.vida = data.vida;
+        this.forca = data.forca;
+        this.level = data.level;
+        this.xp = data.xp;
+        this.xpNecessario = data.xpNecessario;
+        this.moedas = data.moedas;
+        this.pontosDisponiveis = data.pontosDisponiveis;
+        this.defesa = data.defesa;
+        Gdx.app.log("PlayerTemplate", "Save carregado para " + getName());
+    }
+    //AutoSave
+    public void autoSave() {
+        PlayerTemplate player = this;
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                PawFight game = (PawFight) Gdx.app.getApplicationListener();
+                game.savePlayer(player);
+                Gdx.app.log("PlayerTemplate", "Save criado para " + getName());
+            }
+        },30f,15f);
+    }
+
     // Atualização
     public void update(float delta) {
         if (pause) {
@@ -216,9 +264,22 @@ public abstract class PlayerTemplate {
         }
     }
 
+    public void combatMoves() {
+        // Controles de combate
+        ataqueBasico();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            ataqueEspecial();
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            usarHabilidadeEspecial();
+        }
+    }
+
     //Controles Gerais
     public void entityControl(float delta) {
         moveEntityControl(delta);
+        combatMoves();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
             if (drawHitBoxes) {
@@ -230,21 +291,12 @@ public abstract class PlayerTemplate {
             CommunVariable.setHitboxIsvisible(drawHitBoxes);
         }
 
-        // Controles de combate
-        ataqueBasico();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            ataqueEspecial();
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            usarHabilidadeEspecial();
-        }
-
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
                 xpUp(2000);
             }
         }
+
         pauseControl();
     }
 

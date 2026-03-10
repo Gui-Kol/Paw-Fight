@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Timer;
+import com.pawfight.game.PawFight;
 import com.pawfight.game.entity.player.*;
 
 import java.util.Random;
@@ -28,9 +29,13 @@ public class EscolherPersonagem {
     private float nuvemVelocidade = 200; // pixels por segundo
     private Random random;
 
+    //Game
+    PawFight game;
 
 
-    public EscolherPersonagem() {
+
+    public EscolherPersonagem(PawFight game) {
+        this.game = game;
         batch = new SpriteBatch();
 
         personagens = new Texture[]{
@@ -108,8 +113,11 @@ public class EscolherPersonagem {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            return getPlayerEscolhido();
+            PlayerTemplate escolhido = getPlayerEscolhido();
+            escolhido.autoSave(); // inicia o ciclo de autosave
+            return escolhido; // esse é o objeto que vai ser usado no jogo
         }
+
         return null;
     }
 
@@ -134,14 +142,31 @@ public class EscolherPersonagem {
     }
 
     public PlayerTemplate getPlayerEscolhido() {
+        PlayerTemplate playerEscolhido;
         switch (personagemAtual) {
-            case 0: return new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-            case 1: return new PlayerOrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-            case 2: return new PlayerBlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-            case 3: return new PlayerDove(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-            default: return new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+            case 0:
+                playerEscolhido = new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                break;
+            case 1:
+                playerEscolhido = new PlayerOrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                break;
+            case 2:
+                playerEscolhido = new PlayerBlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                break;
+            case 3:
+                playerEscolhido = new PlayerDove(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                break;
+            default:
+                playerEscolhido = new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                break;
         }
+
+        // Carrega os dados salvos para esse personagem
+        playerEscolhido = game.loadPlayer(playerEscolhido, playerEscolhido.getName());
+
+        return playerEscolhido;
     }
+
 
     public void dispose() {
         for (Texture t : personagens) {
