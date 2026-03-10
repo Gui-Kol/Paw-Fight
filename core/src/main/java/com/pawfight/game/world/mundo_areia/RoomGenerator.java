@@ -1,5 +1,7 @@
 package com.pawfight.game.world.mundo_areia;
 
+import com.badlogic.gdx.Gdx;
+
 import java.util.*;
 
 public class RoomGenerator {
@@ -8,6 +10,18 @@ public class RoomGenerator {
     private Map<String, Room> roomMap = new HashMap<>();
 
     public List<Room> generate(int numRooms) {
+        List<Room> response = gerar(numRooms);
+        Room spawn = response.get(0);
+        while (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasSouth() && !spawn.hasWest()){
+            response = gerar(numRooms); // Regenera se a sala de spawn não tiver conexões
+            spawn = response.get(0);
+            Gdx.app.log("RoomGenerator", "Regerando mundo para spawn ter conexões...");
+        }
+
+        return response;
+    }
+
+    public List<Room> gerar(int numRooms){
         List<Room> rooms = new ArrayList<>();
         Room spawn = new Room(0, 0, RoomType.SPAWN);
         rooms.add(spawn);
