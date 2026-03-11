@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
-import com.pawfight.game.commun.animation.ScreenTransition;
+import com.pawfight.game.engine.animation.ScreenTransition;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.Home;
 
@@ -39,7 +39,7 @@ public class PawFight extends Game {
 
     public void savePlayer(PlayerTemplate player) {
         SaveGame saveGame = new SaveGame();
-        saveGame.saveGame(player.toSaveData());
+        saveGame.saveGame(player.saveData());
     }
 
     public PlayerTemplate loadPlayer(PlayerTemplate player, String nomePersonagem) {

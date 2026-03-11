@@ -6,11 +6,11 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.Hud.Hud;
-import com.pawfight.game.commun.animation.ScreenTransition;
-import com.pawfight.game.commun.phisics.ChecarColisao;
+import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.animation.ScreenTransition;
+import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.world.mundo_areia.MundoAreia;
+import com.pawfight.game.world.MundoAreia;
 
 import java.util.List;
 

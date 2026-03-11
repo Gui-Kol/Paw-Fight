@@ -13,19 +13,19 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.SaveDataPlayer;
-import com.pawfight.game.commun.CommunVariable;
-import com.pawfight.game.commun.Hud.Hud;
-import com.pawfight.game.commun.Hud.StatusMenu;
-import com.pawfight.game.commun.animation.AnimationEngine;
-import com.pawfight.game.commun.animation.SpriteDefinition;
-import com.pawfight.game.commun.phisics.ChecarColisao;
-import com.pawfight.game.commun.phisics.CreateHitBox;
-import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.CommunVariable;
+import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.Hud.StatusMenu;
+import com.pawfight.game.engine.animation.AnimationEngine;
+import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.phisics.ChecarColisao;
+import com.pawfight.game.engine.phisics.DrawHitBox;
+import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pawfight.game.commun.CommunVariable.HITBOX_ISVISIBLE;
+import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
 
 public abstract class PlayerTemplate {
     //Moedas
@@ -42,7 +42,7 @@ public abstract class PlayerTemplate {
     protected int level;
     protected boolean morto = false;
     protected boolean hurt = false;
-    protected boolean moving = false;
+    protected boolean moving;
     protected boolean drawHitBoxes = false;
 
     // Atributos de combate
@@ -73,7 +73,7 @@ public abstract class PlayerTemplate {
     protected boolean olhandoEsquerda = false;
 
     // Constantes
-    protected static int TAMANHO_PX = 64;       // tamanho fixo do sprite
+    protected int TAMANHO_PX = 64;       // tamanho fixo do sprite
     // Configuração da hitbox (você pode alterar livremente)
     protected static int HITBOX_SIZE = 20;       // tamanho da hitbox (largura e altura)
     protected static int HITBOX_OFFSET_X = -10;   // deslocamento horizontal (esquerda/direita)
@@ -84,7 +84,7 @@ public abstract class PlayerTemplate {
     protected ChecarColisao checarColisao;
     protected int dx, dy;
     protected final Rectangle hitBox;
-    protected final CreateHitBox createHitBox = new CreateHitBox();
+    protected final DrawHitBox drawHitBox = new DrawHitBox();
 
     // Mundo e câmera
     protected final float mapWidth;
@@ -162,12 +162,11 @@ public abstract class PlayerTemplate {
         texture();
     }
 
-    public SaveDataPlayer toSaveData() {
+    public SaveDataPlayer saveData() {
         SaveDataPlayer data = new SaveDataPlayer();
         data.nomePersonagem = getName(); // cada player define o nome
         data.vidaBase = this.vidaBase;
         data.velocidade = this.velocidade;
-        data.vida = this.vida;
         data.forca = this.forca;
         data.level = this.level;
         data.xp = this.xp;
@@ -181,7 +180,6 @@ public abstract class PlayerTemplate {
     public void loadSaveData(SaveDataPlayer data) {
         this.vidaBase = data.vidaBase;
         this.velocidade = data.velocidade;
-        this.vida = data.vida;
         this.forca = data.forca;
         this.level = data.level;
         this.xp = data.xp;
@@ -191,6 +189,7 @@ public abstract class PlayerTemplate {
         this.defesa = data.defesa;
         Gdx.app.log("PlayerTemplate", "Save carregado para " + getName());
     }
+
     //AutoSave
     public void autoSave() {
         PlayerTemplate player = this;
@@ -201,11 +200,12 @@ public abstract class PlayerTemplate {
                 game.savePlayer(player);
                 Gdx.app.log("PlayerTemplate", "Save criado para " + getName());
             }
-        },30f,15f);
+        }, 30f, 15f);
     }
 
     // Atualização
     public void update(float delta) {
+        TAMANHO_PX = getTamanho();
         if (pause) {
             pauseControl();
             return;
@@ -235,6 +235,8 @@ public abstract class PlayerTemplate {
         updateCamera();
         texture();
     }
+
+    protected abstract int getTamanho();
 
     // Movimento
     protected void moveEntityControl(float delta) {
@@ -291,13 +293,19 @@ public abstract class PlayerTemplate {
             CommunVariable.setHitboxIsvisible(drawHitBoxes);
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
-                xpUp(2000);
-            }
+
+        controleTestes();
+        pauseControl();
+    }
+
+    private void controleTestes() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
+            xpUp(999999999);
         }
 
-        pauseControl();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
+            vida = 999999999;
+        }
     }
 
     //Controle para pausar
@@ -376,7 +384,7 @@ public abstract class PlayerTemplate {
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
         batch.end();
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
-        createHitBox.drawHitBox(shapeRenderer, hitBox);
+        drawHitBox.draw(shapeRenderer, hitBox);
         if (menuAberto) {
             statusMenu.draw(batch, hud.getHudCamera());
         }
@@ -477,7 +485,7 @@ public abstract class PlayerTemplate {
         return olhandoEsquerda;
     }
 
-    public static int getTamanhoPx() {
+    public int getTamanhoPx() {
         return TAMANHO_PX;
     }
 
@@ -549,9 +557,5 @@ public abstract class PlayerTemplate {
 
     public boolean isMorto() {
         return morto;
-    }
-
-    public int getDefesa() {
-        return defesa;
     }
 }

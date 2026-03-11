@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.commun.animation.SpriteDefinition;
+import com.pawfight.game.engine.animation.SpriteDefinition;
 
 public class PlayerBlackCat extends PlayerTemplate {
     // Construtor
@@ -34,9 +34,8 @@ public class PlayerBlackCat extends PlayerTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        TAMANHO_PX = 64;
-        super.update(delta);
+    protected int getTamanho() {
+        return 64;
     }
 
     @Override

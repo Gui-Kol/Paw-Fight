@@ -12,8 +12,8 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.LayerRenderer;
-import com.pawfight.game.commun.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.LayerRenderer;
+import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;

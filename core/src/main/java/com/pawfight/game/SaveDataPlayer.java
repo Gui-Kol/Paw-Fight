@@ -4,7 +4,6 @@ public class SaveDataPlayer {
     public String nomePersonagem;
     public int vidaBase;
     public int velocidade;
-    public int vida;
     public int forca;
     public int level;
     public int xp;

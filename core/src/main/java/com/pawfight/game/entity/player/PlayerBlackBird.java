@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.commun.animation.SpriteDefinition;
+import com.pawfight.game.engine.animation.SpriteDefinition;
 
 public class PlayerBlackBird extends PlayerTemplate{
     public PlayerBlackBird(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -32,11 +32,9 @@ public class PlayerBlackBird extends PlayerTemplate{
         deadDefinition = new SpriteDefinition(deadSheet, 4, 0.1f, false, olhandoEsquerda);
         hurtDefinition = new SpriteDefinition(hurtSheet, 2, 0.1f, false, olhandoEsquerda);
     }
-
     @Override
-    public void update(float delta) {
-        TAMANHO_PX = 32;
-        super.update(delta);
+    protected int getTamanho() {
+        return 32;
     }
 
     @Override

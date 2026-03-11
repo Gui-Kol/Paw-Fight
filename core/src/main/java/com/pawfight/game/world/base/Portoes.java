@@ -2,8 +2,8 @@ package com.pawfight.game.world.base;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.commun.Hud.Hud;
-import com.pawfight.game.commun.phisics.ChecarColisao;
+import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;

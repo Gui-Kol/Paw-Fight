@@ -3,7 +3,7 @@ package com.pawfight.game.world.base;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.commun.animation.ScreenTransition;
+import com.pawfight.game.engine.animation.ScreenTransition;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.List;

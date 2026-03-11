@@ -50,11 +50,11 @@
             "scaleInDock": 1
         },
         "INIMIGOS.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 7,
+            "scale": 0.25,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 346.66666666666663,
-                "y": 394.6666666666667
+                "x": 376,
+                "y": 804
             }
         },
         "INIMIGOS.tmx#Dungeon_Tileset": {

@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.commun.animation.SpriteDefinition;
+import com.pawfight.game.engine.animation.SpriteDefinition;
 
 public class PlayerDove extends PlayerTemplate {
     public PlayerDove(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -33,9 +33,8 @@ public class PlayerDove extends PlayerTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        TAMANHO_PX = 32;
-        super.update(delta);
+    protected int getTamanho() {
+        return 32;
     }
 
     @Override
