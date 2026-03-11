@@ -30,7 +30,7 @@ public class Lwjgl3Launcher {
         configuration.setDecorated(false); // Removes the window borders and title bar
 
         // Set icons for the application window
-        configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
+        configuration.setWindowIcon("icon/logoPaw.png");
 
         // Uncomment the following line if OpenGL emulation is needed
         // configuration.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.ANGLE_GLES20, 0, 0);
