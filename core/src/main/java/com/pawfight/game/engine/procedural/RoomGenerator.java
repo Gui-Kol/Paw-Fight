@@ -7,6 +7,8 @@ import java.util.*;
 public class RoomGenerator {
     private final Random random = new Random();
     private final Map<String, Room> roomMap = new HashMap<>();
+    private int tentativasMax = 10;
+
 
     public List<Room> generate(int numRooms, int extras) {
         roomMap.clear();
@@ -14,7 +16,7 @@ public class RoomGenerator {
         List<Room> response = gerar(numRooms, extras);
         int tentativas = 0;
 
-        while (!validarConexoes(response, numRooms) && tentativas < 5) {
+        while (!validarConexoes(response, numRooms) && tentativas < tentativasMax) {
             roomMap.clear();
             response = gerar(numRooms, extras);
             tentativas++;
@@ -73,7 +75,7 @@ public class RoomGenerator {
             Room next = null;
             int tentativasLocal = 0;
 
-            while (next == null && tentativasLocal < 10) {
+            while (next == null && tentativasLocal < tentativasMax) {
                 int dir = random.nextInt(4);
                 int nx = base.getX();
                 int ny = base.getY();
@@ -106,6 +108,7 @@ public class RoomGenerator {
 
                     rooms.add(next);
                     roomMap.put(key, next);
+                    Gdx.app.log("RoomGenerator", "Sala gerada em " + tentativasLocal + " tentativas");
                 } else {
                     tentativasLocal++;
                 }
@@ -117,7 +120,7 @@ public class RoomGenerator {
         Room treasure = null;
         int tentativasTreasure = 0;
 
-        while (treasure == null && tentativasTreasure < 10) {
+        while (treasure == null && tentativasTreasure < tentativasMax) {
             int dir = random.nextInt(4);
             int nx = boss.getX();
             int ny = boss.getY();
@@ -150,6 +153,7 @@ public class RoomGenerator {
 
                 rooms.add(treasure);
                 roomMap.put(key, treasure);
+                Gdx.app.log("RoomGenerator", "Sala do Tesouro gerada em " + tentativasTreasure + " tentativas");
             } else {
                 tentativasTreasure++;
             }
@@ -163,7 +167,7 @@ public class RoomGenerator {
             Room next = null;
             int tentativasLocal = 0;
 
-            while (next == null && tentativasLocal < 10) {
+            while (next == null && tentativasLocal < tentativasMax) {
                 int dir = random.nextInt(4);
                 int nx = base.getX();
                 int ny = base.getY();
@@ -197,6 +201,7 @@ public class RoomGenerator {
 
                     rooms.add(next);
                     roomMap.put(key, next);
+                    Gdx.app.log("RoomGenerator", "Sala extras gerada em " + tentativasLocal + " tentativas");
                 } else {
                     tentativasLocal++;
                 }

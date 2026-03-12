@@ -14,6 +14,7 @@ public class Base extends WorldTemplate {
     private final ScreenTransition screenTransition;
     private boolean entrouPortal;
     private final Portoes portoes;
+    private int carregarParede = 0;
 
     public Base(PawFight game) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
@@ -39,6 +40,10 @@ public class Base extends WorldTemplate {
                 Gdx.app.log("Base", "Personagem escolhido: " + player.getName());
             }
             return;
+        }
+        if (carregarParede == 0) {
+            carregarParede();
+            carregarParede ++;
         }
 
         if (!entrouPortal) {

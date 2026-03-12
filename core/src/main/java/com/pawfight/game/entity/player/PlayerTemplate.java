@@ -179,6 +179,7 @@ public abstract class PlayerTemplate {
 
     public void loadSaveData(SaveDataPlayer data) {
         this.vidaBase = data.vidaBase;
+        this.vida = data.vidaBase;
         this.velocidade = data.velocidade;
         this.forca = data.forca;
         this.level = data.level;
@@ -377,17 +378,18 @@ public abstract class PlayerTemplate {
 
     // Renderização
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        shapeRenderer.setProjectionMatrix(camera.combined);
         batch.setProjectionMatrix(camera.combined);
-
         batch.begin();
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
         batch.end();
-        tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
-        drawHitBox.draw(shapeRenderer, hitBox);
+
         if (menuAberto) {
             statusMenu.draw(batch, hud.getHudCamera());
         }
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
+        drawHitBox.draw(shapeRenderer, hitBox);
         hud.draw(batch, this, shapeRenderer);
     }
 
@@ -520,7 +522,7 @@ public abstract class PlayerTemplate {
         gastouPontos(pontosGastos);
     }
 
-    private void gastouPontos(int pontosGastos) {
+    public void gastouPontos(int pontosGastos) {
         pontosDisponiveis -= pontosGastos;
     }
 

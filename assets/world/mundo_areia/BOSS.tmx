@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="15" nextobjectid="9">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="11">
  <tileset firstgid="1" name="Dungeon_Tileset" tilewidth="16" tileheight="16" tilecount="100" columns="10">
   <image source="Tilesets/Dungeon_Tileset.png" width="160" height="160"/>
  </tileset>
@@ -213,8 +213,8 @@
  <objectgroup id="9" name="Inimigos" visible="0">
   <object id="3" x="48" y="60" width="865.333" height="820"/>
  </objectgroup>
- <objectgroup id="8" name="Obj" visible="0">
-  <object id="4" x="46.6667" y="57.3333" width="868" height="822.667"/>
+ <objectgroup id="8" name="Obj">
+  <object id="9" x="112" y="90" width="750" height="740"/>
  </objectgroup>
  <layer id="1" name="ParedeLayer" width="60" height="60">
   <data encoding="csv">

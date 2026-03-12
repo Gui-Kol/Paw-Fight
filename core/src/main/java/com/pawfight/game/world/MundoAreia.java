@@ -1,6 +1,7 @@
 package com.pawfight.game.world;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
@@ -8,14 +9,10 @@ import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.LayerRenderer;
 import com.pawfight.game.engine.animation.ScreenTransition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
-import com.pawfight.game.engine.procedural.GerarInimigos;
-import com.pawfight.game.entity.bosses.BossesTemplate;
+import com.pawfight.game.engine.procedural.*;
 import com.pawfight.game.entity.enemy.EnemySkeleton;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.engine.procedural.Room;
-import com.pawfight.game.engine.procedural.RoomGenerator;
-import com.pawfight.game.engine.procedural.RoomType;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,10 +26,13 @@ public class MundoAreia extends WorldTemplate {
     private final Set<String> salasVisitadas;
     private final DesenharMiniMapa desenharMiniMapa;
     private boolean errorFinal = false;
-    private ScreenTransition screenTransition;
+    private final ScreenTransition screenTransition;
     private boolean initialized = false;
-    private GerarInimigos gerarInimigos;
+    private final GerarInimigos gerarInimigos;
+    private final GerarObjetos gerarObjetos;
     private List<EnemyTemplate> listaInimigos;
+    private final List<ObjetoGerado> listaObjetos;
+    private final List<Rectangle> listaObjetosHitbox;
 
     public MundoAreia(PawFight game, PlayerTemplate player) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
@@ -47,6 +47,9 @@ public class MundoAreia extends WorldTemplate {
         desenharMiniMapa = new DesenharMiniMapa();
         gerarInimigos = new GerarInimigos();
         listaInimigos = new ArrayList<>();
+        gerarObjetos = new GerarObjetos();
+        listaObjetos = new ArrayList<>();
+        listaObjetosHitbox = new ArrayList<>();
 
         // Gera salas APENAS aqui, não carrega mapa
         try {
@@ -78,7 +81,7 @@ public class MundoAreia extends WorldTemplate {
 
     private void gerarRooms() {
         try {
-            rooms = roomGenerator.generate(10,5);
+            rooms = roomGenerator.generate(10, 5);
             if (rooms == null || rooms.isEmpty()) {
                 throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
             }
@@ -92,14 +95,47 @@ public class MundoAreia extends WorldTemplate {
         }
     }
 
+    private void gerarObjetos() {
+        try {
+            if (currentRoom.getType() != RoomType.BOSS || currentRoom.getType() != RoomType.TESOURO) {
+                listaObjetos.clear();
+                listaObjetosHitbox.clear();
+
+                List<Rectangle> regiaoSpawn = tilemapHitboxFactory.createHitboxes(map, "Obj");
+                if (regiaoSpawn == null) {
+                    Gdx.app.error("MundoAreia", "não existe região para gerar objetos!");
+                    return;
+                }
+
+                Texture textureObjeto = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
+
+                List<ObjetoGerado> objetosGerados = gerarObjetos.gerar(textureObjeto, 5, 2, regiaoSpawn,
+                    -245, -240, 8, 5);
+
+                listaObjetos.addAll(objetosGerados);
+                for (ObjetoGerado obj : objetosGerados) {
+                    listaObjetosHitbox.add(obj.hitbox);
+                }
+                player.adicionarColisao(listaObjetosHitbox, shapeRenderer);
+            } else if (currentRoom.getType() == RoomType.BOSS) {
+                // Gerar objetos específicos para a sala do boss, se necessário
+            } else if (currentRoom.getType() == RoomType.TESOURO) {
+                // Gerar objetos específicos para a sala do tesouro, se necessário
+            }
+        }catch(Exception e){
+            Gdx.app.error("MundoAreia", "Erro ao gerar objetos: " + e.getMessage(), e);
+        }
+    }
+
+
     private List<EnemyTemplate> gerarInimigos() {
         if (currentRoom == null) {
             Gdx.app.error("MundoAreia", "gerarInimigos() chamado mas currentRoom é null!");
             return new ArrayList<>();
         }
 
-        List<Rectangle> regiaoSpawn = tilemapHitboxFactory.createHitboxes(map,"Inimigos");
-        if (regiaoSpawn == null){
+        List<Rectangle> regiaoSpawn = tilemapHitboxFactory.createHitboxes(map, "Inimigos");
+        if (regiaoSpawn == null) {
             Gdx.app.error("MundoAreia", "não existe região para gerar inimigos!");
             return null;
         }
@@ -141,6 +177,8 @@ public class MundoAreia extends WorldTemplate {
             backMusic.setVolume(0);
             backMusic.play();
             initialized = true;
+            gerarObjetos();
+            carregarParede();
             Gdx.app.log("MundoAreia", "show() completado com sucesso. Mapa: " + getMapPath());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em show(): " + e.getMessage(), e);
@@ -188,6 +226,8 @@ public class MundoAreia extends WorldTemplate {
                 for (EnemyTemplate enemy : listaInimigos) {
                     enemy.draw(batch, shapeRenderer);
                 }
+                drawList.drawObjects(listaObjetos, batch, player.getCamera().combined, 48, 48);
+                drawHitBox.drawList(listaObjetosHitbox, shapeRenderer, player.getCamera().combined);
             }
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);
@@ -271,6 +311,8 @@ public class MundoAreia extends WorldTemplate {
             Gdx.app.error("MundoAreia", "roomGenerator é null em moverParaSala.");
             return;
         }
+        player.clearList();
+        carregarParede();
         Room room = roomGenerator.getRoomMap().get(x + "," + y);
         if (room != null) {
             if (map != null) {
@@ -290,6 +332,7 @@ public class MundoAreia extends WorldTemplate {
                 salasVisitadas.add(x + "," + y);
                 Gdx.app.log("MundoAreia", "Sala mudada com sucesso para: " + x + "," + y);
                 logRoomInfo(room);
+                gerarObjetos();
             } catch (Exception e) {
                 Gdx.app.error("MundoAreia", "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
             }
@@ -298,7 +341,7 @@ public class MundoAreia extends WorldTemplate {
         }
     }
 
-    private void moverSalaInimigos(){
+    private void moverSalaInimigos() {
         listaInimigos.clear();
         if (!currentRoomFoiVisitada()) {
             listaInimigos = gerarInimigos();

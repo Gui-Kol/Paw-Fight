@@ -13,6 +13,8 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.LayerRenderer;
+import com.pawfight.game.engine.animation.DrawList;
+import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -31,6 +33,8 @@ public abstract class WorldTemplate implements Screen {
     protected PlayerTemplate player;
 
     // Mundo
+    protected DrawHitBox drawHitBox;
+    protected DrawList drawList;
     protected ShapeRenderer shapeRenderer;
     protected Texture background;
     protected PawFight game;
@@ -39,11 +43,13 @@ public abstract class WorldTemplate implements Screen {
 
     public WorldTemplate(PawFight game, String backgroundPath, String musicPath) {
         this.game = game;
+        drawList = new DrawList();
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         background = new Texture(backgroundPath);
         backMusic = Gdx.audio.newMusic(Gdx.files.internal(musicPath));
         tilemapHitboxFactory = new TilemapHitboxFactory();
+        drawHitBox = new DrawHitBox();
     }
 
     public void setPlayer(PlayerTemplate player) {
@@ -86,11 +92,13 @@ public abstract class WorldTemplate implements Screen {
     }
 
     protected void updatePlayer(float delta) {
-        List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");
-        player.adicionarColisao(paredes, shapeRenderer);
         player.draw(batch, shapeRenderer);
         player.update(delta);
-        player.clearList();
+    }
+
+    public void carregarParede() {
+        List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");
+        player.adicionarColisao(paredes, shapeRenderer);
     }
 
     protected abstract void renderLayers();

@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GerarInimigos {
-    private List<EnemyTemplate> listaInimigos;
     private List<EnemyTemplate> listaInimigosFortes;
     private List<BossesTemplate> listaBosses;
 
     public GerarInimigos() {
-        listaInimigos = new ArrayList<>();
         listaInimigosFortes = new ArrayList<>();
         listaBosses = new ArrayList<>();
     }
@@ -37,7 +35,6 @@ public class GerarInimigos {
             novosInimigos.add(novoInimigo);
         }
 
-        listaInimigos.addAll(novosInimigos);
 
         clear();
         return novosInimigos;
@@ -55,7 +52,6 @@ public class GerarInimigos {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                listaInimigos.clear();
                 listaInimigosFortes.clear();
                 listaBosses.clear();
             }

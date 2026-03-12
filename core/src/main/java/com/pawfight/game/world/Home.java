@@ -70,7 +70,9 @@ public class Home implements Screen {
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 
         batch.begin();
-        batch.draw(background, 0, 0);
+        batch.draw(background,0,0,
+            Gdx.graphics.getWidth(),
+            Gdx.graphics.getHeight());
         batch.end();
 
         stage.act(delta);
