@@ -42,6 +42,7 @@ public abstract class PlayerTemplate {
     protected int level;
     protected boolean morto = false;
     protected boolean hurt = false;
+    protected boolean podeAtacar = false;
     protected boolean moving;
     protected boolean drawHitBoxes = false;
 
@@ -551,6 +552,9 @@ public abstract class PlayerTemplate {
         );
 
         updateCamera();
+    }
+    public void setPodeAtacar(boolean podeAtacar) {
+        this.podeAtacar = podeAtacar;
     }
 
     public Hud getHud() {

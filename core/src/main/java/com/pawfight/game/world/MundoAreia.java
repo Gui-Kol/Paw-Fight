@@ -43,6 +43,7 @@ public class MundoAreia extends WorldTemplate {
 
         // Reseta estado do player
         player.setLocal(500, 100);
+        player.setPodeAtacar(true);
         salasVisitadas = new HashSet<>();
         desenharMiniMapa = new DesenharMiniMapa();
         gerarInimigos = new GerarInimigos();

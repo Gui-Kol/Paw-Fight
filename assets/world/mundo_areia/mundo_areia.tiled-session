@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "INIMIGOS.tmx",
+    "activeFile": "TESOURO.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "Todos os Ficheiros (*)",
@@ -74,11 +74,11 @@
             "scaleInEditor": 1
         },
         "TESOURO.tmx": {
-            "scale": 1,
-            "selectedLayer": 7,
+            "scale": 0.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 412,
-                "y": 246
+                "x": -6,
+                "y": 494
             }
         },
         "TESOURO.tmx#Dungeon_Tileset": {
@@ -202,12 +202,12 @@
     "map.tileWidth": 16,
     "map.width": 60,
     "openFiles": [
-        "INIMIGOS.tmx"
+        "TESOURO.tmx"
     ],
     "project": "mundo_areia.tiled-project",
     "recentFiles": [
-        "INIMIGOS.tmx",
         "TESOURO.tmx",
+        "INIMIGOS.tmx",
         "mundo_areia1.tmx",
         "default_room.tmx",
         "base.tmx",

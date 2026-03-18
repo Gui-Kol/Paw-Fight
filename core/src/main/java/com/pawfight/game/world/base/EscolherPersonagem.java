@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.entity.player.*;
+import com.pawfight.game.entity.player.dove.PlayerDove;
 
 import java.util.Random;
 
