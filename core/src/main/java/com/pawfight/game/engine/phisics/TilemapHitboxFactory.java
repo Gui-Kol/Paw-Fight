@@ -33,8 +33,7 @@ public class TilemapHitboxFactory {
             } else if (object instanceof EllipseMapObject) {
                 Ellipse ellipse = ((EllipseMapObject) object).getEllipse();
                 hitboxes.add(new Rectangle(ellipse.x, ellipse.y, ellipse.width, ellipse.height));
-            } else if (object instanceof TextureMapObject) {
-                TextureMapObject texObj = (TextureMapObject) object;
+            } else if (object instanceof TextureMapObject texObj) {
                 float x = texObj.getX();
                 float y = texObj.getY();
                 float w = texObj.getTextureRegion().getRegionWidth();
@@ -72,8 +71,7 @@ public class TilemapHitboxFactory {
 
         // Desenha na ordem escolhida
         for (MapObject object : objects) {
-            if (object instanceof TextureMapObject) {
-                TextureMapObject texObj = (TextureMapObject) object;
+            if (object instanceof TextureMapObject texObj) {
 
                 float x = texObj.getX();
                 float y = texObj.getY(); // sem subtrair altura
@@ -89,10 +87,10 @@ public class TilemapHitboxFactory {
     public List<Rectangle> createTileLayerHitboxes(TiledMap map, String layerName, int tileWidth, int tileHeight) {
         List<Rectangle> hitboxes = new ArrayList<>();
 
-        // pega apenas a layer com o nome especificado
+        // pega apenas a ‘layer’ com o nome especificado
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
-        if (!(layer instanceof TiledMapTileLayer)) {
-            return hitboxes; // se não existir ou não for layer de tile, retorna vazio
+        if (layer == null) {
+            return hitboxes; // se não existir ou não for ‘layer’ de tile, retorna vazio
         }
 
         // percorre apenas os tiles dessa layer
@@ -113,7 +111,6 @@ public class TilemapHitboxFactory {
 
         return hitboxes;
     }
-
 
 
     public void draw(ShapeRenderer shapeRenderer, OrthographicCamera camera, List<Rectangle> hitBoxes) {

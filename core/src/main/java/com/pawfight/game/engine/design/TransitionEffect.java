@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.animation;
+package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 

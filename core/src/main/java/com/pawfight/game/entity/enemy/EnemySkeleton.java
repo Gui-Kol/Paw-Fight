@@ -4,13 +4,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class EnemySkeleton extends EnemyTemplate{
     public EnemySkeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
         float multiplicador = forte ? 1.8f : 1;
+        nome = "Esqueleto";
 
         vidaBase = (int)(50 * multiplicador);
         vida = vidaBase;

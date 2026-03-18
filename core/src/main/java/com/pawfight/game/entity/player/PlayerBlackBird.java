@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.SpriteDefinition;
 
 public class PlayerBlackBird extends PlayerTemplate{
     public PlayerBlackBird(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -62,8 +62,4 @@ public class PlayerBlackBird extends PlayerTemplate{
         return 0;
     }
 
-    @Override
-    public boolean podeEsquivar() {
-        return false;
-    }
 }

@@ -3,11 +3,13 @@ package com.pawfight.game.world.base;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.Hud;
-import com.pawfight.game.engine.animation.ScreenTransition;
+import com.pawfight.game.engine.design.ScreenTransition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.MundoAreia;
@@ -19,9 +21,9 @@ public class EntradaPortais {
     private boolean entrouPortal = false;
     private final ScreenTransition screenTransition;
 
-    public EntradaPortais(ScreenTransition screenTransition) {
+    public EntradaPortais(ScreenTransition screenTransition, Hud hud) {
         this.screenTransition = screenTransition;
-        hud = new Hud();
+        this.hud = hud;
     }
 
     public boolean entrarPortal(PlayerTemplate player, List<Rectangle> entradaPortalAreia, SpriteBatch batch) {
@@ -36,7 +38,7 @@ public class EntradaPortais {
         return entrouPortal;
     }
 
-    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
+    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game, OrthographicCamera camera, Viewport viewport) {
         try {
             if (player == null || entradaPortal == null || batch == null || game == null || screenTransition == null) {
                 Gdx.app.error("EntradaPortais", "Objeto null em entrarPortalAreia.");
@@ -50,17 +52,16 @@ public class EntradaPortais {
                 player.clearList();
 
                 // Cria MundoAreia (gera salas)
-                MundoAreia mundoAreia = new MundoAreia(game, player);
+                MundoAreia mundoAreia = new MundoAreia(game, player, camera, viewport);
 
                 // screenTransition, com efeito de Fade
-                screenTransition.startFadeTransaction(mundoAreia, 2f, Color.BLACK,false);
+                screenTransition.startFadeTransaction(mundoAreia, 2f, Color.BLACK, false);
                 return true;
             } else {
                 return false;
             }
         } catch (Exception e) {
             Gdx.app.error("EntradaPortais", "Erro ao tentar entrar no portal de areia: " + e.getMessage(), e);
-            e.printStackTrace();
             return false;
         }
     }

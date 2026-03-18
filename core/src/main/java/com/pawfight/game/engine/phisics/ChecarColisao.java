@@ -16,12 +16,6 @@ public class ChecarColisao {
         return false;
     }
 
-//    public static void danoSeColidir(Player player, List<Rectangle> colisores, List<EnemyTemplate> entitys){
-//        if (houveColisao(player.getHitBox(),colisores)){
-//           player.dano(entitys.get(1).getForca());
-//        }
-//    }
-
     public static void ajustarPosicaoSeBaterParede(Rectangle playerHitbox, float nextX, float nextY, List<Rectangle> paredes) {
         Rectangle nextHitboxX = new Rectangle(nextX, playerHitbox.y, playerHitbox.width, playerHitbox.height);
         if (!houveColisao(nextHitboxX, paredes)) {
@@ -39,11 +33,11 @@ public class ChecarColisao {
         Rectangle hitBox = player.getHitBox();
 
         int offsetX = player.isOlhandoEsquerda()
-            ? -(player.getHitboxOffsetX())
-            : player.getHitboxOffsetX();
+            ? -(PlayerTemplate.getHitboxOffsetX())
+            : PlayerTemplate.getHitboxOffsetX();
 
-        player.setDx((int) (hitBox.x - (player.getTamanhoPx() - player.getHitboxSize()) / 2f - offsetX));
-        player.setDy((int) (hitBox.y - player.getHitboxOffsetY()));
+        player.setDx((int) (hitBox.x - (player.getTamanhoPx() - PlayerTemplate.getHitboxSize()) / 2f - offsetX));
+        player.setDy((int) (hitBox.y - PlayerTemplate.getHitboxOffsetY()));
     }
 
 

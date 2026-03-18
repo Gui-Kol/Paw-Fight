@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.animation;
+package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -9,12 +9,11 @@ public class SlideTransitionEffect implements TransitionEffect {
     public enum Direction { LEFT, RIGHT, UP, DOWN }
 
     private float offset;
-    private float duration;
+    private final float duration;
     private float elapsedTime;
     private boolean slidingOut;
-    private Texture slideTexture;
-    private Direction direction;
-    private Vector2 startPosition;
+    private final Texture slideTexture;
+    private final Vector2 startPosition;
 
     public SlideTransitionEffect(float duration) {
         this(duration, Direction.RIGHT);
@@ -25,7 +24,6 @@ public class SlideTransitionEffect implements TransitionEffect {
         this.offset = 0f;
         this.elapsedTime = 0f;
         this.slidingOut = true;
-        this.direction = direction;
         this.slideTexture = createSlideTexture();
         this.startPosition = getStartPosition(direction);
     }
@@ -40,13 +38,12 @@ public class SlideTransitionEffect implements TransitionEffect {
     }
 
     private Vector2 getStartPosition(Direction dir) {
-        switch (dir) {
-            case LEFT: return new Vector2(-1, 0);
-            case RIGHT: return new Vector2(1, 0);
-            case UP: return new Vector2(0, 1);
-            case DOWN: return new Vector2(0, -1);
-            default: return new Vector2(1, 0);
-        }
+        return switch (dir) {
+            case LEFT -> new Vector2(-1, 0);
+            case RIGHT -> new Vector2(1, 0);
+            case UP -> new Vector2(0, 1);
+            case DOWN -> new Vector2(0, -1);
+        };
     }
 
     @Override

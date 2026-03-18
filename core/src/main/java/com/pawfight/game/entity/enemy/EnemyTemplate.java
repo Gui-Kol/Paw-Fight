@@ -6,8 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.animation.AnimationEngine;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.AnimationEngine;
+import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -246,29 +246,8 @@ public abstract class EnemyTemplate {
         if (specialAtackSheet != null) specialAtackSheet.dispose();
     }
 
-    // Getters e Setters
-    public int getVida() {
-        return vida;
-    }
-
-    public int getVidaBase() {
-        return vidaBase;
-    }
-
-    public int getForca() {
-        return forca;
-    }
-
     public int getVelocidade() {
         return velocidade;
-    }
-
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
     }
 
     public Rectangle getHitBox() {

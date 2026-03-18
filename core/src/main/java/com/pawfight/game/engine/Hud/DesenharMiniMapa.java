@@ -20,12 +20,13 @@ import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
     private static final int AJUSTE = 15; // ajuste altura da linha
-    private GlyphLayout layoutNumSalaAtual = new GlyphLayout();
-    private GlyphLayout layoutTypeSalaAtual = new GlyphLayout();
-    private BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
+    private final GlyphLayout layoutNumSalaAtual = new GlyphLayout();
+    private final GlyphLayout layoutTypeSalaAtual = new GlyphLayout();
+    private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
 
-    public void desenharSalaAtual(int atual, RoomType type, Batch batch) {
+    public void desenharSalaAtual(int atual, RoomType type, Batch batch, OrthographicCamera hudCamera) {
         if (HITBOX_ISVISIBLE) {
+            batch.setProjectionMatrix(hudCamera.combined); // <-- garante HUD
             batch.begin();
             layoutNumSalaAtual.setText(font, String.valueOf(atual));
             layoutTypeSalaAtual.setText(font, type.toString());
@@ -35,16 +36,17 @@ public class DesenharMiniMapa {
 
             float posX = screenWidth - layoutNumSalaAtual.width - 10;
             float posXType = screenWidth - layoutTypeSalaAtual.width - 10;
-            float posY = screenHeight - 80; // um pouco abaixo das coordenadas
+            float posY = screenHeight - 80;
 
             font.draw(batch, layoutNumSalaAtual, posX, posY);
             font.draw(batch, layoutTypeSalaAtual, posXType, posY - 40);
             batch.end();
         }
     }
-    public void desenharMiniMapa(OrthographicCamera hudCamera, Batch batch, ShapeRenderer shapeRenderer,
+
+    public void desenharMiniMapa(OrthographicCamera camera, Batch batch, ShapeRenderer shapeRenderer,
                                  Set<String> salasVisitadas, Room currentRoom, Map<String, Room> roomMap) {
-        shapeRenderer.setProjectionMatrix(hudCamera.combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
         int tamanho = 10; // tamanho de cada quadrado
         int offsetX = 150;
@@ -141,6 +143,7 @@ public class DesenharMiniMapa {
 
         shapeRenderer.end();
 
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
         for (String key : salasVisitadas) {
             String[] coords = key.split(",");

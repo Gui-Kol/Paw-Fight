@@ -17,7 +17,7 @@ public class LayerRenderer {
         this.renderer = new OrthogonalTiledMapRenderer(map);
     }
 
-    // Renderiza apenas um layer pelo nome
+    // Renderiza apenas uma ‘layer’ pelo nome
     public void renderLayer(String layerName, OrthographicCamera camera) {
         MapLayer layer = map.getLayers().get(layerName);
         if (layer == null) {
@@ -30,7 +30,6 @@ public class LayerRenderer {
         renderer.render(new int[]{index});
     }
 
-    // Novo método no LayerRenderer
     public void renderLayerTiled(TiledMapTileLayer layer, OrthographicCamera camera) {
         int index = map.getLayers().getIndex(layer);
         if (index == -1) {

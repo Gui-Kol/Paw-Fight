@@ -5,16 +5,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Timer;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerDove extends PlayerTemplate {
-    private List<Coco> cocos;
-    private float tempoCoco;
-    private float duracaoCoco;
+    private final List<Coco> cocos;
+    private final float tempoCoco;
+    private final float duracaoCoco;
 
     public PlayerDove(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         super(dx, dy, tileWidth, numTilesX, tileHeight, numTilesY, zoomCamera);
@@ -104,8 +104,4 @@ public class PlayerDove extends PlayerTemplate {
         return 0;
     }
 
-    @Override
-    public boolean podeEsquivar() {
-        return false;
-    }
 }

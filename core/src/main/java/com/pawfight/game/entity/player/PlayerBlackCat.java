@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.SpriteDefinition;
 
 public class PlayerBlackCat extends PlayerTemplate {
     // Construtor
@@ -63,9 +63,5 @@ public class PlayerBlackCat extends PlayerTemplate {
         return 0;
     }
 
-    @Override
-    public boolean podeEsquivar() {
-        return false;
-    }
 
 }

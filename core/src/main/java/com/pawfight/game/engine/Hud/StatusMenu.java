@@ -11,36 +11,48 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport; // Adicionado import
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.font.FontFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class StatusMenu {
-    private Stage stage;
-    private PlayerTemplate player;
-    private CreateButton buttonFactory;
-    private BitmapFont font;
-    private Texture coracao;
-    private Texture raio;
-    private Texture musculo;
-    private Texture requa;
-    private Image background;
+    private final Stage stage;
+    private final PlayerTemplate player;
+    private final CreateButton buttonFactory;
+    private final BitmapFont font;
+    private final Texture coracao;
+    private final Texture raio;
+    private final Texture musculo;
+    private final Image background;
 
     float centerX;
     float centerY;
+    private final float scale; // Adicionado para escala proporcional
 
-    private Texture normalTexture;
-    private Texture hoverTexture;
-    private Texture pressedTexture;
-    private Texture backgroundTexture;
+    private final Texture normalTexture;
+    private final Texture hoverTexture;
+    private final Texture pressedTexture;
+    private final Texture backgroundTexture;
 
     public StatusMenu(PlayerTemplate player) {
         this.player = player;
-        stage = new Stage(new ScreenViewport());
+
+        // Calcular escala proporcional baseada na resolução atual vs base 1920x1080
+        float screenW = Gdx.graphics.getWidth();
+        float screenH = Gdx.graphics.getHeight();
+        float baseW = 1920f;
+        float baseH = 1080f;
+        scale = Math.min(screenW / baseW, screenH / baseH);
+
+        // Mudar para FitViewport para manter proporções
+        // Adicionado para viewport proporcional
+        Viewport stageViewport = new FitViewport(1920, 1080);
+        stage = new Stage(stageViewport);
         Gdx.input.setInputProcessor(stage);
 
         buttonFactory = new CreateButton();
-        font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 30);
+        font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", (int)(30 * scale)); // Aplicar escala à fonte
 
         normalTexture = new Texture("menu/new_game_normal.png");
         hoverTexture = new Texture("menu/new_game_hover.png");
@@ -52,9 +64,8 @@ public class StatusMenu {
         musculo = new Texture("Hud/musculo.png");
         background = new Image(backgroundTexture);
 
-
-        centerX = Gdx.graphics.getWidth() / 2f;
-        centerY = Gdx.graphics.getHeight() / 2f;
+        centerX = 1920 / 2f; // Usar coordenadas do viewport base
+        centerY = 1080 / 2f;
 
         criarMenu();
     }
@@ -62,11 +73,11 @@ public class StatusMenu {
     public void criarMenu() {
         stage.clear();
 
-        // Fundo centralizado
-        background.setSize(600, 500);
+        // Fundo centralizado e escalado
+        background.setSize(600 * scale, 500 * scale);
         background.setPosition(
-            (Gdx.graphics.getWidth() - background.getWidth()) / 2f,
-            (Gdx.graphics.getHeight() - background.getHeight()) / 2f
+            (1920 - background.getWidth()) / 2f,
+            (1080 - background.getHeight()) / 2f
         );
         stage.addActor(background);
 
@@ -74,15 +85,15 @@ public class StatusMenu {
 
         // Pontos disponíveis
         Label pontosLabel = new Label("Points: " + player.getPontosDisponiveis(), style);
-        pontosLabel.setPosition(centerX - background.getWidth()/4, centerY + 150);
+        pontosLabel.setPosition(centerX - (background.getWidth()/4), centerY + 150 * scale);
         stage.addActor(pontosLabel);
 
         // Vida Base
         Label vidaLabel = new Label("Life: " + player.getVidaBase(), style);
-        vidaLabel.setPosition(centerX - background.getWidth()/2 + 20, centerY + 60);
+        vidaLabel.setPosition(centerX - (background.getWidth()/2) + 20 * scale, centerY + 60 * scale);
         stage.addActor(vidaLabel);
 
-        var vidaButton = buttonFactory.create(stage, (int)(centerX + 150), (int)(centerY + 60), 48, 48,
+        var vidaButton = buttonFactory.create(stage, (int)(centerX + 150 * scale), (int)(centerY + 60 * scale), (int)(48 * scale), (int)(48 * scale),
             normalTexture, hoverTexture, pressedTexture);
         vidaButton.addListener(new ClickListener() {
             @Override
@@ -96,10 +107,10 @@ public class StatusMenu {
 
         // Força
         Label forcaLabel = new Label("Strength: " + player.getForca(), style);
-        forcaLabel.setPosition(centerX - background.getWidth()/2 + 20, centerY);
+        forcaLabel.setPosition(centerX - (background.getWidth()/2) + 20 * scale, centerY);
         stage.addActor(forcaLabel);
 
-        var forcaButton = buttonFactory.create(stage, (int)(centerX + 150), (int)(centerY), 48, 48,
+        var forcaButton = buttonFactory.create(stage, (int)(centerX + 150 * scale), (int)(centerY), (int)(48 * scale), (int)(48 * scale),
             normalTexture, hoverTexture, pressedTexture);
         forcaButton.addListener(new ClickListener() {
             @Override
@@ -113,10 +124,10 @@ public class StatusMenu {
 
         // Velocidade
         Label velocidadeLabel = new Label("Speed: " + player.getVelocidade(), style);
-        velocidadeLabel.setPosition(centerX - background.getWidth()/2 + 20, centerY - 60);
+        velocidadeLabel.setPosition(centerX - (background.getWidth()/2) + 20 * scale, centerY - 60 * scale);
         stage.addActor(velocidadeLabel);
 
-        var velocidadeButton = buttonFactory.create(stage, (int)(centerX + 150), (int)(centerY - 60), 48, 48,
+        var velocidadeButton = buttonFactory.create(stage, (int)(centerX + 150 * scale), (int)(centerY - 60 * scale), (int)(48 * scale), (int)(48 * scale),
             normalTexture, hoverTexture, pressedTexture);
         velocidadeButton.addListener(new ClickListener() {
             @Override
@@ -129,15 +140,14 @@ public class StatusMenu {
         });
     }
 
-
     public void draw(Batch batch, OrthographicCamera hudCamera) {
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
-        batch.draw(raio, centerX + 200, centerY - 70, 72, 72);
-        batch.draw(musculo, centerX + 200, centerY - 10, 72, 72);
-        batch.draw(coracao, centerX + 210, centerY + 60, 48, 48);
+        batch.draw(raio, centerX + 200 * scale, centerY - 70 * scale, 72 * scale, 72 * scale);
+        batch.draw(musculo, centerX + 200 * scale, centerY - 10 * scale, 72 * scale, 72 * scale);
+        batch.draw(coracao, centerX + 210 * scale, centerY + 60 * scale, 48 * scale, 48 * scale);
         batch.end();
     }
 
@@ -151,6 +161,5 @@ public class StatusMenu {
         coracao.dispose();
         raio.dispose();
         musculo.dispose();
-        requa.dispose();
     }
 }

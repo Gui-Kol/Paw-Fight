@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.animation;
+package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -8,12 +8,12 @@ import com.badlogic.gdx.math.MathUtils;
 
 public class FadeTransitionEffect implements TransitionEffect {
     private float alpha;
-    private float duration;
+    private final float duration;
     private float elapsedTime;
     private boolean fadingOut;
-    private Texture fadeTexture;
-    private Color fadeColor;
-    private boolean useGradient;
+    private final Texture fadeTexture;
+    private final Color fadeColor;
+    private final boolean useGradient;
 
     public FadeTransitionEffect(float duration) {
         this(duration, Color.BLACK, false);

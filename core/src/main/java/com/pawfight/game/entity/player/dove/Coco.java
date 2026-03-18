@@ -7,12 +7,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 
 public class Coco {
-    private int x, y;
-    private Rectangle hitBox;
-    private int dano;
-    private Texture texture;
-    private int tamanhoDraw;
-    private DrawHitBox drawHitBox;
+    private int x;
+    private final int y;
+    private final Rectangle hitBox;
+    private final int dano;
+    private final Texture texture;
+    private final int tamanhoDraw;
+    private final DrawHitBox drawHitBox;
 
     public Coco(int x, int y, int dano, int tamanho, boolean esquerda) {
         this.x = x;
@@ -37,25 +38,16 @@ public class Coco {
         drawHitBox.draw(shapeRenderer,hitBox);
     }
 
-    public Rectangle getHitBox() {
-        return hitBox;
-    }
-
     public int getDano() {
         return dano;
     }
 
     private Texture randomTex() {
         int random = (int) (Math.random() * 3);
-        switch (random) {
-            case 0:
-                return new Texture("entitys/player/dove/coco/1.png");
-            case 1:
-                return new Texture("entitys/player/dove/coco/2.png");
-            case 2:
-                return new Texture("entitys/player/dove/coco/3.png");
-            default:
-                return new Texture("entitys/player/dove/coco/1.png");
-        }
+        return switch (random) {
+            case 1 -> new Texture("entitys/player/dove/coco/2.png");
+            case 2 -> new Texture("entitys/player/dove/coco/3.png");
+            default -> new Texture("entitys/player/dove/coco/1.png");
+        };
     }
 }

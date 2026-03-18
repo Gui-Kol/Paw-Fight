@@ -5,15 +5,17 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.LayerRenderer;
-import com.pawfight.game.engine.animation.DrawList;
+import com.pawfight.game.engine.design.DrawList;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -40,9 +42,14 @@ public abstract class WorldTemplate implements Screen {
     protected PawFight game;
     protected SpriteBatch batch;
     protected Music backMusic;
+    protected OrthographicCamera camera;
+    protected Viewport viewport;
 
-    public WorldTemplate(PawFight game, String backgroundPath, String musicPath) {
+    public WorldTemplate(PawFight game, String backgroundPath, String musicPath, OrthographicCamera camera, Viewport viewport) {
         this.game = game;
+        this.camera = camera;
+        this.viewport = viewport;
+
         drawList = new DrawList();
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -84,6 +91,11 @@ public abstract class WorldTemplate implements Screen {
             updatePlayer(delta);
         }
         renderLayersUp();
+
+        if (player != null) {
+            player.drawHud(batch, shapeRenderer);
+            player.drawStatusMenu(batch);
+        }
         checkPortals();
 
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
@@ -92,13 +104,13 @@ public abstract class WorldTemplate implements Screen {
     }
 
     protected void updatePlayer(float delta) {
-        player.draw(batch, shapeRenderer);
         player.update(delta);
+        player.draw(batch, shapeRenderer);
     }
 
     public void carregarParede() {
         List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");
-        player.adicionarColisao(paredes, shapeRenderer);
+        player.adicionarColisao(paredes);
     }
 
     protected abstract void renderLayers();
@@ -111,10 +123,11 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        viewport.update(width, height, true); // Adicionado 'true' para centrar o viewport
+        camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);
+        camera.update();
         if (player != null) {
-            player.getCamera().viewportWidth = width;
-            player.getCamera().viewportHeight = height;
-            player.getCamera().update();
+            player.getHud().resize(width, height);
         }
     }
 
@@ -140,5 +153,9 @@ public abstract class WorldTemplate implements Screen {
         if (map != null) map.dispose();
         if (layerRenderer != null) layerRenderer.dispose();
         if (player != null) player.dispose();
+    }
+
+    public PlayerTemplate getPlayer() {
+        return player;
     }
 }

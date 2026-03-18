@@ -1,23 +1,16 @@
-package com.pawfight.game.engine.animation;
+package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AnimationEngine {
-    private Texture texture;
-    private int numFrames;
-    private float frameDuration;
-    private boolean reverse;
-    private boolean olhandoEsquerda;
-
-
     public Animation<TextureRegion> animar(SpriteDefinition spriteDefinition) {
-        this.texture = spriteDefinition.texture();
-        this.numFrames = spriteDefinition.numFrame();
-        this.frameDuration = spriteDefinition.frameDuration();
-        this.reverse = spriteDefinition.reverse();
-        this.olhandoEsquerda = spriteDefinition.olhandoEsquerda();
+        Texture texture = spriteDefinition.texture();
+        int numFrames = spriteDefinition.numFrame();
+        float frameDuration = spriteDefinition.frameDuration();
+        boolean reverse = spriteDefinition.reverse();
+        boolean olhandoEsquerda = spriteDefinition.olhandoEsquerda();
 
 
         // Divide o spritesheet em regiões

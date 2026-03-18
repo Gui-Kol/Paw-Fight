@@ -4,8 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.entity.player.*;
+import com.pawfight.game.entity.player.PlayerBlackBird;
+import com.pawfight.game.entity.player.PlayerBlackCat;
+import com.pawfight.game.entity.player.PlayerOrangeCat;
+import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.player.dove.PlayerDove;
 
 import java.util.Random;
@@ -30,13 +34,14 @@ public class EscolherPersonagem {
     private Random random;
 
     //Game
-    PawFight game;
-
+    private PawFight game;
+    private final FitViewport viewport;
 
 
     public EscolherPersonagem(PawFight game) {
         this.game = game;
         batch = new SpriteBatch();
+        viewport = new FitViewport(1920, 1080);
 
         personagens = new Texture[]{
             new Texture("entitys/player/selecao/black_cat.png"),
@@ -56,7 +61,7 @@ public class EscolherPersonagem {
 
         // Inicializa duas cópias do background
         bgX1 = 0;
-        bgX2 = Gdx.graphics.getWidth() -1; // começa logo após a primeira
+        bgX2 = Gdx.graphics.getWidth() - 1; // começa logo após a primeira
 
         exibirDadosPersonagem = new ExibirDadosPersonagem();
         personagemPreview = getPlayerEscolhido();
@@ -69,7 +74,8 @@ public class EscolherPersonagem {
         nuvemX = Gdx.graphics.getWidth(); // começa fora da tela
         nuvemY = random.nextInt(Gdx.graphics.getHeight() - nuvem.getHeight()); // altura aleatória
     }
-    private void updateNuvem(){
+
+    private void updateNuvem() {
         // Movimento do background
         bgX1 -= bgVelocidade * Gdx.graphics.getDeltaTime();
         bgX2 -= bgVelocidade * Gdx.graphics.getDeltaTime();
@@ -121,24 +127,49 @@ public class EscolherPersonagem {
         return null;
     }
 
-    private void drawNuvem(){
+    private void drawNuvem() {
         batch.draw(backGroud, bgX1, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(backGroud, bgX2, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.draw(nuvem, nuvemX, nuvemY);
     }
 
     public void draw() {
+        float worldW = viewport.getWorldWidth();
+        float worldH = viewport.getWorldHeight();
+
+        float baseW = 1920f;
+        float baseH = 1080f;
+
+        float scaleX = worldW / baseW;
+        float scaleY = worldH / baseH;
+        float scale = Math.min(scaleX, scaleY);
+
+        batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
-        drawNuvem();
+
+        // Background
+        batch.draw(backGroud, bgX1, 0, worldW, worldH);
+        batch.draw(backGroud, bgX2, 0, worldW, worldH);
+
+        // Personagem centralizado
         Texture personagem = personagens[personagemAtual];
-        float largura = 200;
-        float altura = 200;
-        float x = (Gdx.graphics.getWidth() - largura) / 2f;
-        float y = (Gdx.graphics.getHeight() - altura) / 2f;
-        batch.draw(personagem, x, y, largura, altura);
+        float largura = 200 * scale;
+        float altura = 200 * scale;
+        float playerX = (worldW - largura) / 2f;
+        float playerY = (worldH - altura) / 2f;
+        batch.draw(personagem, playerX, playerY, largura, altura);
+
+        // Nuvem nos pés do player
+        float nuvemW = (nuvem.getWidth() * scale) * 1.5f;
+        float nuvemH = (nuvem.getHeight() * scale) * 1.5f;
+        float nuvemX = (playerX - (nuvemW - largura) / 2f) * 1.1f; // centraliza com player
+        float nuvemY = (playerY - nuvemH) + playerY * 0.22f;                  // pés do player
+        batch.draw(nuvem, nuvemX, nuvemY, nuvemW, nuvemH);
+
         batch.end();
 
-        exibirDadosPersonagem.draw(batch, personagemPreview);
+        // HUD à esquerda do player
+        exibirDadosPersonagem.draw(batch, personagemPreview, playerX, playerY, scale);
     }
 
     public PlayerTemplate getPlayerEscolhido() {
@@ -165,6 +196,23 @@ public class EscolherPersonagem {
         playerEscolhido = game.loadPlayer(playerEscolhido, playerEscolhido.getName());
 
         return playerEscolhido;
+    }
+
+    // Corrige o resize para manter proporção
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
+        viewport.getCamera().position.set(
+            viewport.getWorldWidth() / 2f,
+            viewport.getWorldHeight() / 2f,
+            0
+        );
+        viewport.getCamera().update();
+
+        // Reposiciona elementos dependentes
+        bgX1 = 0;
+        bgX2 = viewport.getWorldWidth() - 1;
+        nuvemX = viewport.getWorldWidth();
+        nuvemY = random.nextInt((int) viewport.getWorldHeight() - nuvem.getHeight());
     }
 
 

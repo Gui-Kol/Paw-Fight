@@ -26,8 +26,8 @@ public class Lwjgl3Launcher {
         configuration.useVsync(true);
 
         // Set the window to a borderless (windowed) mode for a fullscreen effect
-        configuration.setWindowedMode(1920, 1080); // Set your desired width and height
-        configuration.setDecorated(false); // Removes the window borders and title bar
+        //configuration.setWindowedMode(1920, 1080); // Set your desired width and height
+        //configuration.setDecorated(false); // Removes the window borders and title bar
 
         // Set icons for the application window
         configuration.setWindowIcon("icon/logoPaw.png");

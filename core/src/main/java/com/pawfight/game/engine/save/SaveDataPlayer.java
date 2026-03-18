@@ -1,4 +1,4 @@
-package com.pawfight.game;
+package com.pawfight.game.engine.save;
 
 public class SaveDataPlayer {
     public String nomePersonagem;

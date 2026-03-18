@@ -1,4 +1,4 @@
-package com.pawfight.game;
+package com.pawfight.game.engine.save;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;

@@ -25,7 +25,7 @@ public class GerarObjetos {
             int x = (int)(regiao.x + Math.random() * regiao.width);
             int y = (int) (regiao.y + Math.random() * regiao.height);
 
-            // Cria uma nova hitbox baseada na posição
+            // Cria uma hitbox baseada na posição
             Rectangle novaHitbox = new Rectangle(x + ajusteX, y + ajusteY, textureObjeto.getWidth() + ajusteLargura, textureObjeto.getHeight() + ajusteAltura);
 
             ObjetoGerado obj = new ObjetoGerado(textureObjeto, novaHitbox, x, y);

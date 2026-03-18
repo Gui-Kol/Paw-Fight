@@ -9,7 +9,7 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import java.util.List;
 
 public class Portoes {
-    private Hud hud;
+    private final Hud hud;
 
     public Portoes() {
         hud = new Hud();

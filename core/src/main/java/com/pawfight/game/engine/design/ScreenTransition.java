@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.animation;
+package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -43,17 +43,12 @@ public class ScreenTransition {
         this.transitionDuration = duration;
     }
 
-    public void start(Screen screen) {
-        game.setScreen(screen);
-    }
-
     public void update(float delta) {
         if (transitioning) {
             currentEffect.update(delta);
 
             // Muda de tela na metade da transição
-            if (fadingOut && currentEffect instanceof FadeTransitionEffect) {
-                FadeTransitionEffect fade = (FadeTransitionEffect) currentEffect;
+            if (fadingOut && currentEffect instanceof FadeTransitionEffect fade) {
                 if (fade.getElapsedTime() >= transitionDuration / 2f) {
                     if (nextScreen != null) {
                         game.setScreen(nextScreen);
@@ -61,8 +56,7 @@ public class ScreenTransition {
                     fadingOut = false;
                     fade.switchToFadeIn();
                 }
-            } else if (fadingOut && currentEffect instanceof SlideTransitionEffect) {
-                SlideTransitionEffect slide = (SlideTransitionEffect) currentEffect;
+            } else if (fadingOut && currentEffect instanceof SlideTransitionEffect slide) {
                 if (slide.getElapsedTime() >= transitionDuration / 2f) {
                     if (nextScreen != null) {
                         game.setScreen(nextScreen);
@@ -92,10 +86,6 @@ public class ScreenTransition {
             // Restaura a matriz original
             batch.setProjectionMatrix(oldMatrix);
         }
-    }
-
-    public boolean isTransitioning() {
-        return transitioning;
     }
 
     public void dispose() {

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GerarInimigos {
-    private List<EnemyTemplate> listaInimigosFortes;
-    private List<BossesTemplate> listaBosses;
+    private final List<EnemyTemplate> listaInimigosFortes;
+    private final List<BossesTemplate> listaBosses;
 
     public GerarInimigos() {
         listaInimigosFortes = new ArrayList<>();

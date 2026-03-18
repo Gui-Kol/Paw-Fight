@@ -7,7 +7,7 @@ import java.util.*;
 public class RoomGenerator {
     private final Random random = new Random();
     private final Map<String, Room> roomMap = new HashMap<>();
-    private int tentativasMax = 10;
+    private final int tentativasMax = 10;
 
 
     public List<Room> generate(int numRooms, int extras) {
@@ -39,7 +39,7 @@ public class RoomGenerator {
                 return false; // spawn isolado
             }
 
-            // checa se alguma conexão do extra leva a uma sala principal
+            // checa se alguma conexão do extraleva a uma sala principal
             for (Room principal : principais) {
                 if (saoConectados(extra, principal)) {
                     conectado = true;
@@ -57,8 +57,7 @@ public class RoomGenerator {
         if (a.getX() == b.getX() && a.getY() == b.getY() + 1 && a.hasSouth() && b.hasNorth()) return true;
         if (a.getX() == b.getX() && a.getY() == b.getY() - 1 && a.hasNorth() && b.hasSouth()) return true;
         if (a.getX() == b.getX() + 1 && a.getY() == b.getY() && a.hasWest() && b.hasEast()) return true;
-        if (a.getX() == b.getX() - 1 && a.getY() == b.getY() && a.hasEast() && b.hasWest()) return true;
-        return false;
+        return a.getX() == b.getX() - 1 && a.getY() == b.getY() && a.hasEast() && b.hasWest();
     }
 
 

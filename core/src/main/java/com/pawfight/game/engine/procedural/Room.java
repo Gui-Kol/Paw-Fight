@@ -1,9 +1,9 @@
 package com.pawfight.game.engine.procedural;
 
 public class Room {
-    private int x, y;
+    private final int x,y;
     private boolean north, south, east, west;
-    private RoomType type;
+    private final RoomType type;
 
     public Room(int x, int y, RoomType type) {
         this.x = x;

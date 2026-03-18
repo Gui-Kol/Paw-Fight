@@ -1,6 +1,7 @@
 package com.pawfight.game.world.base;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -33,57 +34,42 @@ public class ExibirDadosPersonagem {
         shapeRenderer = new ShapeRenderer();
     }
 
-    public void draw(SpriteBatch batch, PlayerTemplate player) {
+    public void draw(SpriteBatch batch, PlayerTemplate player, float playerX, float playerY, float scale) {
         if (player == null) return;
 
-        // --- Calcula posição centralizada verticalmente ---
-        float centerY = Gdx.graphics.getHeight() / 2f; // meio da tela
-        float offsetX = Gdx.graphics.getWidth() /4; // margem da esquerda
-        float centerX = Gdx.graphics.getWidth()/2; // margem da esquerda
-        float boxWidth = 320;
-        float boxHeight = 250;
+        float offsetX = playerX - 400 * scale; // desloca para a esquerda do player
+        float centerY = playerY + 100 * scale; // altura alinhada ao player
 
-        // --- Quadrado cinza escuro atrás do texto ---
+        // Caixa de fundo
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
-        shapeRenderer.rect(offsetX - 10, centerY - boxHeight / 2, boxWidth, boxHeight);
+        shapeRenderer.rect(offsetX - 10 * scale, centerY - 125 * scale, 320 * scale, 250 * scale);
         shapeRenderer.end();
 
-        // --- Texto e coração ---
         batch.begin();
 
-        //Mensagem para selecionar personagem
-        font.setColor(Color.BLACK);
-        font.draw(batch, "=============================", (float) (centerX - centerX * 0.26),(float) (centerY * 1.5 + 50));
-        font.draw(batch, "Select your character", (float) (centerX - centerX * 0.23), (float) (centerY * 1.5));
-        font.draw(batch, "=============================", (float) (centerX - centerX * 0.26), (float) (centerY * 1.5 - 50));
-
+        font.getData().setScale(scale);
         font.setColor(Color.WHITE);
-        font.draw(batch, "Status", offsetX + 90, centerY  + 110);
-        font.draw(batch,player.getName(), offsetX + 50, centerY  + 80);
-        // Vida
-        font.draw(batch, "Life: " + player.getVidaBase(), offsetX, centerY + 20);
-        batch.draw(coracao, offsetX + 250, centerY, 24, 24);
 
-        // Velocidade
-        font.draw(batch, "Speed: " + player.getVelocidade()/100, offsetX, centerY - 10);
-        batch.draw(raio, offsetX + 235, centerY - 45, 56, 56);
+        // Status alinhados à esquerda do player
+        font.draw(batch, "Status", offsetX + 90 * scale, centerY + 110 * scale);
+        font.draw(batch, player.getName(), offsetX + 50 * scale, centerY + 80 * scale);
 
-        // Força
-        font.draw(batch, "Strength: " + player.getForca(), offsetX, centerY - 40);
-        batch.draw(musculo, offsetX + 235, centerY - 85, 56, 56);
+        font.draw(batch, "Life: " + player.getVidaBase(), offsetX, centerY + 20 * scale);
+        batch.draw(coracao, offsetX + 250 * scale, centerY, 24 * scale, 24 * scale);
 
-        // Tamanho
-        font.draw(batch, "Size: " + player.getTamanhoPx() + " cm", offsetX, centerY - 70);
-        batch.draw(requa, offsetX + 235, centerY - 120, 56, 56);
+        font.draw(batch, "Speed: " + player.getVelocidade() / 100, offsetX, centerY - 10 * scale);
+        batch.draw(raio, offsetX + 235 * scale, centerY - 45 * scale, 56 * scale, 56 * scale);
 
+        font.draw(batch, "Strength: " + player.getForca(), offsetX, centerY - 40 * scale);
+        batch.draw(musculo, offsetX + 235 * scale, centerY - 85 * scale, 56 * scale, 56 * scale);
 
-        batch.draw(nuvemChao, offsetX - 80, centerY - 350, 1024, 280);
-        batch.draw(nuvemChao, offsetX - 80, centerY - 430, 1024, 280);
+        font.draw(batch, "Size: " + player.getTamanhoPx() + " cm", offsetX, centerY - 70 * scale);
+        batch.draw(requa, offsetX + 235 * scale, centerY - 120 * scale, 56 * scale, 56 * scale);
 
         batch.end();
     }
-
 
     public void dispose() {
         font.dispose();

@@ -12,12 +12,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.SaveDataPlayer;
+import com.pawfight.game.engine.design.ZoomChanger;
+import com.pawfight.game.engine.save.SaveDataPlayer;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.StatusMenu;
-import com.pawfight.game.engine.animation.AnimationEngine;
-import com.pawfight.game.engine.animation.SpriteDefinition;
+import com.pawfight.game.engine.design.AnimationEngine;
+import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
@@ -87,11 +88,12 @@ public abstract class PlayerTemplate {
     protected final Rectangle hitBox;
     protected final DrawHitBox drawHitBox = new DrawHitBox();
 
-    // Mundo e câmera
+    // Mundo e camera
     protected final float mapWidth;
     protected final float mapHeight;
     protected final OrthographicCamera camera;
     protected final Hud hud;
+    protected final ZoomChanger zoomChanger;
 
     // Métodos abstratos (cada player define os seus)
     public abstract void texture();
@@ -106,9 +108,8 @@ public abstract class PlayerTemplate {
 
     public abstract int calcularDefesa();
 
-    public abstract boolean podeEsquivar();
 
-    //Movimentacao
+    //Movimentação
     float nextY;
     float nextX;
     float speed;
@@ -117,6 +118,7 @@ public abstract class PlayerTemplate {
     public PlayerTemplate(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         this.dx = dx;
         this.dy = dy;
+        this.zoomChanger = new ZoomChanger();
 
         pontosDisponiveis = 0;
 
@@ -146,7 +148,7 @@ public abstract class PlayerTemplate {
         stateTime = 0f;
         moving = false;
 
-        // Configuração da câmera
+        // Configuração da camera
         camera = new OrthographicCamera();
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.zoom = zoomCamera;
@@ -286,15 +288,11 @@ public abstract class PlayerTemplate {
         combatMoves();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
-            if (drawHitBoxes) {
-                drawHitBoxes = false;
-            } else {
-                drawHitBoxes = true;
-            }
+            drawHitBoxes = !drawHitBoxes;
             Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + HITBOX_ISVISIBLE);
             CommunVariable.setHitboxIsvisible(drawHitBoxes);
         }
-
+        camera.zoom = zoomChanger.changeZoom();
 
         controleTestes();
         pauseControl();
@@ -348,7 +346,7 @@ public abstract class PlayerTemplate {
         }
     }
 
-    public void adicionarColisao(List<Rectangle> colisores, ShapeRenderer shapeRenderer) {
+    public void adicionarColisao(List<Rectangle> colisores) {
         listColisores.addAll(colisores);
     }
 
@@ -384,13 +382,16 @@ public abstract class PlayerTemplate {
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
         batch.end();
 
-        if (menuAberto) {
-            statusMenu.draw(batch, hud.getHudCamera());
-        }
-
         shapeRenderer.setProjectionMatrix(camera.combined);
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         drawHitBox.draw(shapeRenderer, hitBox);
+    }
+    public void drawStatusMenu(SpriteBatch batch) {
+        if (menuAberto) {
+            statusMenu.draw(batch, hud.getHudCamera());
+        }
+    }
+    public void drawHud(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         hud.draw(batch, this, shapeRenderer);
     }
 
@@ -428,20 +429,12 @@ public abstract class PlayerTemplate {
         return pontosDisponiveis;
     }
 
-    public int getXp() {
-        return xp;
-    }
-
     public int getVidaBase() {
         return vidaBase;
     }
 
     public int getForca() {
         return forca;
-    }
-
-    public void setForca(int forca) {
-        this.forca = forca;
     }
 
     public int getDx() {
@@ -470,10 +463,6 @@ public abstract class PlayerTemplate {
 
     public int getVida() {
         return vida;
-    }
-
-    public int getXpNecessario() {
-        return xpNecessario;
     }
 
     public int getVelocidade() {

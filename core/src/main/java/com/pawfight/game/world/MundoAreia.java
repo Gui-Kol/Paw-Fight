@@ -1,13 +1,15 @@
 package com.pawfight.game.world;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.LayerRenderer;
-import com.pawfight.game.engine.animation.ScreenTransition;
+import com.pawfight.game.engine.design.ScreenTransition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.engine.procedural.*;
 import com.pawfight.game.entity.enemy.EnemySkeleton;
@@ -34,8 +36,8 @@ public class MundoAreia extends WorldTemplate {
     private final List<ObjetoGerado> listaObjetos;
     private final List<Rectangle> listaObjetosHitbox;
 
-    public MundoAreia(PawFight game, PlayerTemplate player) {
-        super(game, "menu/menu.png", "audio/music/time_for_adventure.wav");
+    public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
+        super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
         screenTransition = new ScreenTransition(game);
         roomGenerator = new RoomGenerator();
@@ -117,13 +119,12 @@ public class MundoAreia extends WorldTemplate {
                 for (ObjetoGerado obj : objetosGerados) {
                     listaObjetosHitbox.add(obj.hitbox);
                 }
-                player.adicionarColisao(listaObjetosHitbox, shapeRenderer);
-            } else if (currentRoom.getType() == RoomType.BOSS) {
-                // Gerar objetos específicos para a sala do boss, se necessário
-            } else if (currentRoom.getType() == RoomType.TESOURO) {
-                // Gerar objetos específicos para a sala do tesouro, se necessário
+                player.adicionarColisao(listaObjetosHitbox);
             }
-        }catch(Exception e){
+//            else if (currentRoom.getType() == RoomType.BOSS) {
+//            } else if (currentRoom.getType() == RoomType.TESOURO) {
+//            }
+        } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro ao gerar objetos: " + e.getMessage(), e);
         }
     }
@@ -211,7 +212,7 @@ public class MundoAreia extends WorldTemplate {
             if (player != null && !player.isMorto()) {
                 super.render(delta);
                 int indiceAtual = rooms.indexOf(currentRoom);
-                desenharMiniMapa.desenharSalaAtual(indiceAtual, currentRoom.getType(), batch);
+                desenharMiniMapa.desenharSalaAtual(indiceAtual, currentRoom.getType(), batch, player.getHud().getHudCamera());
 
                 // Atualizar e renderizar inimigos
                 List<EnemyTemplate> inimigosMortos = new ArrayList<>();
@@ -346,9 +347,11 @@ public class MundoAreia extends WorldTemplate {
         listaInimigos.clear();
         if (!currentRoomFoiVisitada()) {
             listaInimigos = gerarInimigos();
-            // Definir lista de inimigos para cada inimigo
-            for (EnemyTemplate enemy : listaInimigos) {
-                enemy.setEnemiesList(listaInimigos);
+
+            if (listaInimigos != null) {
+                for (EnemyTemplate enemy : listaInimigos) {
+                    enemy.setEnemiesList(listaInimigos);
+                }
             }
         }
         Gdx.app.log("MundoAreia", "Inimigos gerados para sala [" + currentRoom.getX() + "," + currentRoom.getY() + "]: " + listaInimigos.size());
