@@ -553,4 +553,8 @@ public abstract class PlayerTemplate {
     public boolean isMorto() {
         return morto;
     }
+
+    public StatusMenu getStatusMenu() {
+        return statusMenu;
+    }
 }

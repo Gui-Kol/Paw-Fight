@@ -151,6 +151,41 @@ public class StatusMenu {
         batch.end();
     }
 
+    public void resize(int width, int height) {
+        // Atualiza o viewport do Stage para manter proporção
+        stage.getViewport().update(width, height, true);
+
+        // Centraliza a câmera do Stage
+        stage.getCamera().position.set(
+            stage.getViewport().getWorldWidth() / 2f,
+            stage.getViewport().getWorldHeight() / 2f,
+            0
+        );
+        stage.getCamera().update();
+
+        // Recalcula centro lógico
+        centerX = stage.getViewport().getWorldWidth() / 2f;
+        centerY = stage.getViewport().getWorldHeight() / 2f;
+
+        // Recalcula escala proporcional
+        float baseW = 1920f;
+        float baseH = 1080f;
+        float scaleX = width / baseW;
+        float scaleY = height / baseH;
+        float newScale = Math.min(scaleX, scaleY);
+
+        // Atualiza tamanho e posição do background
+        background.setSize(600 * newScale, 500 * newScale);
+        background.setPosition(
+            (stage.getViewport().getWorldWidth() - background.getWidth()) / 2f,
+            (stage.getViewport().getWorldHeight() - background.getHeight()) / 2f
+        );
+
+        // Recria o menu com nova escala
+        criarMenu();
+    }
+
+
     public void dispose() {
         stage.dispose();
         font.dispose();
