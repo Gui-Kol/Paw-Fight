@@ -7,7 +7,7 @@ import java.util.*;
 public class RoomGenerator {
     private final Random random = new Random();
     private final Map<String, Room> roomMap = new HashMap<>();
-    private final int tentativasMax = 10;
+    private final int tentativasMax = 30;
 
 
     public List<Room> generate(int numRooms, int extras) {

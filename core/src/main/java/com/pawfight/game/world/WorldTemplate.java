@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.LayerRenderer;
 import com.pawfight.game.engine.design.DrawList;
+import com.pawfight.game.engine.phisics.DanoTiro;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -36,6 +37,7 @@ public abstract class WorldTemplate implements Screen {
 
     // Mundo
     protected DrawHitBox drawHitBox;
+    protected DanoTiro danoTiro;
     protected DrawList drawList;
     protected ShapeRenderer shapeRenderer;
     protected Texture background;
@@ -57,6 +59,7 @@ public abstract class WorldTemplate implements Screen {
         backMusic = Gdx.audio.newMusic(Gdx.files.internal(musicPath));
         tilemapHitboxFactory = new TilemapHitboxFactory();
         drawHitBox = new DrawHitBox();
+        danoTiro = new DanoTiro();
     }
 
     public void setPlayer(PlayerTemplate player) {

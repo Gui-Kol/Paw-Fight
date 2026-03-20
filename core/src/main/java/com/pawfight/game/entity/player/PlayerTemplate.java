@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.design.ZoomChanger;
+import com.pawfight.game.engine.phisics.TirosTamplate;
 import com.pawfight.game.engine.save.SaveDataPlayer;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
@@ -33,6 +34,7 @@ public abstract class PlayerTemplate {
     protected int moedas;
 
     // Atributos comuns
+    protected final List<TirosTamplate> tiros;
     protected int pontosDisponiveis;
     protected int xp;
     protected int xpNecessario;
@@ -131,6 +133,7 @@ public abstract class PlayerTemplate {
         menuAberto = false;
         pause = false;
 
+        tiros = new ArrayList<>();
         hud = new Hud();
 
         tilemapHitboxFactory = new TilemapHitboxFactory();
@@ -556,5 +559,9 @@ public abstract class PlayerTemplate {
 
     public StatusMenu getStatusMenu() {
         return statusMenu;
+    }
+
+    public List<TirosTamplate> getTiros() {
+        return tiros;
     }
 }

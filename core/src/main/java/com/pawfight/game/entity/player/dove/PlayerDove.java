@@ -6,13 +6,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.phisics.TirosTamplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerDove extends PlayerTemplate {
-    private final List<Coco> cocos;
     private final float tempoCoco;
     private final float duracaoCoco;
 
@@ -23,7 +23,6 @@ public class PlayerDove extends PlayerTemplate {
         velocidade = 600;
         forca = 1;
         vida = vidaBase;
-        cocos = new ArrayList<>();
         tempoCoco = 2;
         duracaoCoco = 3;
 
@@ -66,15 +65,16 @@ public class PlayerDove extends PlayerTemplate {
     }
 
     private void cagando() {
+
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
                 Coco coco = new Coco(dx, dy, forca, 16, isOlhandoEsquerda());
-                cocos.add(coco);
+                tiros.add(coco);
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
-                        cocos.remove(coco); // Remove o coco
+                        tiros.remove(coco); // Remove o coco
                     }
                 }, duracaoCoco);
             }
@@ -85,7 +85,7 @@ public class PlayerDove extends PlayerTemplate {
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         batch.setProjectionMatrix(camera.combined);
 
-        for (Coco coco : cocos) {
+        for (TirosTamplate coco : tiros) {
             coco.draw(batch,shapeRenderer);
         }
         super.draw(batch, shapeRenderer);

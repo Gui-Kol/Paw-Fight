@@ -191,24 +191,24 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public void render(float delta) {
-        if (!initialized) {
-            Gdx.app.error("MundoAreia", "render() chamado mas não foi inicializado. Chamando show()...");
-            show();
-        }
-
-        if (errorFinal) {
-            screenTransition.update(Gdx.graphics.getDeltaTime());
-            screenTransition.render(batch);
-            return;
-        }
-
-        if (currentRoom == null || map == null || layerRenderer == null) {
-            Gdx.app.error("MundoAreia", "render() - objeto null: currentRoom=" + (currentRoom == null) +
-                ", map=" + (map == null) + ", layerRenderer=" + (layerRenderer == null));
-            return;
-        }
-
         try {
+            if (!initialized) {
+                Gdx.app.error("MundoAreia", "render() chamado mas não foi inicializado. Chamando show()...");
+                show();
+            }
+
+            if (errorFinal) {
+                screenTransition.update(Gdx.graphics.getDeltaTime());
+                screenTransition.render(batch);
+                return;
+            }
+
+            if (currentRoom == null || map == null || layerRenderer == null) {
+                Gdx.app.error("MundoAreia", "render() - objeto null: currentRoom=" + (currentRoom == null) +
+                    ", map=" + (map == null) + ", layerRenderer=" + (layerRenderer == null));
+                return;
+            }
+
             if (player != null && !player.isMorto()) {
                 super.render(delta);
                 int indiceAtual = rooms.indexOf(currentRoom);
@@ -230,6 +230,9 @@ public class MundoAreia extends WorldTemplate {
                 }
                 drawList.drawObjects(listaObjetos, batch, player.getCamera().combined, 48, 48);
                 drawHitBox.drawList(listaObjetosHitbox, shapeRenderer, player.getCamera().combined);
+                if (listaInimigos != null && !listaInimigos.isEmpty()){
+                    danoTiro.darDanoListaInimigos(listaInimigos,player.getTiros());
+                }
             }
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);
