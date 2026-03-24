@@ -3,14 +3,13 @@ package com.pawfight.game.world;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
-import com.pawfight.game.engine.LayerRenderer;
 import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.procedural.*;
+import com.pawfight.game.engine.procedural.CarregarPortas;
+import com.pawfight.game.engine.procedural.GerarInimigos;
+import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomGenerator;
 import com.pawfight.game.engine.procedural.room.RoomType;
@@ -24,12 +23,7 @@ import java.util.List;
 
 public class MundoAreia extends WorldTemplate {
     private final DesenharMiniMapa desenharMiniMapa;
-    private boolean errorFinal = false;
     private final ScreenTransition screenTransition;
-    private boolean initialized = false;
-    private final GerarObjetos gerarObjetos;
-    private final List<ObjetoGerado> listaObjetos;
-    private final List<Rectangle> listaObjetosHitbox;
     private final CarregarPortas carregarPortas;
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
@@ -47,9 +41,6 @@ public class MundoAreia extends WorldTemplate {
         desenharMiniMapa = new DesenharMiniMapa();
         gerarInimigos = new GerarInimigos();
         listaInimigos = new ArrayList<>();
-        gerarObjetos = new GerarObjetos();
-        listaObjetos = new ArrayList<>();
-        listaObjetosHitbox = new ArrayList<>();
         carregarPortas = new CarregarPortas();
 
         // Gera salas APENAS aqui, não carrega mapa
@@ -82,37 +73,15 @@ public class MundoAreia extends WorldTemplate {
     }
 
 
-
     @Override
-    public void gerarObjetos() {
-        try {
-            if (currentRoom.getType() != RoomType.BOSS || currentRoom.getType() != RoomType.TESOURO) {
-                listaObjetos.clear();
-                listaObjetosHitbox.clear();
+    public List<InfoGeraObjeto> getInfoObjetos() {
+        Texture cacto = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
+        List<InfoGeraObjeto> infoGeraObjetoList = new ArrayList<>();
 
-                List<Rectangle> regiaoSpawn = tilemapHitboxFactory.createHitboxes(map, "Obj");
-                if (regiaoSpawn == null) {
-                    Gdx.app.error("MundoAreia", "não existe região para gerar objetos!");
-                    return;
-                }
+        infoGeraObjetoList.add(new InfoGeraObjeto("Obj", RoomType.INIMIGOS, cacto, 6, 2,
+            -245, -240, 8, 5));
 
-                Texture textureObjeto = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
-
-                List<ObjetoGerado> objetosGerados = gerarObjetos.gerar(textureObjeto, 5, 2, regiaoSpawn,
-                    -245, -240, 8, 5);
-
-                listaObjetos.addAll(objetosGerados);
-                for (ObjetoGerado obj : objetosGerados) {
-                    listaObjetosHitbox.add(obj.hitbox);
-                }
-                player.adicionarColisao(listaObjetosHitbox);
-            }
-//            else if (currentRoom.getType() == RoomType.BOSS) {
-//            } else if (currentRoom.getType() == RoomType.TESOURO) {
-//            }
-        } catch (Exception e) {
-            Gdx.app.error("MundoAreia", "Erro ao gerar objetos: " + e.getMessage(), e);
-        }
+        return infoGeraObjetoList;
     }
 
     @Override
@@ -122,7 +91,7 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public List<EnemyTemplate> getInimigos() {
-        EnemyTemplate enemySkeleton = new EnemySkeleton(0,0,false,player);
+        EnemyTemplate enemySkeleton = new EnemySkeleton(0, 0, false, player);
         return List.of(enemySkeleton);
     }
 
@@ -132,43 +101,13 @@ public class MundoAreia extends WorldTemplate {
     }
 
     @Override
-    public void show() {
-        if (errorFinal) {
-            Gdx.app.error("MundoAreia", "show() chamado mas errorFinal = true");
-            return;
-        }
-
-        if (currentRoom == null) {
-            Gdx.app.error("MundoAreia", "show() chamado mas currentRoom é null!");
-            errorFinal = true;
-            return;
-        }
-
-        try {
-            map = new TmxMapLoader().load(getMapPath());
-            layerRenderer = new LayerRenderer(map);
-            backMusic.setLooping(true);
-            backMusic.setVolume(0);
-            backMusic.play();
-            initialized = true;
-            gerarObjetos();
-            carregarParede();
-            Gdx.app.log("MundoAreia", "show() completado com sucesso. Mapa: " + getMapPath());
-        } catch (Exception e) {
-            Gdx.app.error("MundoAreia", "Erro em show(): " + e.getMessage(), e);
-            errorFinal = true;
-        }
+    public boolean deveCarregarMapaCompleto() {
+        return true;
     }
-
 
     @Override
     public void render(float delta) {
         try {
-            if (!initialized) {
-                Gdx.app.error("MundoAreia", "render() chamado mas não foi inicializado. Chamando show()...");
-                show();
-            }
-
             if (errorFinal) {
                 screenTransition.update(Gdx.graphics.getDeltaTime());
                 screenTransition.render(batch);
@@ -206,7 +145,7 @@ public class MundoAreia extends WorldTemplate {
                     podeEntrarPorta = false;
                     danoTiro.darDanoListaInimigos(listaInimigos, player.getTiros());
                 }
-                if (listaInimigos.isEmpty()){
+                if (listaInimigos.isEmpty()) {
                     podeEntrarPorta = true;
                 }
             }
@@ -294,6 +233,7 @@ public class MundoAreia extends WorldTemplate {
     @Override
     protected void checkPortals() {
         carregarPortas.carregar(this);
+
     }
 
     @Override

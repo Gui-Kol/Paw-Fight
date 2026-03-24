@@ -17,87 +17,58 @@ import com.pawfight.game.world.WorldTemplate;
 import java.util.List;
 
 public class CarregarPortas {
+
+    private enum Direcao {
+        CIMA("PortaCima", 0, 1, 430, 120),
+        BAIXO("PortaBaixo", 0, -1, 350, 840),
+        ESQUERDA("PortaEsquerda", -1, 0, 820, 420),
+        DIREITA("PortaDireita", 1, 0, 70, 420);
+
+        final String layer;
+        final int dx, dy;
+        final int posX, posY;
+
+        Direcao(String layer, int dx, int dy, int posX, int posY) {
+            this.layer = layer;
+            this.dx = dx;
+            this.dy = dy;
+            this.posX = posX;
+            this.posY = posY;
+        }
+    }
+
     public void carregar(WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
         Room currentRoom = world.getCurrentRoom();
         TiledMap map = world.getMap();
         RoomGenerator roomGenerator = world.getRoomGenerator();
-        boolean podeEntrarPorta = world.isPodeEntrarPorta();
         TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
 
-        if (player == null || currentRoom == null || map == null || roomGenerator == null || !podeEntrarPorta) {
+        if (player == null || currentRoom == null || map == null || roomGenerator == null || !world.isPodeEntrarPorta()) {
             return;
         }
+
         Rectangle playerBox = player.getHitBox();
 
-        // Porta cima
-        if (currentRoom.hasNorth()) {
-            Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() + 1));
-            if (destino != null && map.getLayers().get("PortaCima") != null) {
+        for (Direcao dir : Direcao.values()) {
+            // SPAWN não tem porta para baixo
+            if (dir == Direcao.BAIXO && currentRoom.getType() == RoomType.SPAWN) continue;
+
+            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
+            if (destino != null && map.getLayers().get(dir.layer) != null) {
                 try {
-                    List<Rectangle> portaCima = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaCima", 16, 16);
-                    if (!portaCima.isEmpty() && ChecarColisao.houveColisao(playerBox, portaCima)) {
+                    List<Rectangle> portas = tilemapHitboxFactory.createTileLayerHitboxes(map, dir.layer, 16, 16);
+                    if (!portas.isEmpty() && ChecarColisao.houveColisao(playerBox, portas)) {
                         moverParaSala(destino.getX(), destino.getY(), world);
-                        player.setLocal(430, 120);
+                        player.setLocal(dir.posX, dir.posY);
                         return;
                     }
                 } catch (Exception e) {
-                    Gdx.app.error(nomeClasseOrigem, "Erro porta cima: " + e.getMessage());
+                    Gdx.app.error(nomeClasseOrigem, "Erro porta " + dir.name().toLowerCase() + ": " + e.getMessage());
                 }
             }
         }
-
-        // Porta baixo
-        if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth()) {
-            Room destino = roomGenerator.getRoomMap().get(currentRoom.getX() + "," + (currentRoom.getY() - 1));
-            if (destino != null && map.getLayers().get("PortaBaixo") != null) {
-                try {
-                    List<Rectangle> portaBaixo = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaBaixo", 16, 16);
-                    if (!portaBaixo.isEmpty() && ChecarColisao.houveColisao(playerBox, portaBaixo)) {
-                        moverParaSala(destino.getX(), destino.getY(), world);
-                        player.setLocal(350, 840);
-                        return;
-                    }
-                } catch (Exception e) {
-                    Gdx.app.error(nomeClasseOrigem, "Erro porta baixo: " + e.getMessage());
-                }
-            }
-        }
-
-        // Porta esquerda
-        if (currentRoom.hasWest()) {
-            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() - 1) + "," + currentRoom.getY());
-            if (destino != null && map.getLayers().get("PortaEsquerda") != null) {
-                try {
-                    List<Rectangle> portaEsq = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaEsquerda", 16, 16);
-                    if (!portaEsq.isEmpty() && ChecarColisao.houveColisao(playerBox, portaEsq)) {
-                        moverParaSala(destino.getX(), destino.getY(), world);
-                        player.setLocal(820, 420);
-                        return;
-                    }
-                } catch (Exception e) {
-                    Gdx.app.error(nomeClasseOrigem, "Erro porta esquerda: " + e.getMessage());
-                }
-            }
-        }
-
-        // Porta direita
-        if (currentRoom.hasEast()) {
-            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + 1) + "," + currentRoom.getY());
-            if (destino != null && map.getLayers().get("PortaDireita") != null) {
-                try {
-                    List<Rectangle> portaDir = tilemapHitboxFactory.createTileLayerHitboxes(map, "PortaDireita", 16, 16);
-                    if (!portaDir.isEmpty() && ChecarColisao.houveColisao(playerBox, portaDir)) {
-                        moverParaSala(destino.getX(), destino.getY(), world);
-                        player.setLocal(70, 420);
-                    }
-                } catch (Exception e) {
-                    Gdx.app.error(nomeClasseOrigem, "Erro porta direita: " + e.getMessage());
-                }
-            }
-        }
-
     }
 
     private void moverParaSala(int x, int y, WorldTemplate world) {
@@ -110,30 +81,31 @@ public class CarregarPortas {
         player.clearList();
         world.carregarParede();
         Room room = roomGenerator.getRoomMap().get(x + "," + y);
-        if (room != null) {
-            if (map != null) {
-                map.dispose();
-                if (layerRenderer != null) {
-                    layerRenderer.dispose();
-                }
-            }
-            try {
-                world.setCurrentRoom(room);
-                map = new TmxMapLoader().load(world.getMapPath());
-                world.setLayerRenderer(new LayerRenderer(map));
 
-                // Gera inimigos ANTES de marcar como visitada
-                moverSalaInimigos(world);
-
-                world.getSalasVisitadas().add(x + "," + y);
-                Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
-                world.logRoomInfo(room);
-                world.gerarObjetos();
-            } catch (Exception e) {
-                Gdx.app.error(nomeClasseOrigem, "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
-            }
-        } else {
+        if (room == null) {
             Gdx.app.error(nomeClasseOrigem, "Erro: Sala não encontrada em " + x + "," + y);
+            return;
+        }
+
+        if (map != null) {
+            map.dispose();
+            if (layerRenderer != null) layerRenderer.dispose();
+        }
+
+        try {
+            world.setCurrentRoom(room);
+            map = new TmxMapLoader().load(world.getMapPath());
+            world.setLayerRenderer(new LayerRenderer(map));
+
+            moverSalaInimigos(world);
+
+            world.getSalasVisitadas().add(x + "," + y);
+            Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
+            world.logRoomInfo(room);
+
+            world.gerarObjetos(); // agora garante que os objetos sejam carregados
+        } catch (Exception e) {
+            Gdx.app.error(nomeClasseOrigem, "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
         }
     }
 
@@ -148,9 +120,7 @@ public class CarregarPortas {
             List<EnemyTemplate> novos = gerarInimigos.gerarInimigos(world);
             if (novos != null) {
                 listaInimigos.addAll(novos);
-                for (EnemyTemplate enemy : listaInimigos) {
-                    enemy.setEnemiesList(listaInimigos);
-                }
+                listaInimigos.forEach(enemy -> enemy.setEnemiesList(listaInimigos));
             }
         }
 

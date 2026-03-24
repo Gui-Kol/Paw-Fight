@@ -19,11 +19,15 @@ import com.pawfight.game.engine.phisics.DanoTiro;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.GerarInimigos;
+import com.pawfight.game.engine.procedural.GerarObjetos;
+import com.pawfight.game.engine.procedural.ObjetoGerado;
+import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomGenerator;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +44,10 @@ public abstract class WorldTemplate implements Screen {
     protected PlayerTemplate player;
 
     // Mundo
+    private final GerarObjetos gerarObjetos;
+    protected boolean errorFinal = false;
+    protected final List<ObjetoGerado> listaObjetos;
+    protected final List<Rectangle> listaObjetosHitbox;
     protected List<Room> rooms;
     protected RoomGenerator roomGenerator;
     protected Room currentRoom;
@@ -64,6 +72,9 @@ public abstract class WorldTemplate implements Screen {
         this.camera = camera;
         this.viewport = viewport;
 
+        gerarObjetos = new GerarObjetos();
+        listaObjetos = new ArrayList<>();
+        listaObjetosHitbox = new ArrayList<>();
         drawList = new DrawList();
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -88,14 +99,35 @@ public abstract class WorldTemplate implements Screen {
             backMusic.setVolume(0);
             backMusic.play();
         } catch (Exception e) {
-            Gdx.app.error("WorldTemplate", "Erro ao carregar mundo: " + e.getMessage(), e);
+            Gdx.app.error(getWorldName(), "Erro no Show: " + e.getMessage(), e);
+        }
+        carregarMapaCompleto();
+    }
+
+    private void carregarMapaCompleto(){
+        if (deveCarregarMapaCompleto()){
+            if (errorFinal) {
+                Gdx.app.error(getWorldName(), "show() chamado mas errorFinal = true");
+                return;
+            }
+            if (currentRoom == null) {
+                Gdx.app.error(getWorldName(), "show() chamado mas currentRoom é null!");
+                errorFinal = true;
+                return;
+            }
+            try {
+                gerarObjetos();
+                carregarParede();
+            } catch (Exception e) {
+                Gdx.app.error(getWorldName(), "Erro no Show: " + e.getMessage(), e);
+            }
         }
     }
 
     @Override
     public void render(float delta) {
         if (map == null || layerRenderer == null) {
-            Gdx.app.error("WorldTemplate", "Mapa não carregado!");
+            Gdx.app.error(getWorldName(), "Mapa não carregado!");
             return;
         }
 
@@ -136,13 +168,22 @@ public abstract class WorldTemplate implements Screen {
 
     public abstract void logRoomInfo(Room room);
 
-    public abstract void gerarObjetos();
+    public abstract List<InfoGeraObjeto> getInfoObjetos();
+
+    public void gerarObjetos(){
+        if (getInfoObjetos() == null || getInfoObjetos().isEmpty()){
+            return;
+        }
+        gerarObjetos.gerar(this,getInfoObjetos());
+    }
 
     public abstract String getWorldName();
 
     public abstract List<EnemyTemplate> getInimigos();
 
     public abstract List<EnemyTemplate> getBosses();
+
+    protected abstract boolean deveCarregarMapaCompleto();
 
     @Override
     public void resize(int width, int height) {
@@ -243,5 +284,19 @@ public abstract class WorldTemplate implements Screen {
 
     public void addSalasVisitadas(String newRoom) {
         salasVisitadas.add(newRoom);
+    }
+
+    public List<ObjetoGerado> getListaObjetos() {
+        return listaObjetos;
+    }
+
+    public List<Rectangle> getListaObjetosHitbox() {
+        return listaObjetosHitbox;
+    }
+    public void addListaObjetos(List<ObjetoGerado> objetoGerados){
+        listaObjetos.addAll(objetoGerados);
+    }
+    public void addListaObjetosHitbox(List<Rectangle> hitBoxs){
+        listaObjetosHitbox.addAll(hitBoxs);
     }
 }

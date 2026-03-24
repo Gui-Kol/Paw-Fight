@@ -77,9 +77,11 @@ public class RoomGenerator {
 
     private boolean typeInimigo(Room room, int numRooms) {
         for (Direction dir : Direction.values()) {
-            Room vizinho = room.getRoom(dir);
-            if (vizinho != null && vizinho.getType() == RoomType.INIMIGOS) {
-                if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
+            if (!dir.equals(Direction.SOUTH)) {
+                Room vizinho = room.getRoom(dir);
+                if (vizinho != null && vizinho.getType() == RoomType.INIMIGOS) {
+                    if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
+                }
             }
         }
         return false;

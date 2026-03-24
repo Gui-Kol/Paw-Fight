@@ -23,6 +23,32 @@
         "#Wall_Variations": {
             "scaleInDock": 1
         },
+        "BOSS.tmx": {
+            "expandedObjectLayers": [
+                10
+            ],
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 277.33333333333337,
+                "y": 254.66666666666669
+            }
+        },
+        "BOSS.tmx#Dungeon_Tileset": {
+            "scaleInDock": 1
+        },
+        "BOSS.tmx#Floors_Tiles": {
+            "scaleInDock": 1
+        },
+        "BOSS.tmx#Wall_Tiles": {
+            "scaleInDock": 1
+        },
+        "BOSS.tmx#Wall_Variations": {
+            "scaleInDock": 1
+        },
+        "BOSS.tmx#sangue": {
+            "scaleInDock": 0.75
+        },
         "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx": {
             "scale": 4,
             "selectedLayer": 6,
@@ -77,7 +103,7 @@
             "scale": 0.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": -6,
+                "x": 388,
                 "y": 494
             }
         },
@@ -206,8 +232,8 @@
     ],
     "project": "mundo_areia.tiled-project",
     "recentFiles": [
-        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
         "TESOURO.tmx",
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
         "INIMIGOS.tmx",
         "mundo_areia1.tmx",
         "default_room.tmx",

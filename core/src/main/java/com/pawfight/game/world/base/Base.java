@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.design.transition.ScreenTransition;
+import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
@@ -102,8 +103,8 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    public void gerarObjetos() {
-
+    public List<InfoGeraObjeto> getInfoObjetos() {
+        return List.of();
     }
 
     @Override
@@ -119,6 +120,11 @@ public class Base extends WorldTemplate {
     @Override
     public List<EnemyTemplate> getBosses() {
         return List.of();
+    }
+
+    @Override
+    public boolean deveCarregarMapaCompleto() {
+        return false;
     }
 
     @Override
