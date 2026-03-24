@@ -8,61 +8,62 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.design.AnimationEngine;
 import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.design.animation.AnimationEngine;
+import com.pawfight.game.engine.design.desenhar.DesenharTexto;
+import com.pawfight.game.engine.design.desenhar.DesenharTextura;
 import com.pawfight.game.engine.font.FontFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
+import static com.pawfight.game.engine.CommunVariable.*;
 
 public class Hud {
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
-    private final GlyphLayout layoutCoord = new GlyphLayout();
-    private final GlyphLayout layoutOlhando = new GlyphLayout();
     private final AnimationEngine animationEngine;
     private final SpriteDefinition coracaoDefinition;
+    private final Texture coin;
+    private final DesenharTexto desenharTexto;
+    private final DesenharTextura desenharTextura;
+    private final float opacidadeHud;
 
     // câmera e viewport fixos para HUD
     private final OrthographicCamera hudCamera;
     private final Viewport hudViewport;
 
-    private float scale; // Adicionado para armazenar o fator de escala
-
     public Hud() {
         hudCamera = new OrthographicCamera();
-        hudViewport = new FitViewport(1920, 1080, hudCamera); // mantém proporção
+        hudViewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE(), hudCamera); // mantém proporção
         hudCamera.position.set(hudViewport.getWorldWidth() / 2f, hudViewport.getWorldHeight() / 2f, 0);
         hudCamera.update();
+        desenharTexto = new DesenharTexto(hudViewport, hudCamera);
+        desenharTextura = new DesenharTextura();
+        opacidadeHud = 0.5f;
 
-        Texture coracao = new Texture("Hud/coracao.png");
-        coracaoDefinition = new SpriteDefinition(coracao, 5, 0.5f, false, false);
+        coin = new Texture("Hud/coin.png");
+        coracaoDefinition = new SpriteDefinition(new Texture("Hud/coracao.png"), 5, 1f, false, false);
         animationEngine = new AnimationEngine();
+        Gdx.app.log("Hud", "Hud sendo carregado e desenhado...");
     }
 
     public void draw(Batch batch, PlayerTemplate playerTemplate, ShapeRenderer shapeRenderer) {
-        float screenW = Gdx.graphics.getWidth();
-        float screenH = Gdx.graphics.getHeight();
-        float baseW = 1920f;
-        float baseH = 1080f;
-        scale = Math.min(screenW / baseW, screenH / baseH);
-
         hudCamera.update();
-        batch.setProjectionMatrix(hudCamera.combined);
 
+        batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
-        font.getData().setScale(scale);
+        font.getData().setScale(GET_SCALE());
 
         int x = playerTemplate.getDx();
         int y = playerTemplate.getDy();
 
         font.setColor(Color.WHITE);
-
         desenharLevel(batch, playerTemplate.getLevel(), shapeRenderer);
+        desenharMoeda(batch, playerTemplate.getMoedas(), shapeRenderer);
         desenharCoracao(batch, playerTemplate.getVida(), playerTemplate.getVidaBase());
 
         if (HITBOX_ISVISIBLE) {
-            desenharCoordenadas(batch, x, y);
-            desenharDirecaoOlhar(batch, playerTemplate.isOlhandoEsquerda());
+            desenharCoordenadas(batch, shapeRenderer, x, y);
+            desenharDirecaoOlhar(batch, shapeRenderer, playerTemplate.isOlhandoEsquerda());
+            desenharScale(batch, shapeRenderer);
         }
         batch.end();
     }
@@ -72,96 +73,81 @@ public class Hud {
         hudCamera.position.set(hudViewport.getWorldWidth() / 2f, hudViewport.getWorldHeight() / 2f, 0);
     }
 
-    private void desenharCoordenadas(Batch batch, int x, int y) {
-        String coords = "X: " + x + " Y: " + y;
-        layoutCoord.setText(font, coords);
-
-        float screenWidth = hudViewport.getWorldWidth();
-        float screenHeight = hudViewport.getWorldHeight();
-
-        float posX = screenWidth - layoutCoord.width - 10 * scale; // Aplicar escala à posição
-        float posY = screenHeight - 10 * scale; // Aplicar escala à posição
-
-        font.draw(batch, layoutCoord, posX, posY);
-    }
-
     private void desenharCoracao(Batch batch, int vidaAtual, int vidaMaxima) {
         Animation<TextureRegion> coracaoAnimation = animationEngine.animar(coracaoDefinition);
-
-        int tamanho = (int) (128 * scale); // Aplicar escala ao tamanho
-        float posX = 20 * scale; // Aplicar escala à posição
-        float posY = hudViewport.getWorldHeight() - tamanho;
-
         float porcentagemVida = (float) vidaAtual / vidaMaxima;
         int frameIndex = (int) ((1 - porcentagemVida) * (coracaoAnimation.getKeyFrames().length - 1));
         frameIndex = Math.max(0, Math.min(frameIndex, coracaoAnimation.getKeyFrames().length - 1));
+        var x = GET_LARGURA_TELA_BASE() - 180;
+        var y = 40;
 
-        batch.draw(coracaoAnimation.getKeyFrames()[frameIndex], posX, posY, tamanho, tamanho);
+        desenharTextura.desenhar(batch, null, coracaoAnimation.getKeyFrames()[frameIndex], x, y, 128);
+    }
+
+    private void desenharMoeda(Batch batch, int moedas, ShapeRenderer shapeRenderer) {
+        Color cor = new Color(0f / 255f, 100f / 255f, 0f / 255f, opacidadeHud);
+        String moedaText = String.valueOf(moedas);
+        GlyphLayout layout = new GlyphLayout(font, moedaText);
+        var x = 20;
+        var y = (GET_ALTURA_TELA_BASE() - layout.height) - 60;
+        var yC = (GET_ALTURA_TELA_BASE() - layout.height) - 90;
+
+        desenharTextura.desenhar(batch, coin, null, x, yC, 48);
+        desenharTexto.desenhar(batch, shapeRenderer, cor, moedaText, font, x + 70, y, 10, true);
     }
 
     private void desenharLevel(Batch batch, int levelAtual, ShapeRenderer shapeRenderer) {
-        GlyphLayout layout = new GlyphLayout();
-        layout.setText(font, "Level: " + levelAtual);
+        Color cor = new Color(0f / 255f, 100f / 255f, 0f / 255f, opacidadeHud);
+        String texto = "Level: " + levelAtual;
+        GlyphLayout layout = new GlyphLayout(font, texto);
+        var x = 20;
+        var y = (GET_ALTURA_TELA_BASE() - layout.height) - 10;
 
-        float screenWidth = hudViewport.getWorldWidth();
-        float screenHeight = hudViewport.getWorldHeight();
-        float ajusteAltura = layout.height * 2 * scale;
-
-        float posX = screenWidth / 8 * scale;
-        float posY = screenHeight - ajusteAltura;
-
-        batch.end(); // fecha o batch antes de usar ShapeRenderer
-        shapeRenderer.setProjectionMatrix(hudCamera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(new Color(0f / 255f, 100f / 255f, 0f / 255f, 1f));
-
-        float padding = 8 * scale; // Aplicar escala ao padding
-        shapeRenderer.rect(
-            posX - padding,
-            posY - layout.height - padding,
-            layout.width + padding * 2,
-            layout.height + padding * 2
-        );
-        shapeRenderer.end();
-        batch.begin(); // volta para desenhar com o batch
-
-        font.draw(batch, layout, posX, posY);
+        desenharTexto.desenhar(batch, shapeRenderer, cor, texto, font, x + 70, y, 10, true);
     }
 
-    private void desenharDirecaoOlhar(Batch batch, boolean olhandoEsquerda) {
+    private void desenharCoordenadas(Batch batch, ShapeRenderer shapeRenderer, int x, int y) {
+        String coords = "X: " + x + " Y: " + y;
+        GlyphLayout layout = new GlyphLayout(font, coords);
+        Color corFundo = new Color();
+        var xW = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
+        var yH = (GET_ALTURA_TELA_BASE() - layout.height) - 10;
+
+        desenharTexto.desenhar(batch, shapeRenderer, corFundo, coords, font, xW, yH, 0, false);
+    }
+
+    private void desenharDirecaoOlhar(Batch batch, ShapeRenderer shapeRenderer, boolean olhandoEsquerda) {
         String direcaoOlhar = olhandoEsquerda ? "esquerda" : "direita";
         String olhando = "Olhando para: " + direcaoOlhar;
-        layoutOlhando.setText(font, olhando);
+        GlyphLayout layout = new GlyphLayout(font, olhando);
+        Color corFundo = new Color();
+        var x = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE() - layout.height) - 40;
 
-        float screenWidth = hudViewport.getWorldWidth();
-        float screenHeight = hudViewport.getWorldHeight();
-
-        float posX = screenWidth - layoutOlhando.width - 10 * scale; // Aplicar escala à posição
-        float posY = screenHeight - 40 * scale; // Aplicar escala à posição
-
-        font.draw(batch, layoutOlhando, posX, posY);
+        desenharTexto.desenhar(batch, shapeRenderer, corFundo, olhando, font, x, y, 0, false);
     }
 
-    public void mostrarMensagemEmBaixo(Batch batch, String mensagem) {
+    private void desenharScale(Batch batch, ShapeRenderer shapeRenderer) {
         float screenW = Gdx.graphics.getWidth();
         float screenH = Gdx.graphics.getHeight();
-        float baseW = 1920f;
-        float baseH = 1080f;
-        scale = Math.min(screenW / baseW, screenH / baseH);
+        float scale = Math.min(screenW / GET_LARGURA_TELA_BASE(), screenH / GET_ALTURA_TELA_BASE());
+        String scaleText = "Scale: " + String.format("%.2f", scale);
+        GlyphLayout layout = new GlyphLayout(font, scaleText);
+        Color corFundo = new Color();
+        var x = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE() - layout.height) - 70;
+
+        desenharTexto.desenhar(batch, shapeRenderer, corFundo, scaleText, font, x, y, 0, false);
+    }
+
+    public void mostrarMensagemEmBaixo(Batch batch, ShapeRenderer shapeRenderer, String mensagem) {
+        GlyphLayout layout = new GlyphLayout(font, mensagem);
+        Color corFundo = new Color();
+        var x = (GET_LARGURA_TELA_BASE() - layout.width) / 2f;
 
         batch.setProjectionMatrix(hudCamera.combined);
-
         batch.begin();
-        GlyphLayout layout = new GlyphLayout();
-        layout.setText(font, mensagem);
-
-        float screenWidth = hudViewport.getWorldWidth();
-        float screenHeight = hudViewport.getWorldHeight();
-
-        float posX = (screenWidth - layout.width) / 2f;
-        float posY = (screenHeight + layout.height) / 8f * scale; // Aplicar escala à posição
-
-        font.draw(batch, layout, posX, posY);
+        desenharTexto.desenhar(batch, shapeRenderer, corFundo, mensagem, font, x, 100, 10, true);
         batch.end();
     }
 

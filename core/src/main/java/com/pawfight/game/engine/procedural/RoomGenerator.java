@@ -7,11 +7,12 @@ import java.util.*;
 public class RoomGenerator {
     private final Random random = new Random();
     private final Map<String, Room> roomMap = new HashMap<>();
-    private final int tentativasMax = 30;
+    private int tentativasMax;
 
 
-    public List<Room> generate(int numRooms, int extras) {
+    public List<Room> generate(int numRooms, int extras, int tentativasMax) {
         roomMap.clear();
+        this.tentativasMax = tentativasMax;
 
         List<Room> response = gerar(numRooms, extras);
         int tentativas = 0;
@@ -20,7 +21,7 @@ public class RoomGenerator {
             roomMap.clear();
             response = gerar(numRooms, extras);
             tentativas++;
-            Gdx.app.log("RoomGenerator", "Regenerando mundo porque extras não estão conectados à cadeia principal... (tentativa " + tentativas + ")");
+            Gdx.app.log("RoomGenerator", "Regenerando mundo porque extras não estão conectados corretamente... (tentativa " + tentativas + ")");
         }
 
         return response;
@@ -35,8 +36,10 @@ public class RoomGenerator {
             Room extra = rooms.get(i);
             boolean conectado = false;
 
-            if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest()) {
+            if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest() && spawn.hasSouth()) {
                 return false; // spawn isolado
+            } else if (!typeInimigo(spawn, numRooms)) {
+                return false; // spawn incorreto
             }
 
             // checa se alguma conexão do extraleva a uma sala principal
@@ -53,6 +56,32 @@ public class RoomGenerator {
         }
         return true;
     }
+
+    private boolean typeInimigo(Room room, int numRooms) {
+        for (Direction dir : Direction.values()) {
+            Room vizinho = room.getRoom(dir);
+            if (vizinho != null && vizinho.getType() == RoomType.INIMIGOS) {
+                if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
+            }
+        }
+        return false;
+    }
+
+
+    private boolean verifyTypeInimigo(int index, int numRooms) {
+        return index >= 0 && index < numRooms;
+    }
+
+    private void conectar(Room base, Room next, Direction dir) {
+        switch (dir) {
+            case NORTH -> { base.connectNorth(next); next.connectSouth(base); }
+            case SOUTH -> { base.connectSouth(next); next.connectNorth(base); }
+            case EAST  -> { base.connectEast(next); next.connectWest(base); }
+            case WEST  -> { base.connectWest(next); next.connectEast(base); }
+        }
+    }
+
+
     private boolean saoConectados(Room a, Room b) {
         if (a.getX() == b.getX() && a.getY() == b.getY() + 1 && a.hasSouth() && b.hasNorth()) return true;
         if (a.getX() == b.getX() && a.getY() == b.getY() - 1 && a.hasNorth() && b.hasSouth()) return true;
@@ -61,7 +90,7 @@ public class RoomGenerator {
     }
 
 
-    public List<Room> gerar(int numRooms,int extras) {
+    public List<Room> gerar(int numRooms, int extras) {
         List<Room> rooms = new ArrayList<>();
         Room spawn = new Room(0, 0, RoomType.SPAWN);
         rooms.add(spawn);
@@ -75,35 +104,21 @@ public class RoomGenerator {
             int tentativasLocal = 0;
 
             while (next == null && tentativasLocal < tentativasMax) {
-                int dir = random.nextInt(4);
+                Direction dir = Direction.values()[random.nextInt(Direction.values().length)];
                 int nx = base.getX();
                 int ny = base.getY();
 
-                if (dir == 0) ny++;
-                else if (dir == 1) ny--;
-                else if (dir == 2) nx++;
-                else nx--;
+                switch (dir) {
+                    case NORTH -> ny++;
+                    case SOUTH -> ny--;
+                    case EAST  -> nx++;
+                    case WEST  -> nx--;
+                }
 
                 String key = nx + "," + ny;
                 if (!roomMap.containsKey(key)) {
                     next = new Room(nx, ny, type);
-
-                    if (dir == 0) {
-                        base.connectNorth();
-                        next.connectSouth();
-                    }
-                    if (dir == 1) {
-                        base.connectSouth();
-                        next.connectNorth();
-                    }
-                    if (dir == 2) {
-                        base.connectEast();
-                        next.connectWest();
-                    }
-                    if (dir == 3) {
-                        base.connectWest();
-                        next.connectEast();
-                    }
+                    conectar(base, next, dir);
 
                     rooms.add(next);
                     roomMap.put(key, next);
@@ -120,35 +135,22 @@ public class RoomGenerator {
         int tentativasTreasure = 0;
 
         while (treasure == null && tentativasTreasure < tentativasMax) {
-            int dir = random.nextInt(4);
+            Direction dir = Direction.values()[random.nextInt(Direction.values().length)];
+
             int nx = boss.getX();
             int ny = boss.getY();
 
-            if (dir == 0) ny++;
-            else if (dir == 1) ny--;
-            else if (dir == 2) nx++;
-            else nx--;
+            switch (dir) {
+                case NORTH -> ny++;
+                case SOUTH -> ny--;
+                case EAST  -> nx++;
+                case WEST  -> nx--;
+            }
 
             String key = nx + "," + ny;
             if (!roomMap.containsKey(key)) {
                 treasure = new Room(nx, ny, RoomType.TESOURO);
-
-                if (dir == 0) {
-                    boss.connectNorth();
-                    treasure.connectSouth();
-                }
-                if (dir == 1) {
-                    boss.connectSouth();
-                    treasure.connectNorth();
-                }
-                if (dir == 2) {
-                    boss.connectEast();
-                    treasure.connectWest();
-                }
-                if (dir == 3) {
-                    boss.connectWest();
-                    treasure.connectEast();
-                }
+                conectar(boss, treasure, dir);
 
                 rooms.add(treasure);
                 roomMap.put(key, treasure);
@@ -167,36 +169,22 @@ public class RoomGenerator {
             int tentativasLocal = 0;
 
             while (next == null && tentativasLocal < tentativasMax) {
-                int dir = random.nextInt(4);
+                Direction dir = Direction.values()[random.nextInt(Direction.values().length)];
                 int nx = base.getX();
                 int ny = base.getY();
 
-                if (dir == 0) ny++;
-                else if (dir == 1) ny--;
-                else if (dir == 2) nx++;
-                else nx--;
+                switch (dir) {
+                    case NORTH -> ny++;
+                    case SOUTH -> ny--;
+                    case EAST  -> nx++;
+                    case WEST  -> nx--;
+                }
 
                 String key = nx + "," + ny;
                 if (!roomMap.containsKey(key)) {
                     RoomType type = tipos[random.nextInt(tipos.length)];
                     next = new Room(nx, ny, type);
-
-                    if (dir == 0) {
-                        base.connectNorth();
-                        next.connectSouth();
-                    }
-                    if (dir == 1) {
-                        base.connectSouth();
-                        next.connectNorth();
-                    }
-                    if (dir == 2) {
-                        base.connectEast();
-                        next.connectWest();
-                    }
-                    if (dir == 3) {
-                        base.connectWest();
-                        next.connectEast();
-                    }
+                    conectar(base, next, dir);
 
                     rooms.add(next);
                     roomMap.put(key, next);

@@ -18,7 +18,7 @@ import com.pawfight.game.engine.save.SaveDataPlayer;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.StatusMenu;
-import com.pawfight.game.engine.design.AnimationEngine;
+import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.engine.phisics.DrawHitBox;
@@ -338,6 +338,10 @@ public abstract class PlayerTemplate {
         pontosDisponiveis += 1;
     }
 
+    public void moedaUp(int moedasGanha) {
+        moedas += moedasGanha;
+    }
+
     public void checarColisao() {
         checarColisao.checarColisaoSeparadoEixo(listColisores, this);
     }
@@ -563,5 +567,9 @@ public abstract class PlayerTemplate {
 
     public List<TirosTamplate> getTiros() {
         return tiros;
+    }
+
+    public int getMoedas() {
+        return moedas;
     }
 }

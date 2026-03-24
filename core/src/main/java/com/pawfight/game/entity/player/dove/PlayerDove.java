@@ -28,7 +28,7 @@ public class PlayerDove extends PlayerTemplate {
 
         TAMANHO_PX = 32;
 
-        HITBOX_SIZE = 20;
+        HITBOX_SIZE = 15;
         HITBOX_OFFSET_Y = 0;
         HITBOX_OFFSET_X = -5;
     }

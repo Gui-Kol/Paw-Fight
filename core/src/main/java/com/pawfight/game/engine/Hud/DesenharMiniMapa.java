@@ -67,7 +67,7 @@ public class DesenharMiniMapa {
         }
 
         int largura = (maxX - minX + 1) * SEPARACAO + 40;
-        int altura = (maxY - minY + 1) * SEPARACAO + 40;
+        int altura = (maxY - minY + 1) * SEPARACAO + 10;
 
         float rectX = offsetX + minX * SEPARACAO - 20;
         float rectY = offsetY + minY * SEPARACAO - 20;

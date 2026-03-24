@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.design.AnimationEngine;
+import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -202,6 +202,7 @@ public abstract class EnemyTemplate {
         this.vida -= forca;
         if (vida <= 0) {
             morto = true;
+            player.moedaUp(moedasMorte());
         } else {
             hurt = true;
             hurtTime = 0f;
@@ -234,6 +235,8 @@ public abstract class EnemyTemplate {
         }
         return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
     }
+
+    protected abstract int moedasMorte();
 
     public abstract void draw(SpriteBatch batch, ShapeRenderer shapeRenderer);
 

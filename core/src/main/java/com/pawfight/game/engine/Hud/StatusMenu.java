@@ -16,6 +16,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.font.FontFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
+import static com.pawfight.game.engine.CommunVariable.*;
+
 public class StatusMenu {
     private final Stage stage;
     private final PlayerTemplate player;
@@ -28,7 +30,6 @@ public class StatusMenu {
 
     float centerX;
     float centerY;
-    private final float scale; // Adicionado para escala proporcional
 
     private final Texture normalTexture;
     private final Texture hoverTexture;
@@ -38,16 +39,11 @@ public class StatusMenu {
     public StatusMenu(PlayerTemplate player) {
         this.player = player;
 
-        // Calcular escala proporcional baseada na resolução atual vs base 1920x1080
-        float screenW = Gdx.graphics.getWidth();
-        float screenH = Gdx.graphics.getHeight();
-        float baseW = 1920f;
-        float baseH = 1080f;
-        scale = Math.min(screenW / baseW, screenH / baseH);
+        var scale = GET_SCALE();
 
         // Mudar para FitViewport para manter proporções
         // Adicionado para viewport proporcional
-        Viewport stageViewport = new FitViewport(1920, 1080);
+        Viewport stageViewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
         stage = new Stage(stageViewport);
         Gdx.input.setInputProcessor(stage);
 
@@ -64,20 +60,21 @@ public class StatusMenu {
         musculo = new Texture("Hud/musculo.png");
         background = new Image(backgroundTexture);
 
-        centerX = 1920 / 2f; // Usar coordenadas do viewport base
-        centerY = 1080 / 2f;
+        centerX = GET_LARGURA_TELA_BASE() / 2f; // Usar coordenadas do viewport base
+        centerY = GET_ALTURA_TELA_BASE() / 2f;
 
         criarMenu();
     }
 
     public void criarMenu() {
         stage.clear();
+        var scale = GET_SCALE();
 
         // Fundo centralizado e escalado
         background.setSize(600 * scale, 500 * scale);
         background.setPosition(
-            (1920 - background.getWidth()) / 2f,
-            (1080 - background.getHeight()) / 2f
+            (GET_LARGURA_TELA_BASE() - background.getWidth()) / 2f,
+            (GET_ALTURA_TELA_BASE() - background.getHeight()) / 2f
         );
         stage.addActor(background);
 
@@ -141,6 +138,7 @@ public class StatusMenu {
     }
 
     public void draw(Batch batch, OrthographicCamera hudCamera) {
+        var scale = GET_SCALE();
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
         batch.setProjectionMatrix(hudCamera.combined);
@@ -155,7 +153,7 @@ public class StatusMenu {
         // Atualiza o viewport do Stage para manter proporção
         stage.getViewport().update(width, height, true);
 
-        // Centraliza a câmera do Stage
+        // Centraliza a camera do Stage
         stage.getCamera().position.set(
             stage.getViewport().getWorldWidth() / 2f,
             stage.getViewport().getWorldHeight() / 2f,
@@ -167,21 +165,14 @@ public class StatusMenu {
         centerX = stage.getViewport().getWorldWidth() / 2f;
         centerY = stage.getViewport().getWorldHeight() / 2f;
 
-        // Recalcula escala proporcional
-        float baseW = 1920f;
-        float baseH = 1080f;
-        float scaleX = width / baseW;
-        float scaleY = height / baseH;
-        float newScale = Math.min(scaleX, scaleY);
+        var newScale = GET_SCALE();
 
-        // Atualiza tamanho e posição do background
         background.setSize(600 * newScale, 500 * newScale);
         background.setPosition(
             (stage.getViewport().getWorldWidth() - background.getWidth()) / 2f,
             (stage.getViewport().getWorldHeight() - background.getHeight()) / 2f
         );
 
-        // Recria o menu com nova escala
         criarMenu();
     }
 

@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.LayerRenderer;
-import com.pawfight.game.engine.design.ScreenTransition;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.engine.procedural.*;
 import com.pawfight.game.entity.enemy.EnemySkeleton;
@@ -84,7 +84,7 @@ public class MundoAreia extends WorldTemplate {
 
     private void gerarRooms() {
         try {
-            rooms = roomGenerator.generate(10, 5);
+            rooms = roomGenerator.generate(10, 5,100);
             if (rooms == null || rooms.isEmpty()) {
                 throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
             }

@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.design;
+package com.pawfight.game.engine.design.desenhar;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;

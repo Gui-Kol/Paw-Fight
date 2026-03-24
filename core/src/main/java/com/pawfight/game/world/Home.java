@@ -18,8 +18,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.CreateButton;
-import com.pawfight.game.engine.design.ScreenTransition;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.world.base.Base;
+
+import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
 
 public class Home implements Screen {
     private final ScreenTransition screenTransition;
@@ -70,7 +73,7 @@ public class Home implements Screen {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
 
-        stage = new Stage(new FitViewport(1920, 1080), batch);
+        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE()), batch);
         stage.addActor(backgroundImage);
 
         Gdx.input.setInputProcessor(stage);

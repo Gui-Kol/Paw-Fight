@@ -1,8 +1,9 @@
-package com.pawfight.game.engine.design;
+package com.pawfight.game.engine.design.animation;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.pawfight.game.engine.design.SpriteDefinition;
 
 public class AnimationEngine {
     public Animation<TextureRegion> animar(SpriteDefinition spriteDefinition) {

@@ -14,6 +14,8 @@ import com.pawfight.game.entity.player.dove.PlayerDove;
 
 import java.util.Random;
 
+import static com.pawfight.game.engine.CommunVariable.*;
+
 public class EscolherPersonagem {
     private ExibirDadosPersonagem exibirDadosPersonagem;
     private PlayerTemplate personagemPreview;
@@ -41,7 +43,7 @@ public class EscolherPersonagem {
     public EscolherPersonagem(PawFight game) {
         this.game = game;
         batch = new SpriteBatch();
-        viewport = new FitViewport(1920, 1080);
+        viewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
 
         personagens = new Texture[]{
             new Texture("entitys/player/selecao/black_cat.png"),
@@ -134,42 +136,34 @@ public class EscolherPersonagem {
     }
 
     public void draw() {
-        float worldW = viewport.getWorldWidth();
-        float worldH = viewport.getWorldHeight();
-
-        float baseW = 1920f;
-        float baseH = 1080f;
-
-        float scaleX = worldW / baseW;
-        float scaleY = worldH / baseH;
-        float scale = Math.min(scaleX, scaleY);
+        var scale = GET_SCALE();
 
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
         // Background
-        batch.draw(backGroud, bgX1, 0, worldW, worldH);
-        batch.draw(backGroud, bgX2, 0, worldW, worldH);
+        batch.draw(backGroud, bgX1, 0, GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
+        batch.draw(backGroud, bgX2, 0, GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
 
         // Personagem centralizado
         Texture personagem = personagens[personagemAtual];
         float largura = 200 * scale;
         float altura = 200 * scale;
-        float playerX = (worldW - largura) / 2f;
-        float playerY = (worldH - altura) / 2f;
+        float playerX = (GET_LARGURA_TELA_BASE() - largura) / 2f;
+        float playerY = (GET_ALTURA_TELA_BASE() - altura) / 2f;
         batch.draw(personagem, playerX, playerY, largura, altura);
 
         // Nuvem nos pés do player
         float nuvemW = (nuvem.getWidth() * scale) * 1.5f;
         float nuvemH = (nuvem.getHeight() * scale) * 1.5f;
-        float nuvemX = (playerX - (nuvemW - largura) / 2f) * 1.1f; // centraliza com player
-        float nuvemY = (playerY - nuvemH) + playerY * 0.22f;                  // pés do player
+        float nuvemX = (playerX - (nuvemW - largura) / 2f) + 100 * scale; // centraliza com player
+        float nuvemY = (playerY - nuvemH) + 100 * scale;                  // pés do player
         batch.draw(nuvem, nuvemX, nuvemY, nuvemW, nuvemH);
 
         batch.end();
 
         // HUD à esquerda do player
-        exibirDadosPersonagem.draw(batch, personagemPreview, playerX, playerY, scale);
+        exibirDadosPersonagem.draw(batch, personagemPreview, playerX, playerY);
     }
 
     public PlayerTemplate getPlayerEscolhido() {

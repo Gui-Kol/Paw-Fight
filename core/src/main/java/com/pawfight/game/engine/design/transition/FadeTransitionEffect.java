@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.design;
+package com.pawfight.game.engine.design.transition;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;

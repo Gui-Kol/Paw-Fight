@@ -12,12 +12,15 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.design.ScreenTransition;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.engine.save.SaveDataPlayer;
 import com.pawfight.game.engine.save.SaveGame;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.Home;
 import com.pawfight.game.world.WorldTemplate;
+
+import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
 
 public class PawFight extends Game {
     private final PawFight game = this;
@@ -36,9 +39,8 @@ public class PawFight extends Game {
         batch = new SpriteBatch();
         image = new Texture("menu/BackGroundPawFight.png");
 
-        // Camera e viewport base 1920x1080
         camera = new OrthographicCamera();
-        viewport = new FitViewport(1920, 1080, camera);
+        viewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE(), camera);
 
         // MUITO IMPORTANTE: posicionar a camera no centro do mundo
         camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);

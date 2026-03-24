@@ -50,6 +50,11 @@ public class EnemySkeleton extends EnemyTemplate{
     }
 
     @Override
+    protected int moedasMorte() {
+        return 1;
+    }
+
+    @Override
     public void ataqueBasico() {
         if (hitBox.overlaps(player.getHitBox())) {
             player.receberDano(forca);

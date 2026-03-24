@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
+import static com.pawfight.game.engine.CommunVariable.GET_SCALE;
+
 public class ExibirDadosPersonagem {
     private BitmapFont font;
     private Texture coracao;
@@ -34,8 +36,9 @@ public class ExibirDadosPersonagem {
         shapeRenderer = new ShapeRenderer();
     }
 
-    public void draw(SpriteBatch batch, PlayerTemplate player, float playerX, float playerY, float scale) {
+    public void draw(SpriteBatch batch, PlayerTemplate player, float playerX, float playerY) {
         if (player == null) return;
+        var scale = GET_SCALE();
 
         float offsetX = playerX - 400 * scale; // desloca para a esquerda do player
         float centerY = playerY + 100 * scale; // altura alinhada ao player

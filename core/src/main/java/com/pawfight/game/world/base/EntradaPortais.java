@@ -5,11 +5,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.Hud;
-import com.pawfight.game.engine.design.ScreenTransition;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.MundoAreia;
@@ -26,10 +27,10 @@ public class EntradaPortais {
         this.hud = hud;
     }
 
-    public boolean entrarPortal(PlayerTemplate player, List<Rectangle> entradaPortalAreia, SpriteBatch batch) {
+    public boolean entrarPortal(PlayerTemplate player, List<Rectangle> entradaPortalAreia, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (ChecarColisao.houveColisao(player.getHitBox(), entradaPortalAreia)) {
             String mensagem = "Aperte ENTER para entrar";
-            hud.mostrarMensagemEmBaixo(batch, mensagem);
+            hud.mostrarMensagemEmBaixo(batch,shapeRenderer ,mensagem);
 
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                 entrouPortal = true;
@@ -38,7 +39,7 @@ public class EntradaPortais {
         return entrouPortal;
     }
 
-    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game, OrthographicCamera camera, Viewport viewport) {
+    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, ShapeRenderer shapeRenderer,PawFight game, OrthographicCamera camera, Viewport viewport) {
         try {
             if (player == null || entradaPortal == null || batch == null || game == null || screenTransition == null) {
                 Gdx.app.error("EntradaPortais", "Objeto null em entrarPortalAreia.");
@@ -47,7 +48,7 @@ public class EntradaPortais {
 
             batch.setProjectionMatrix(hud.getHudCamera().combined);
 
-            if (entrarPortal(player, entradaPortal, batch)) {
+            if (entrarPortal(player, entradaPortal, batch,shapeRenderer)) {
                 // Reseta estado do player
                 player.clearList();
 
