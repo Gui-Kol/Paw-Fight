@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.procedural;
+package com.pawfight.game.engine.procedural.room;
 
 public enum RoomType {
     BOSS,

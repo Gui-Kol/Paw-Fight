@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "TESOURO.tmx",
+    "activeFile": "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "Todos os Ficheiros (*)",
@@ -24,11 +24,11 @@
             "scaleInDock": 1
         },
         "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx": {
-            "scale": 0.31468749999999995,
-            "selectedLayer": 0,
+            "scale": 4,
+            "selectedLayer": 6,
             "viewCenter": {
-                "x": 1598.4111221449855,
-                "y": 1201.1916583912614
+                "x": 584.75,
+                "y": 56
             }
         },
         "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx#Agua": {
@@ -202,17 +202,17 @@
     "map.tileWidth": 16,
     "map.width": 60,
     "openFiles": [
-        "TESOURO.tmx"
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx"
     ],
     "project": "mundo_areia.tiled-project",
     "recentFiles": [
+        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
         "TESOURO.tmx",
         "INIMIGOS.tmx",
         "mundo_areia1.tmx",
         "default_room.tmx",
         "base.tmx",
-        "Solo.tsx",
-        "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx"
+        "Solo.tsx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {

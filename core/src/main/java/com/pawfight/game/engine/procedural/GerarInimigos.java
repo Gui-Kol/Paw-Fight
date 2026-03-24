@@ -1,61 +1,110 @@
 package com.pawfight.game.engine.procedural;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Timer;
+import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.entity.bosses.BossesTemplate;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GerarInimigos {
     private final List<EnemyTemplate> listaInimigosFortes;
     private final List<BossesTemplate> listaBosses;
+    private final Random random;
 
     public GerarInimigos() {
         listaInimigosFortes = new ArrayList<>();
         listaBosses = new ArrayList<>();
+        random = new Random();
     }
 
-    public List<EnemyTemplate> inimigos(EnemyTemplate inimigoBase, int qntMax, int qntMin, List<Rectangle> regioesSpawn) {
+    private List<EnemyTemplate> inimigos(List<EnemyTemplate> modelosDisponiveis, boolean forte,
+                                        int qntMax, int qntMin, List<Rectangle> regioesSpawn) {
         List<EnemyTemplate> novosInimigos = new ArrayList<>();
 
-        int quantidade = qntMin + (int)(Math.random() * (qntMax - qntMin + 1));
+        if (modelosDisponiveis == null || modelosDisponiveis.isEmpty() || regioesSpawn == null || regioesSpawn.isEmpty()) {
+            return novosInimigos; // retorna vazio se não há modelos ou regiões
+        }
+
+        int quantidade = qntMin + random.nextInt(qntMax - qntMin + 1);
 
         while (novosInimigos.size() < quantidade) {
-            // Escolhe uma região aleatória da lista
-            Rectangle regiao = regioesSpawn.get((int)(Math.random() * regioesSpawn.size()));
+            // Escolhe modelo aleatório
+            EnemyTemplate modelo = modelosDisponiveis.get(random.nextInt(modelosDisponiveis.size()));
 
-            int x = (int)(regiao.x + Math.random() * regiao.width);
-            int y = (int)(regiao.y + Math.random() * regiao.height);
+            // Escolhe região aleatória
+            Rectangle regiao = regioesSpawn.get(random.nextInt(regioesSpawn.size()));
+            int x = (int) (regiao.x + random.nextFloat() * regiao.width);
+            int y = (int) (regiao.y + random.nextFloat() * regiao.height);
 
-            EnemyTemplate novoInimigo = inimigoBase.cloneEnemy();
+            // Clona inimigo base e posiciona
+            EnemyTemplate novoInimigo = modelo.cloneEnemy();
             novoInimigo.setLocation(x, y);
+            if (forte) {
+                novoInimigo.setForte(true);
+                listaInimigosFortes.add(novoInimigo);
+            }
 
             novosInimigos.add(novoInimigo);
         }
-
 
         clear();
         return novosInimigos;
     }
 
+    public List<EnemyTemplate> gerarInimigos(WorldTemplate world) {
+        Room currentRoom = world.getCurrentRoom();
+        TiledMap map = world.getMap();
+        TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
+        String nomeClasseOrigem = world.getWorldName();
+        GerarInimigos gerarInimigos = world.getGerarInimigos();
 
-    public List<EnemyTemplate> inimigosFortes(){
+        if (currentRoom == null) {
+            Gdx.app.error(nomeClasseOrigem, "gerarInimigos() chamado mas currentRoom é null!");
+            return new ArrayList<>();
+        }
+
+        List<Rectangle> regiaoSpawn = tilemapHitboxFactory.createHitboxes(map, "Inimigos");
+        if (regiaoSpawn == null) {
+            Gdx.app.error(nomeClasseOrigem, "não existe região para gerar inimigos!");
+            return null;
+        }
+        List<EnemyTemplate> inimigosGerados = new ArrayList<>();
+
+        List<EnemyTemplate> listarModeloEnemy = world.getInimigos();
+        switch (currentRoom.getType()) {
+            case INIMIGOS -> {
+                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, false, 10, 5, regiaoSpawn));
+            }
+            case INIMIGOS_FORTES -> {
+                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, true, 7, 3, regiaoSpawn));
+            }
+        }
+        return inimigosGerados;
+    }
+
+    public List<EnemyTemplate> getInimigosFortes() {
         return listaInimigosFortes;
     }
-    public List<BossesTemplate> bosses(){
+
+    public List<BossesTemplate> getBosses() {
         return listaBosses;
     }
 
-    public void clear(){
+    private void clear() {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
                 listaInimigosFortes.clear();
                 listaBosses.clear();
             }
-        },1.5f);
+        }, 1.5f);
     }
-
 }

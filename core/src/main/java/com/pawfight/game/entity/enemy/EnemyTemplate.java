@@ -260,4 +260,8 @@ public abstract class EnemyTemplate {
     public boolean isMorto() {
         return morto;
     }
+
+    public void setForte(boolean forte) {
+        this.forte = forte;
+    }
 }

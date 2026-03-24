@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.engine.font.FontFactory;
-import com.pawfight.game.engine.procedural.Room;
-import com.pawfight.game.engine.procedural.RoomType;
+import com.pawfight.game.engine.procedural.room.Room;
+import com.pawfight.game.engine.procedural.room.RoomType;
 
 import java.util.Map;
 import java.util.Set;

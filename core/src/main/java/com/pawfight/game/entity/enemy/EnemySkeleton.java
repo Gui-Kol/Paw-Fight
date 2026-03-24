@@ -34,7 +34,7 @@ public class EnemySkeleton extends EnemyTemplate{
 
     @Override
     public EnemyTemplate cloneEnemy() {
-        return new EnemySkeleton(dx, dy, forte, player);
+        return new EnemySkeleton(dx, dy, false, player);
     }
 
     @Override

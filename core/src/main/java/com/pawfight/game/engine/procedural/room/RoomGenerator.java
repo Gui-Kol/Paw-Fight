@@ -1,6 +1,7 @@
-package com.pawfight.game.engine.procedural;
+package com.pawfight.game.engine.procedural.room;
 
 import com.badlogic.gdx.Gdx;
+import com.pawfight.game.world.WorldTemplate;
 
 import java.util.*;
 
@@ -9,8 +10,25 @@ public class RoomGenerator {
     private final Map<String, Room> roomMap = new HashMap<>();
     private int tentativasMax;
 
+    public void gerarRooms(WorldTemplate world) {
+        try {
+            world.setRooms(generate(10, 5, 100));
 
-    public List<Room> generate(int numRooms, int extras, int tentativasMax) {
+            if (world.getRooms() == null || world.getRooms().isEmpty()) {
+                throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
+            }
+            world.setCurrentRoom(world.getRooms().get(0));
+            world.addSalasVisitadas(world.getCurrentRoom().getX() + "," + world.getCurrentRoom().getY());
+            Gdx.app.log(world.getWorldName(), "Salas geradas com sucesso: " + world.getRooms().size());
+        } catch (Exception e) {
+            Gdx.app.error(world.getWorldName(), "Erro ao gerar salas: " + e.getMessage(), e);
+            world.setCurrentRoom(null);
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private List<Room> generate(int numRooms, int extras, int tentativasMax) {
         roomMap.clear();
         this.tentativasMax = tentativasMax;
 
@@ -32,15 +50,15 @@ public class RoomGenerator {
         Set<Room> principais = new HashSet<>(rooms.subList(0, numRooms));
         Room spawn = rooms.get(0);
 
+        if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest() && spawn.hasSouth()) {
+            return false; // spawn isolado
+        } else if (!typeInimigo(spawn, numRooms)) {
+            return false; // spawn incorreto
+        }
+
         for (int i = numRooms; i < rooms.size(); i++) {
             Room extra = rooms.get(i);
             boolean conectado = false;
-
-            if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest() && spawn.hasSouth()) {
-                return false; // spawn isolado
-            } else if (!typeInimigo(spawn, numRooms)) {
-                return false; // spawn incorreto
-            }
 
             // checa se alguma conexão do extraleva a uma sala principal
             for (Room principal : principais) {
@@ -90,7 +108,7 @@ public class RoomGenerator {
     }
 
 
-    public List<Room> gerar(int numRooms, int extras) {
+    private List<Room> gerar(int numRooms, int extras) {
         List<Room> rooms = new ArrayList<>();
         Room spawn = new Room(0, 0, RoomType.SPAWN);
         rooms.add(spawn);

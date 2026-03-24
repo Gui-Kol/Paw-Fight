@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.procedural;
+package com.pawfight.game.engine.procedural.room;
 
 public class Room {
     private final int x, y;

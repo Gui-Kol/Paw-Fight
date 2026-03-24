@@ -18,9 +18,14 @@ import com.pawfight.game.engine.design.desenhar.DrawList;
 import com.pawfight.game.engine.phisics.DanoTiro;
 import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.GerarInimigos;
+import com.pawfight.game.engine.procedural.room.Room;
+import com.pawfight.game.engine.procedural.room.RoomGenerator;
+import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
+import java.util.Set;
 
 public abstract class WorldTemplate implements Screen {
 
@@ -35,6 +40,11 @@ public abstract class WorldTemplate implements Screen {
     protected PlayerTemplate player;
 
     // Mundo
+    protected List<Room> rooms;
+    protected RoomGenerator roomGenerator;
+    protected Room currentRoom;
+    protected boolean podeEntrarPorta;
+    protected Set<String> salasVisitadas;
     protected DrawHitBox drawHitBox;
     protected DanoTiro danoTiro;
     protected DrawList drawList;
@@ -45,6 +55,9 @@ public abstract class WorldTemplate implements Screen {
     protected Music backMusic;
     protected OrthographicCamera camera;
     protected Viewport viewport;
+    protected GerarInimigos gerarInimigos;
+    protected List<EnemyTemplate> listaInimigos;
+
 
     public WorldTemplate(PawFight game, String backgroundPath, String musicPath, OrthographicCamera camera, Viewport viewport) {
         this.game = game;
@@ -60,6 +73,7 @@ public abstract class WorldTemplate implements Screen {
         drawHitBox = new DrawHitBox();
         danoTiro = new DanoTiro();
     }
+
 
     public void setPlayer(PlayerTemplate player) {
         this.player = player;
@@ -116,9 +130,19 @@ public abstract class WorldTemplate implements Screen {
 
     protected abstract void renderLayersUp();
 
-    protected abstract String getMapPath();
+    public abstract String getMapPath();
 
     protected abstract void checkPortals();
+
+    public abstract void logRoomInfo(Room room);
+
+    public abstract void gerarObjetos();
+
+    public abstract String getWorldName();
+
+    public abstract List<EnemyTemplate> getInimigos();
+
+    public abstract List<EnemyTemplate> getBosses();
 
     @Override
     public void resize(int width, int height) {
@@ -154,7 +178,70 @@ public abstract class WorldTemplate implements Screen {
         if (player != null) player.dispose();
     }
 
+    public boolean currentRoomFoiVisitada() {
+        Room currentRoom = getCurrentRoom();
+
+        String key = currentRoom.getX() + "," + currentRoom.getY();
+        return getSalasVisitadas().contains(key);
+    }
+
     public PlayerTemplate getPlayer() {
         return player;
+    }
+
+    public Set<String> getSalasVisitadas() {
+        return salasVisitadas;
+    }
+
+    public TilemapHitboxFactory getTilemapHitboxFactory() {
+        return tilemapHitboxFactory;
+    }
+
+    public LayerRenderer getLayerRenderer() {
+        return layerRenderer;
+    }
+
+    public TiledMap getMap() {
+        return map;
+    }
+
+    public boolean isPodeEntrarPorta() {
+        return podeEntrarPorta;
+    }
+
+    public Room getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public RoomGenerator getRoomGenerator() {
+        return roomGenerator;
+    }
+
+    public GerarInimigos getGerarInimigos() {
+        return gerarInimigos;
+    }
+
+    public List<EnemyTemplate> getListaInimigos() {
+        return listaInimigos;
+    }
+
+    public void setLayerRenderer(LayerRenderer layerRenderer) {
+        this.layerRenderer = layerRenderer;
+    }
+
+    public void setCurrentRoom(Room currentRoom) {
+        this.currentRoom = currentRoom;
+    }
+
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
+
+    public void addSalasVisitadas(String newRoom) {
+        salasVisitadas.add(newRoom);
     }
 }

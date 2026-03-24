@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.design.transition.ScreenTransition;
+import com.pawfight.game.engine.procedural.room.Room;
+import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.List;
@@ -27,7 +29,7 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    protected String getMapPath() {
+    public String getMapPath() {
         return "world/base/base.tmx";
     }
 
@@ -92,6 +94,31 @@ public class Base extends WorldTemplate {
         } catch (Exception e) {
             Gdx.app.error("Base", "Erro ao verificar portais: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void logRoomInfo(Room room) {
+
+    }
+
+    @Override
+    public void gerarObjetos() {
+
+    }
+
+    @Override
+    public String getWorldName() {
+        return "Base";
+    }
+
+    @Override
+    public List<EnemyTemplate> getInimigos() {
+        return List.of();
+    }
+
+    @Override
+    public List<EnemyTemplate> getBosses() {
+        return List.of();
     }
 
     @Override
