@@ -35,7 +35,7 @@ public class RoomGenerator {
         List<Room> response = gerar(numRooms, extras);
         int tentativas = 0;
 
-        while (!validarConexoes(response, numRooms) && tentativas < tentativasMax) {
+        while ((!validarConexoes(response, numRooms) && tentativas < tentativasMax) || (response.get(0).hasSouth() && tentativas < tentativasMax)) {
             roomMap.clear();
             response = gerar(numRooms, extras);
             tentativas++;
@@ -77,11 +77,9 @@ public class RoomGenerator {
 
     private boolean typeInimigo(Room room, int numRooms) {
         for (Direction dir : Direction.values()) {
-            if (!dir.equals(Direction.SOUTH)) {
-                Room vizinho = room.getRoom(dir);
-                if (vizinho != null && vizinho.getType() == RoomType.INIMIGOS) {
-                    if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
-                }
+            Room vizinho = room.getRoom(dir);
+            if (vizinho != null && vizinho.getType() == RoomType.INIMIGOS) {
+                if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
             }
         }
         return false;
@@ -94,10 +92,22 @@ public class RoomGenerator {
 
     private void conectar(Room base, Room next, Direction dir) {
         switch (dir) {
-            case NORTH -> { base.connectNorth(next); next.connectSouth(base); }
-            case SOUTH -> { base.connectSouth(next); next.connectNorth(base); }
-            case EAST  -> { base.connectEast(next); next.connectWest(base); }
-            case WEST  -> { base.connectWest(next); next.connectEast(base); }
+            case NORTH -> {
+                base.connectNorth(next);
+                next.connectSouth(base);
+            }
+            case SOUTH -> {
+                base.connectSouth(next);
+                next.connectNorth(base);
+            }
+            case EAST -> {
+                base.connectEast(next);
+                next.connectWest(base);
+            }
+            case WEST -> {
+                base.connectWest(next);
+                next.connectEast(base);
+            }
         }
     }
 
@@ -131,8 +141,8 @@ public class RoomGenerator {
                 switch (dir) {
                     case NORTH -> ny++;
                     case SOUTH -> ny--;
-                    case EAST  -> nx++;
-                    case WEST  -> nx--;
+                    case EAST -> nx++;
+                    case WEST -> nx--;
                 }
 
                 String key = nx + "," + ny;
@@ -163,8 +173,8 @@ public class RoomGenerator {
             switch (dir) {
                 case NORTH -> ny++;
                 case SOUTH -> ny--;
-                case EAST  -> nx++;
-                case WEST  -> nx--;
+                case EAST -> nx++;
+                case WEST -> nx--;
             }
 
             String key = nx + "," + ny;
@@ -196,8 +206,8 @@ public class RoomGenerator {
                 switch (dir) {
                     case NORTH -> ny++;
                     case SOUTH -> ny--;
-                    case EAST  -> nx++;
-                    case WEST  -> nx--;
+                    case EAST -> nx++;
+                    case WEST -> nx--;
                 }
 
                 String key = nx + "," + ny;

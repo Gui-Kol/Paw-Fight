@@ -4,17 +4,19 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.pawfight.game.entity.player.PlayerTemplate;
 
 public abstract class TirosTamplate {
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
+    protected float duracao;
     protected Texture texture;
     protected int tamanhoDraw, tamanho;
     protected DrawHitBox drawHitBox;
     protected int xHitBox, yHitBox;
 
-    public TirosTamplate(int x, int y, int dano, int tamanho, boolean esquerda) {
+    public TirosTamplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         setTexture();
         drawHitBox = new DrawHitBox();
         this.tamanho = tamanho;
@@ -26,9 +28,9 @@ public abstract class TirosTamplate {
         this.xHitBox = x;
         this.yHitBox = y;
 
-        if (esquerda) {
-            this.x += tamanho;
-            xHitBox += tamanho;
+        if (player.isOlhandoEsquerda()) {
+            this.x += player.getTamanho();
+            xHitBox += player.getTamanho();
         }
 
         hitBox = gerarHitBox();
@@ -54,7 +56,9 @@ public abstract class TirosTamplate {
 
     protected abstract Texture singleTex();
 
-
+    public float getDuracao() {
+        return duracao;
+    }
 }
 
 

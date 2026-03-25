@@ -1,11 +1,13 @@
 package com.pawfight.game.entity.enemy;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.phisics.DrawHitBox;
@@ -40,6 +42,7 @@ public abstract class EnemyTemplate {
     protected boolean moving = false;
     protected boolean atacando = false;
     protected boolean atacandoEspecial = false;
+    protected boolean podeTomarDano = true;
 
     protected String nome;
     protected int vida;
@@ -51,19 +54,20 @@ public abstract class EnemyTemplate {
     protected boolean hurt = false;
     protected boolean forte;
     protected float hurtTime = 0f;
-    protected static final float HURT_DURATION = 0.3f;
+    protected final float HURT_DURATION = 0.3f;
     protected float stateTime;
     protected float ataqueTimer = 0f;
-    protected static final float ATAQUE_COOLDOWN = 1.5f; // Cooldown entre ataques
-    protected static final float ATAQUE_DURATION = 0.5f; // Duração da animação de ataque
-    protected static final float DISTANCIA_ATAQUE = 60f; // Distância para atacar
+    protected final float ATAQUE_COOLDOWN = 1.5f; // Cooldown entre ataques
+    protected final float ATAQUE_DURATION = 0.5f; // Duração da animação de ataque
+    protected final float DISTANCIA_ATAQUE = 60f; // Distância para atacar
+    private float danoCooldown = 0f;
 
     protected Rectangle hitBox;
     protected DrawHitBox drawHitBox;
-    protected static int TAMANHO_PX = 64;
-    protected static int HITBOX_SIZE = 20;
-    protected static int HITBOX_OFFSET_X = -10;
-    protected static int HITBOX_OFFSET_Y = 0;
+    protected int TAMANHO_PX = 64;
+    protected int HITBOX_SIZE = 20;
+    protected int HITBOX_OFFSET_X = -10;
+    protected int HITBOX_OFFSET_Y = 0;
 
     protected List<EnemyTemplate> enemiesList;
 
@@ -74,6 +78,7 @@ public abstract class EnemyTemplate {
         this.stateTime = 0f;
         this.forte = forte;
         this.drawHitBox = new DrawHitBox();
+        criarHitBox();
         texture();
     }
 
@@ -88,8 +93,9 @@ public abstract class EnemyTemplate {
 
     public abstract EnemyTemplate cloneEnemy();
 
+    public abstract String  getNome();
+
     public void setLocation(int x, int y) {
-        criarHitBox();
         dx = x;
         dy = y;
         hitBox.setPosition(dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X, dy + HITBOX_OFFSET_Y);
@@ -107,6 +113,15 @@ public abstract class EnemyTemplate {
             stateTime += delta;
             ataqueTimer += delta;
 
+            // Atualizar cooldown de dano
+            if (!podeTomarDano) {
+                danoCooldown += delta;
+                if (danoCooldown >= 0.5f) {
+                    podeTomarDano = true;
+                    danoCooldown =  0f;
+                }
+            }
+
             if (hurt) {
                 hurtTime += delta;
                 if (hurtTime >= HURT_DURATION) {
@@ -115,7 +130,6 @@ public abstract class EnemyTemplate {
                 }
             }
 
-            // Resetar estado de ataque após duração
             if (atacando && stateTime >= ATAQUE_DURATION) {
                 atacando = false;
             }
@@ -199,13 +213,17 @@ public abstract class EnemyTemplate {
     }
 
     public void dano(int forca) {
-        this.vida -= forca;
-        if (vida <= 0) {
-            morto = true;
-            player.moedaUp(moedasMorte());
-        } else {
-            hurt = true;
-            hurtTime = 0f;
+        if (podeTomarDano) {
+            podeTomarDano = false;
+            this.vida -= forca;
+            if (vida <= 0) {
+                morto = true;
+                player.moedaUp(moedasMorte());
+            } else {
+                hurt = true;
+                hurtTime = 0f;
+            }
+            Gdx.app.log(getNome(), "Tomou " + forca + " de dano!");
         }
     }
 

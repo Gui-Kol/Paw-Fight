@@ -113,12 +113,12 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    public List<EnemyTemplate> getInimigos() {
+    public List<EnemyTemplate> getInimigosModelo() {
         return List.of();
     }
 
     @Override
-    public List<EnemyTemplate> getBosses() {
+    public List<EnemyTemplate> getBossesModelo() {
         return List.of();
     }
 

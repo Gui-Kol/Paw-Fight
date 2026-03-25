@@ -6,11 +6,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.entity.player.PlayerBlackBird;
-import com.pawfight.game.entity.player.PlayerBlackCat;
-import com.pawfight.game.entity.player.PlayerOrangeCat;
+import com.pawfight.game.entity.player.BlackBird;
+import com.pawfight.game.entity.player.BlackCat;
+import com.pawfight.game.entity.player.OrangeCat;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.entity.player.dove.PlayerDove;
+import com.pawfight.game.entity.player.Dove;
 
 import java.util.Random;
 
@@ -170,19 +170,19 @@ public class EscolherPersonagem {
         PlayerTemplate playerEscolhido;
         switch (personagemAtual) {
             case 0:
-                playerEscolhido = new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                playerEscolhido = new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
                 break;
             case 1:
-                playerEscolhido = new PlayerOrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                playerEscolhido = new OrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
                 break;
             case 2:
-                playerEscolhido = new PlayerBlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                playerEscolhido = new BlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f);
                 break;
             case 3:
-                playerEscolhido = new PlayerDove(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                playerEscolhido = new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f);
                 break;
             default:
-                playerEscolhido = new PlayerBlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+                playerEscolhido = new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
                 break;
         }
 

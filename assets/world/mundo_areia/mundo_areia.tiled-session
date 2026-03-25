@@ -9,7 +9,7 @@
     "file.lastUsedOpenFilter": "Todos os Ficheiros (*)",
     "fileStates": {
         "": {
-            "scaleInDock": 0.0625
+            "scaleInDock": 0.75
         },
         "#Dungeon_Tileset": {
             "scaleInDock": 1
@@ -27,11 +27,11 @@
             "expandedObjectLayers": [
                 10
             ],
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 10,
             "viewCenter": {
-                "x": 277.33333333333337,
-                "y": 254.66666666666669
+                "x": 494,
+                "y": 305
             }
         },
         "BOSS.tmx#Dungeon_Tileset": {
@@ -232,8 +232,8 @@
     ],
     "project": "mundo_areia.tiled-project",
     "recentFiles": [
-        "TESOURO.tmx",
         "C:/Users/Kolnd/Documents/Desenv/projetos-pessoais/paw_fight/assets/world/base/base.tmx",
+        "TESOURO.tmx",
         "INIMIGOS.tmx",
         "mundo_areia1.tmx",
         "default_room.tmx",

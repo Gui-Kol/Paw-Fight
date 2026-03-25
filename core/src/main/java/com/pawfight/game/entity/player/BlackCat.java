@@ -3,21 +3,50 @@ package com.pawfight.game.entity.player;
 import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.design.SpriteDefinition;
 
-public class PlayerBlackCat extends PlayerTemplate {
+public class BlackCat extends PlayerTemplate {
     // Construtor
-    public PlayerBlackCat(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
+    public BlackCat(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         super(dx, dy, tileWidth, numTilesX, tileHeight, numTilesY, zoomCamera);
+    }
 
-        vidaBase = 10;
-        velocidade = 350;
-        forca = 2;
-        vida = vidaBase;
+    @Override
+    protected int definirHitBoxOffY() {
+        return 0;
+    }
 
-        TAMANHO_PX = 64;
+    @Override
+    protected int definirHitBoxOffX() {
+        return -5;
+    }
 
-        HITBOX_SIZE = 25;       // tamanho da hitbox (largura e altura)
-        HITBOX_OFFSET_Y = 0;    // deslocamento vertical (abaixar ou subir)
-        HITBOX_OFFSET_X = -5;
+    @Override
+    protected int definirHitBoxSize() {
+        return 25;
+    }
+
+    @Override
+    protected int definirVelocidade() {
+        return 350;
+    }
+
+    @Override
+    protected int definirVidaBase() {
+        return 10;
+    }
+
+    @Override
+    protected float definirDuracaoTiro() {
+        return 0;
+    }
+
+    @Override
+    protected float definirCadenciaTiro() {
+        return 0;
+    }
+
+    @Override
+    protected int definirForca() {
+        return 2;
     }
 
     @Override
@@ -34,7 +63,7 @@ public class PlayerBlackCat extends PlayerTemplate {
     }
 
     @Override
-    protected int getTamanho() {
+    protected int definirTamanho() {
         return 64;
     }
 
@@ -56,11 +85,6 @@ public class PlayerBlackCat extends PlayerTemplate {
     @Override
     public void usarHabilidadeEspecial() {
 
-    }
-
-    @Override
-    public int calcularDefesa() {
-        return 0;
     }
 
 

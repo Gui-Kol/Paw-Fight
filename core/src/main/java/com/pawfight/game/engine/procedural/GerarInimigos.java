@@ -78,7 +78,7 @@ public class GerarInimigos {
         }
         List<EnemyTemplate> inimigosGerados = new ArrayList<>();
 
-        List<EnemyTemplate> listarModeloEnemy = world.getInimigos();
+        List<EnemyTemplate> listarModeloEnemy = world.getInimigosModelo();
         switch (currentRoom.getType()) {
             case INIMIGOS -> {
                 inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, false, 10, 5, regiaoSpawn));

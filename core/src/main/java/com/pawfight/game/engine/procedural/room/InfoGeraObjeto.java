@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 
 public record InfoGeraObjeto(
     String layerName,
+    String nomeObjeto,
     RoomType typeRoom,
     Texture texture,
     int qntMax,
@@ -11,6 +12,7 @@ public record InfoGeraObjeto(
     int ajusteAlturaHitBox,
     int ajusteLarguraHitBox,
     int ajusteXHitBox,
-    int ajusteYHitBox
+    int ajusteYHitBox,
+    int areaToque
 ) {
 }

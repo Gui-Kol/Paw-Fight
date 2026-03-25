@@ -1,14 +1,14 @@
-package com.pawfight.game.entity.player.dove;
+package com.pawfight.game.entity.tiro.dove;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.phisics.TirosTamplate;
+import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class Coco extends TirosTamplate {
 
-    public Coco(int x, int y, int dano, int tamanho, boolean esquerda) {
-        super(x, y, dano, tamanho, esquerda);
-        this.y -= tamanho / 2;
+    public Coco(int tamanho, PlayerTemplate player) {
+        super(player.getDx() - tamanho / 2, player.getDy() - tamanho / 2, player.getForca(), tamanho, player);
     }
 
     @Override

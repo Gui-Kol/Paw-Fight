@@ -9,6 +9,7 @@ import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.GerarInimigos;
+import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomGenerator;
@@ -78,10 +79,22 @@ public class MundoAreia extends WorldTemplate {
         Texture cacto = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
         List<InfoGeraObjeto> infoGeraObjetoList = new ArrayList<>();
 
-        infoGeraObjetoList.add(new InfoGeraObjeto("Obj", RoomType.INIMIGOS, cacto, 6, 2,
-            -245, -240, 8, 5));
+        infoGeraObjetoList.add(new InfoGeraObjeto("Obj", "cacto", RoomType.INIMIGOS, cacto, 6, 2,
+            -245, -235, 15, 10, 10));
 
         return infoGeraObjetoList;
+    }
+
+    private void cactoDano() {
+        if (validar.validarLista(listaObjetos)) {
+            for (ObjetoGerado obj : listaObjetos) {
+                if (obj.nomeObjeto.equals("cacto")) {
+                    if (obj.areaToque.overlaps(player.getHitBox())) {
+                        player.dano(1);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -90,13 +103,13 @@ public class MundoAreia extends WorldTemplate {
     }
 
     @Override
-    public List<EnemyTemplate> getInimigos() {
+    public List<EnemyTemplate> getInimigosModelo() {
         EnemyTemplate enemySkeleton = new EnemySkeleton(0, 0, false, player);
         return List.of(enemySkeleton);
     }
 
     @Override
-    public List<EnemyTemplate> getBosses() {
+    public List<EnemyTemplate> getBossesModelo() {
         return List.of();
     }
 
@@ -139,15 +152,14 @@ public class MundoAreia extends WorldTemplate {
                 for (EnemyTemplate enemy : listaInimigos) {
                     enemy.draw(batch, shapeRenderer);
                 }
+
+                cactoDano();
+
                 drawList.drawObjects(listaObjetos, batch, player.getCamera().combined, 48, 48);
-                drawHitBox.drawList(listaObjetosHitbox, shapeRenderer, player.getCamera().combined);
-                if (listaInimigos != null && !listaInimigos.isEmpty()) {
-                    podeEntrarPorta = false;
-                    danoTiro.darDanoListaInimigos(listaInimigos, player.getTiros());
-                }
-                if (listaInimigos.isEmpty()) {
-                    podeEntrarPorta = true;
-                }
+                drawHitBox.drawListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
+                podeEntrarPorta = !validar.validarLista(listaInimigos);
+                danoTiro.darDanoListaInimigos(this);
+
             }
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);

@@ -36,7 +36,7 @@ public class ChecarColisao {
             ? -(PlayerTemplate.getHitboxOffsetX())
             : PlayerTemplate.getHitboxOffsetX();
 
-        player.setDx((int) (hitBox.x - (player.getTamanhoPx() - PlayerTemplate.getHitboxSize()) / 2f - offsetX));
+        player.setDx((int) (hitBox.x - (player.getTamanho() - PlayerTemplate.getHitboxSize()) / 2f - offsetX));
         player.setDy((int) (hitBox.y - PlayerTemplate.getHitboxOffsetY()));
     }
 

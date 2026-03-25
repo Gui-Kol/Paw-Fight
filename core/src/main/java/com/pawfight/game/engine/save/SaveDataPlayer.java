@@ -10,5 +10,4 @@ public class SaveDataPlayer {
     public int xpNecessario;
     public int moedas;
     public int pontosDisponiveis;
-    public int defesa;
 }

@@ -85,7 +85,7 @@ public class GerarObjetos {
             // Cria uma hitbox baseada na posição
             Rectangle novaHitbox = new Rectangle(x + info.ajusteXHitBox(), y + info.ajusteYHitBox(), info.texture().getWidth() + info.ajusteLarguraHitBox(), info.texture().getHeight() + info.ajusteAlturaHitBox());
 
-            ObjetoGerado obj = new ObjetoGerado(info.texture(), novaHitbox, x, y);
+            ObjetoGerado obj = new ObjetoGerado(info.texture(), info.nomeObjeto(), novaHitbox, x, y, info.areaToque());
             novosObjetos.add(obj);
         }
 

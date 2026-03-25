@@ -56,7 +56,15 @@ public class CarregarPortas {
             if (dir == Direcao.BAIXO && currentRoom.getType() == RoomType.SPAWN) continue;
 
             Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
-            if (destino != null && map.getLayers().get(dir.layer) != null) {
+
+            // só continua se a sala atual realmente tiver conexão nessa direção
+            boolean conexaoValida =
+                (dir == Direcao.CIMA && currentRoom.hasNorth()) ||
+                    (dir == Direcao.BAIXO && currentRoom.hasSouth()) ||
+                    (dir == Direcao.ESQUERDA && currentRoom.hasWest()) ||
+                    (dir == Direcao.DIREITA && currentRoom.hasEast());
+
+            if (destino != null && conexaoValida && map.getLayers().get(dir.layer) != null) {
                 try {
                     List<Rectangle> portas = tilemapHitboxFactory.createTileLayerHitboxes(map, dir.layer, 16, 16);
                     if (!portas.isEmpty() && ChecarColisao.houveColisao(playerBox, portas)) {
@@ -70,6 +78,7 @@ public class CarregarPortas {
             }
         }
     }
+
 
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();

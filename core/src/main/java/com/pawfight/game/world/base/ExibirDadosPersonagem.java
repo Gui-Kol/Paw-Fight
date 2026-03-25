@@ -1,7 +1,6 @@
 package com.pawfight.game.world.base;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -68,7 +67,7 @@ public class ExibirDadosPersonagem {
         font.draw(batch, "Strength: " + player.getForca(), offsetX, centerY - 40 * scale);
         batch.draw(musculo, offsetX + 235 * scale, centerY - 85 * scale, 56 * scale, 56 * scale);
 
-        font.draw(batch, "Size: " + player.getTamanhoPx() + " cm", offsetX, centerY - 70 * scale);
+        font.draw(batch, "Size: " + player.getTamanho() + " cm", offsetX, centerY - 70 * scale);
         batch.draw(requa, offsetX + 235 * scale, centerY - 120 * scale, 56 * scale, 56 * scale);
 
         batch.end();

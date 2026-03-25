@@ -38,6 +38,11 @@ public class EnemySkeleton extends EnemyTemplate{
     }
 
     @Override
+    public String getNome() {
+        return "Skeleton";
+    }
+
+    @Override
     public void andarIA(float delta) {
         if (player != null && !player.isMorto()) {
             moverEmDirecaoAoPlayer(delta);
@@ -57,8 +62,7 @@ public class EnemySkeleton extends EnemyTemplate{
     @Override
     public void ataqueBasico() {
         if (hitBox.overlaps(player.getHitBox())) {
-            player.receberDano(forca);
-            dano(player.getForca());
+            player.dano(forca);
             atacando = true;
         }
     }

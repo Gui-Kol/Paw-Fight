@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.LayerRenderer;
+import com.pawfight.game.engine.Validar;
 import com.pawfight.game.engine.design.desenhar.DrawList;
 import com.pawfight.game.engine.phisics.DanoTiro;
 import com.pawfight.game.engine.phisics.DrawHitBox;
@@ -45,6 +46,7 @@ public abstract class WorldTemplate implements Screen {
 
     // Mundo
     private final GerarObjetos gerarObjetos;
+    protected final Validar validar;
     protected boolean errorFinal = false;
     protected final List<ObjetoGerado> listaObjetos;
     protected final List<Rectangle> listaObjetosHitbox;
@@ -73,6 +75,7 @@ public abstract class WorldTemplate implements Screen {
         this.viewport = viewport;
 
         gerarObjetos = new GerarObjetos();
+        validar = new Validar();
         listaObjetos = new ArrayList<>();
         listaObjetosHitbox = new ArrayList<>();
         drawList = new DrawList();
@@ -179,9 +182,9 @@ public abstract class WorldTemplate implements Screen {
 
     public abstract String getWorldName();
 
-    public abstract List<EnemyTemplate> getInimigos();
+    public abstract List<EnemyTemplate> getInimigosModelo();
 
-    public abstract List<EnemyTemplate> getBosses();
+    public abstract List<EnemyTemplate> getBossesModelo();
 
     protected abstract boolean deveCarregarMapaCompleto();
 
@@ -298,5 +301,53 @@ public abstract class WorldTemplate implements Screen {
     }
     public void addListaObjetosHitbox(List<Rectangle> hitBoxs){
         listaObjetosHitbox.addAll(hitBoxs);
+    }
+
+    public GerarObjetos getGerarObjetos() {
+        return gerarObjetos;
+    }
+
+    public boolean isErrorFinal() {
+        return errorFinal;
+    }
+
+    public DrawHitBox getDrawHitBox() {
+        return drawHitBox;
+    }
+
+    public DanoTiro getDanoTiro() {
+        return danoTiro;
+    }
+
+    public DrawList getDrawList() {
+        return drawList;
+    }
+
+    public ShapeRenderer getShapeRenderer() {
+        return shapeRenderer;
+    }
+
+    public Texture getBackground() {
+        return background;
+    }
+
+    public PawFight getGame() {
+        return game;
+    }
+
+    public SpriteBatch getBatch() {
+        return batch;
+    }
+
+    public Music getBackMusic() {
+        return backMusic;
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public Viewport getViewport() {
+        return viewport;
     }
 }
