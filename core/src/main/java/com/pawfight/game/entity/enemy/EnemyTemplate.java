@@ -7,10 +7,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.design.SpriteDefinition;
-import com.pawfight.game.engine.phisics.DrawHitBox;
+import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
@@ -63,7 +62,7 @@ public abstract class EnemyTemplate {
     private float danoCooldown = 0f;
 
     protected Rectangle hitBox;
-    protected DrawHitBox drawHitBox;
+    protected Renderizar renderizar;
     protected int TAMANHO_PX = 64;
     protected int HITBOX_SIZE = 20;
     protected int HITBOX_OFFSET_X = -10;
@@ -77,7 +76,7 @@ public abstract class EnemyTemplate {
         this.dy = dy;
         this.stateTime = 0f;
         this.forte = forte;
-        this.drawHitBox = new DrawHitBox();
+        this.renderizar = new Renderizar();
         criarHitBox();
         texture();
     }
@@ -253,10 +252,21 @@ public abstract class EnemyTemplate {
         }
         return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
     }
+    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        var cameraCombined = player.getCamera().combined;
+        shapeRenderer.setProjectionMatrix(cameraCombined);
+        batch.setProjectionMatrix(cameraCombined);
+
+        batch.begin();
+        batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
+        batch.end();
+        renderizar.hitboxDraw(shapeRenderer, hitBox);
+        extraDraw(batch,shapeRenderer);
+    }
 
     protected abstract int moedasMorte();
 
-    public abstract void draw(SpriteBatch batch, ShapeRenderer shapeRenderer);
+    public abstract void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer);
 
     public void dispose() {
         if (idleSheet != null) idleSheet.dispose();

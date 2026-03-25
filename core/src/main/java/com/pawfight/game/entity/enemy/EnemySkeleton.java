@@ -83,15 +83,6 @@ public class EnemySkeleton extends EnemyTemplate{
     }
 
     @Override
-    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        var cameraCombined = player.getCamera().combined;
-        shapeRenderer.setProjectionMatrix(cameraCombined);
-        batch.setProjectionMatrix(cameraCombined);
-
-        batch.begin();
-        batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
-        batch.end();
-
-        drawHitBox.draw(shapeRenderer, hitBox);
+    public void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
     }
 }

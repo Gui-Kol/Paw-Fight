@@ -13,11 +13,13 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.LayerRenderer;
+import com.pawfight.game.engine.Hud.DesenharMiniMapa;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
+import com.pawfight.game.engine.procedural.CarregarPortas;
+import com.pawfight.game.engine.render.LayerRenderer;
 import com.pawfight.game.engine.Validar;
-import com.pawfight.game.engine.design.desenhar.DrawList;
-import com.pawfight.game.engine.phisics.DanoTiro;
-import com.pawfight.game.engine.phisics.DrawHitBox;
+import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.entity.tiro.DanoTiro;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.GerarObjetos;
@@ -29,6 +31,7 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +48,11 @@ public abstract class WorldTemplate implements Screen {
     protected PlayerTemplate player;
 
     // Mundo
-    private final GerarObjetos gerarObjetos;
+    protected final DesenharMiniMapa desenharMiniMapa;
+    protected final ScreenTransition screenTransition;
+    protected final CarregarPortas carregarPortas;
+    protected final GerarObjetos gerarObjetos;
+    protected final Renderizar renderizar;
     protected final Validar validar;
     protected boolean errorFinal = false;
     protected final List<ObjetoGerado> listaObjetos;
@@ -55,9 +62,7 @@ public abstract class WorldTemplate implements Screen {
     protected Room currentRoom;
     protected boolean podeEntrarPorta;
     protected Set<String> salasVisitadas;
-    protected DrawHitBox drawHitBox;
     protected DanoTiro danoTiro;
-    protected DrawList drawList;
     protected ShapeRenderer shapeRenderer;
     protected Texture background;
     protected PawFight game;
@@ -78,14 +83,20 @@ public abstract class WorldTemplate implements Screen {
         validar = new Validar();
         listaObjetos = new ArrayList<>();
         listaObjetosHitbox = new ArrayList<>();
-        drawList = new DrawList();
+        listaInimigos = new ArrayList<>();
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         background = new Texture(backgroundPath);
         backMusic = Gdx.audio.newMusic(Gdx.files.internal(musicPath));
         tilemapHitboxFactory = new TilemapHitboxFactory();
-        drawHitBox = new DrawHitBox();
         danoTiro = new DanoTiro();
+        salasVisitadas = new HashSet<>();
+        podeEntrarPorta = true;
+        renderizar = new Renderizar();
+        gerarInimigos = new GerarInimigos();
+        desenharMiniMapa = new DesenharMiniMapa();
+        screenTransition = new ScreenTransition(game);
+        carregarPortas = new CarregarPortas();
     }
 
 
@@ -311,16 +322,8 @@ public abstract class WorldTemplate implements Screen {
         return errorFinal;
     }
 
-    public DrawHitBox getDrawHitBox() {
-        return drawHitBox;
-    }
-
     public DanoTiro getDanoTiro() {
         return danoTiro;
-    }
-
-    public DrawList getDrawList() {
-        return drawList;
     }
 
     public ShapeRenderer getShapeRenderer() {

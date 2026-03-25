@@ -9,6 +9,11 @@ public class BlackBird extends PlayerTemplate{
     }
 
     @Override
+    protected int definirTamanhoTiro() {
+        return 0;
+    }
+
+    @Override
     protected int definirHitBoxOffY() {
         return 0;
     }
@@ -72,7 +77,7 @@ public class BlackBird extends PlayerTemplate{
     }
 
     @Override
-    public void ataqueBasico() {
+    public void ataqueBasico(float delta) {
 
     }
 

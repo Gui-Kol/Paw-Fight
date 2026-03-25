@@ -4,15 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.engine.design.SpriteDefinition;
-import com.pawfight.game.engine.phisics.TirosTamplate;
+import com.pawfight.game.entity.tiro.TirosTamplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
 
 public class Dove extends PlayerTemplate {
 
     public Dove(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         super(dx, dy, tileWidth, numTilesX, tileHeight, numTilesY, zoomCamera);
+    }
+
+    @Override
+    protected int definirTamanhoTiro() {
+        return 0;
     }
 
     @Override
@@ -42,12 +46,12 @@ public class Dove extends PlayerTemplate {
 
     @Override
     protected float definirDuracaoTiro() {
-        return 0;
+        return 1;
     }
 
     @Override
     protected float definirCadenciaTiro() {
-        return 0;
+        return 1;
     }
 
     @Override
@@ -78,7 +82,7 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
-    public void ataqueBasico() {
+    public void ataqueBasico(float delta) {
         if (podeAtacar) {
             cagando();
             Gdx.app.log("PlayerDove", "Atacando...");
@@ -87,20 +91,8 @@ public class Dove extends PlayerTemplate {
     }
 
     private void cagando() {
-        PlayerTemplate player = this;
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                Coco coco = new Coco(tamanhoTiro, player);
-                tiros.add(coco);
-                Timer.schedule(new Timer.Task() {
-                    @Override
-                    public void run() {
-                        tiros.remove(coco); // Remove o coco
-                    }
-                }, coco.getDuracao() + duracaoTiro);
-            }
-        }, 1, 5 - cadenciaTiro);
+        Coco cocoModelo = new Coco(tamanhoTiro, this);
+        atirar.atira(cocoModelo, this);
     }
 
     @Override
@@ -108,7 +100,7 @@ public class Dove extends PlayerTemplate {
         batch.setProjectionMatrix(camera.combined);
 
         for (TirosTamplate coco : tiros) {
-            coco.draw(batch,shapeRenderer);
+            coco.draw(batch, shapeRenderer);
         }
         super.draw(batch, shapeRenderer);
     }

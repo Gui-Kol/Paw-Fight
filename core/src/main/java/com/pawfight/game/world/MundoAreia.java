@@ -5,10 +5,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.Hud.DesenharMiniMapa;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.procedural.CarregarPortas;
-import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
@@ -19,30 +15,20 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 public class MundoAreia extends WorldTemplate {
-    private final DesenharMiniMapa desenharMiniMapa;
-    private final ScreenTransition screenTransition;
-    private final CarregarPortas carregarPortas;
+
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
-        screenTransition = new ScreenTransition(game);
         roomGenerator = new RoomGenerator();
         setPlayer(player);
 
         // Reseta estado do player
         player.setLocal(500, 100);
         player.setPodeAtacar(true);
-        podeEntrarPorta = true;
-        salasVisitadas = new HashSet<>();
-        desenharMiniMapa = new DesenharMiniMapa();
-        gerarInimigos = new GerarInimigos();
-        listaInimigos = new ArrayList<>();
-        carregarPortas = new CarregarPortas();
 
         // Gera salas APENAS aqui, não carrega mapa
         try {
@@ -80,7 +66,7 @@ public class MundoAreia extends WorldTemplate {
         List<InfoGeraObjeto> infoGeraObjetoList = new ArrayList<>();
 
         infoGeraObjetoList.add(new InfoGeraObjeto("Obj", "cacto", RoomType.INIMIGOS, cacto, 6, 2,
-            -245, -235, 15, 10, 10));
+            -245, -235, 15, 10, 10,48));
 
         return infoGeraObjetoList;
     }
@@ -138,25 +124,13 @@ public class MundoAreia extends WorldTemplate {
                 int indiceAtual = rooms.indexOf(currentRoom);
                 desenharMiniMapa.desenharSalaAtual(indiceAtual, currentRoom.getType(), batch, player.getHud().getHudCamera());
 
-                // Atualizar e renderizar inimigos
-                List<EnemyTemplate> inimigosMortos = new ArrayList<>();
-                for (EnemyTemplate enemy : listaInimigos) {
-                    enemy.update(delta);
-                    if (enemy.isMorto()) {
-                        inimigosMortos.add(enemy);
-                    }
-                }
-                // Remover inimigos mortos
-                listaInimigos.removeAll(inimigosMortos);
-                // Renderizar inimigos após atualização
-                for (EnemyTemplate enemy : listaInimigos) {
-                    enemy.draw(batch, shapeRenderer);
-                }
+                renderizar.atualizarListaInimigos(delta,listaInimigos);
+                renderizar.renderizarInimigos(batch,shapeRenderer,listaInimigos);
 
                 cactoDano();
 
-                drawList.drawObjects(listaObjetos, batch, player.getCamera().combined, 48, 48);
-                drawHitBox.drawListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
+                renderizar.renderizarObjects(this);
+                renderizar.hitBoxListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
                 podeEntrarPorta = !validar.validarLista(listaInimigos);
                 danoTiro.darDanoListaInimigos(this);
 

@@ -13,6 +13,7 @@ public record InfoGeraObjeto(
     int ajusteLarguraHitBox,
     int ajusteXHitBox,
     int ajusteYHitBox,
-    int areaToque
+    int areaToque,
+    int tamanhoPx
 ) {
 }

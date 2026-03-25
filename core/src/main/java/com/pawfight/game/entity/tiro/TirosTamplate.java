@@ -1,26 +1,30 @@
-package com.pawfight.game.engine.phisics;
+package com.pawfight.game.entity.tiro;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public abstract class TirosTamplate {
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
-    protected float duracao;
+    protected float duracao, intervalo;
     protected Texture texture;
-    protected int tamanhoDraw, tamanho;
-    protected DrawHitBox drawHitBox;
+    protected int tamanhoDraw, tamanho, tamanhoPadrao;
+    protected Renderizar renderizar;
     protected int xHitBox, yHitBox;
 
     public TirosTamplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
-        setTexture();
-        drawHitBox = new DrawHitBox();
-        this.tamanho = tamanho;
-        this.tamanhoDraw = tamanho;
+        renderizar = new Renderizar();
+        duracao = definirDuracao();
+        intervalo = definirIntervalo();
+        tamanhoPadrao = definirTamanhoPadrao();
+
+        this.tamanho = tamanho + tamanhoPadrao;
+        this.tamanhoDraw = tamanho + tamanhoPadrao;
         this.x = x;
         this.y = y;
         this.dano = dano;
@@ -33,20 +37,20 @@ public abstract class TirosTamplate {
             xHitBox += player.getTamanho();
         }
 
+        texture = singleTex();
         hitBox = gerarHitBox();
     }
+
+    protected abstract int definirTamanhoPadrao();
+
+    protected abstract float definirDuracao();
 
     public void draw(Batch batch, ShapeRenderer shapeRenderer) {
         batch.begin();
         batch.draw(texture, x, y, tamanhoDraw, tamanhoDraw);
         batch.end();
-        drawHitBox.draw(shapeRenderer, hitBox);
+        renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
-
-    protected void setTexture() {
-        texture = singleTex();
-    }
-
     protected void update() {
     }
 
@@ -54,10 +58,26 @@ public abstract class TirosTamplate {
 
     protected abstract Rectangle gerarHitBox();
 
+    protected abstract TirosTamplate clonar(PlayerTemplate player);
+
     protected abstract Texture singleTex();
+
+    protected abstract float definirIntervalo();
+
+    public float getIntervalo() {
+        return intervalo;
+    }
 
     public float getDuracao() {
         return duracao;
+    }
+
+    public int getDano() {
+        return dano;
+    }
+
+    public Rectangle getHitBox() {
+        return hitBox;
     }
 }
 

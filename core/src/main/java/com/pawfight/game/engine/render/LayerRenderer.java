@@ -1,4 +1,4 @@
-package com.pawfight.game.engine;
+package com.pawfight.game.engine.render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;

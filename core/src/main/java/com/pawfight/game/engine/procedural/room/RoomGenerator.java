@@ -35,7 +35,7 @@ public class RoomGenerator {
         List<Room> response = gerar(numRooms, extras);
         int tentativas = 0;
 
-        while ((!validarConexoes(response, numRooms) && tentativas < tentativasMax) || (response.get(0).hasSouth() && tentativas < tentativasMax)) {
+        while ((!validarConexoes(response, numRooms) && tentativas < tentativasMax)) {
             roomMap.clear();
             response = gerar(numRooms, extras);
             tentativas++;
@@ -50,7 +50,7 @@ public class RoomGenerator {
         Set<Room> principais = new HashSet<>(rooms.subList(0, numRooms));
         Room spawn = rooms.get(0);
 
-        if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest() && spawn.hasSouth()) {
+        if (!spawn.hasEast() && !spawn.hasNorth() && !spawn.hasWest() || spawn.hasSouth()) {
             return false; // spawn isolado
         } else if (!typeInimigo(spawn, numRooms)) {
             return false; // spawn incorreto

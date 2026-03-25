@@ -8,12 +8,13 @@ public class ObjetoGerado {
     public String nomeObjeto;
     public Rectangle hitbox;
     public Rectangle areaToque;
-    public int x, y;
+    public int x, y, tamanhoPx;
 
-    public ObjetoGerado(Texture textura, String nomeObjeto,Rectangle hitbox, int x, int y, int areaToque) {
+    public ObjetoGerado(Texture textura, String nomeObjeto,Rectangle hitbox, int x, int y, int areaToque, int tamanhoPx) {
         this.nomeObjeto = nomeObjeto;
         this.textura = textura;
         this.hitbox = hitbox;
+        this.tamanhoPx = tamanhoPx;
         this.x = x;
         this.y = y;
         int ajuste = areaToque / 2;

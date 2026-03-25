@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.phisics;
+package com.pawfight.game.entity.tiro;
 
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
@@ -17,8 +17,8 @@ public class DanoTiro {
 
         for (EnemyTemplate inimigo : inimigos) {
             for (TirosTamplate tiro : tiros)
-                if (inimigo.getHitBox().overlaps(tiro.hitBox)) {
-                    inimigo.dano(tiro.dano);
+                if (inimigo.getHitBox().overlaps(tiro.getHitBox())) {
+                    inimigo.dano(tiro.getDano());
                 }
         }
     }

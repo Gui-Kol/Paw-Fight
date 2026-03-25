@@ -19,9 +19,10 @@ import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.design.ZoomChanger;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.phisics.ChecarColisao;
-import com.pawfight.game.engine.phisics.DrawHitBox;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
-import com.pawfight.game.engine.phisics.TirosTamplate;
+import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.entity.tiro.Atirar;
+import com.pawfight.game.entity.tiro.TirosTamplate;
 import com.pawfight.game.engine.save.SaveDataPlayer;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public abstract class PlayerTemplate {
     protected float cadenciaTiro;
     protected float duracaoTiro;
     protected final List<TirosTamplate> tiros;
+    protected final Atirar atirar;
     protected int pontosDisponiveis;
     protected int xp;
     protected int xpNecessario;
@@ -91,7 +93,6 @@ public abstract class PlayerTemplate {
     protected ChecarColisao checarColisao;
     protected int dx, dy;
     protected final Rectangle hitBox;
-    protected final DrawHitBox drawHitBox = new DrawHitBox();
 
     // Mundo e camera
     protected final float mapWidth;
@@ -99,13 +100,14 @@ public abstract class PlayerTemplate {
     protected final OrthographicCamera camera;
     protected final Hud hud;
     protected final ZoomChanger zoomChanger;
+    protected final Renderizar renderizar;
 
     // Métodos abstratos (cada player define os seus)
     public abstract void texture();
 
     public abstract String getName();
 
-    public abstract void ataqueBasico();
+    public abstract void ataqueBasico(float delta);
 
     public abstract void ataqueEspecial();
 
@@ -134,6 +136,7 @@ public abstract class PlayerTemplate {
         vidaBase = definirVidaBase();
         velocidade = definirVelocidade();
         TAMANHO_PX = definirTamanho();
+        tamanhoTiro = definirTamanhoTiro();
 
         HITBOX_SIZE = definirHitBoxSize();
         HITBOX_OFFSET_Y = definirHitBoxOffY();
@@ -145,11 +148,13 @@ public abstract class PlayerTemplate {
         pause = false;
 
         tiros = new ArrayList<>();
+        atirar = new Atirar();
         hud = new Hud();
 
         tilemapHitboxFactory = new TilemapHitboxFactory();
         listColisores = new ArrayList<>();
         statusMenu = new StatusMenu(this);
+        renderizar = new Renderizar();
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
@@ -178,6 +183,8 @@ public abstract class PlayerTemplate {
         camera.update();
         texture();
     }
+
+    protected abstract int definirTamanhoTiro();
 
     protected abstract int definirHitBoxOffY();
 
@@ -304,9 +311,9 @@ public abstract class PlayerTemplate {
         }
     }
 
-    public void combatMoves() {
+    public void combatMoves(float delta) {
         // Controles de combate
-        ataqueBasico();
+        ataqueBasico(delta);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             ataqueEspecial();
@@ -319,7 +326,7 @@ public abstract class PlayerTemplate {
     //Controles Gerais
     public void entityControl(float delta) {
         moveEntityControl(delta);
-        combatMoves();
+        combatMoves(delta);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
             drawHitBoxes = !drawHitBoxes;
@@ -387,6 +394,13 @@ public abstract class PlayerTemplate {
     public void adicionarColisao(List<Rectangle> colisores) {
         listColisores.addAll(colisores);
     }
+
+    public void adicionarTiro(TirosTamplate tiro) {
+        tiros.add(tiro);
+    }
+    public void removerTiro(TirosTamplate tiro) {
+        tiros.remove(tiro);
+    }
     // Animação
     protected TextureRegion animaAtual() {
         idleAnimation = animationEngine.animar(idleDefinition);
@@ -415,7 +429,7 @@ public abstract class PlayerTemplate {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
-        drawHitBox.draw(shapeRenderer, hitBox);
+        renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
 
     public void drawStatusMenu(SpriteBatch batch) {
@@ -599,5 +613,13 @@ public abstract class PlayerTemplate {
 
     public int getTamanho() {
         return TAMANHO_PX;
+    }
+
+    public float getCadenciaTiro() {
+        return cadenciaTiro;
+    }
+
+    public float getDuracaoTiro() {
+        return duracaoTiro;
     }
 }
