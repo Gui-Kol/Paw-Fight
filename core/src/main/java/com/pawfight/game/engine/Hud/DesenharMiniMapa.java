@@ -24,8 +24,6 @@ import static com.pawfight.game.engine.CommunVariable.*;
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
     private static final int AJUSTE = 15; // ajuste altura da linha
-    private final GlyphLayout layoutNumSalaAtual = new GlyphLayout();
-    private final GlyphLayout layoutTypeSalaAtual = new GlyphLayout();
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
 
     private void desenharSalaAtual(WorldTemplate world) {

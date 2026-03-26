@@ -122,7 +122,6 @@ public class EscolherPersonagem {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
             PlayerTemplate escolhido = getPlayerEscolhido();
-            escolhido.autoSave(); // inicia o ciclo de autosave
             return escolhido; // esse é o objeto que vai ser usado no jogo
         }
 

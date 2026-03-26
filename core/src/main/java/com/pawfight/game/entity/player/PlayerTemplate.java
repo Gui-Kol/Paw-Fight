@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.Hud.HudPause;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.design.ZoomChanger;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
@@ -23,9 +25,11 @@ import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.tiro.Atirar;
 import com.pawfight.game.entity.tiro.TirosTamplate;
 import com.pawfight.game.engine.save.SaveDataPlayer;
+import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.SocketHandler;
 
 import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
 
@@ -63,6 +67,7 @@ public abstract class PlayerTemplate {
 
     // Spritesheets e animações
     private boolean menuAberto;
+    protected HudPause hudPause;
     protected boolean pause;
     protected TilemapHitboxFactory tilemapHitboxFactory;
     protected SpriteDefinition idleDefinition;
@@ -154,6 +159,7 @@ public abstract class PlayerTemplate {
         tilemapHitboxFactory = new TilemapHitboxFactory();
         listColisores = new ArrayList<>();
         renderizar = new Renderizar();
+        hudPause = new HudPause();
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
@@ -181,8 +187,9 @@ public abstract class PlayerTemplate {
         camera.position.y = MathUtils.clamp(camera.position.y, camera.viewportHeight / 2f, mapHeight - camera.viewportHeight / 2f);
         camera.update();
         texture();
-
-        tirosModelos.add(modeloTiroExclusivo());
+        if (modeloTiroExclusivo() != null) {
+            tirosModelos.add(modeloTiroExclusivo());
+        }
     }
 
     protected abstract int definirTamanhoTiro();
@@ -230,19 +237,6 @@ public abstract class PlayerTemplate {
         this.moedas = data.moedas;
         this.pontosDisponiveis = data.pontosDisponiveis;
         Gdx.app.log("PlayerTemplate", "Save carregado para " + getName());
-    }
-
-    //AutoSave
-    public void autoSave() {
-        PlayerTemplate player = this;
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                PawFight game = (PawFight) Gdx.app.getApplicationListener();
-                game.savePlayer(player);
-                Gdx.app.log("PlayerTemplate", "Save criado para " + getName());
-            }
-        }, 30f, 15f);
     }
 
     // Atualização
@@ -318,6 +312,10 @@ public abstract class PlayerTemplate {
     public void combatMoves(float delta) {
         // Controles de combate
         ataqueBasico(delta);
+        if (podeAtacar) {
+            if (tirosModelos == null || tirosModelos.isEmpty()){return;}
+            atirar.atira(tirosModelos, this, delta);
+        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             ataqueEspecial();
@@ -423,7 +421,11 @@ public abstract class PlayerTemplate {
     }
 
     // Renderização
-    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    public void draw(WorldTemplate world) {
+        desenharTiros(world);
+
+        Batch batch = world.getBatch();
+        ShapeRenderer shapeRenderer = world.getShapeRenderer();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
@@ -432,6 +434,16 @@ public abstract class PlayerTemplate {
         shapeRenderer.setProjectionMatrix(camera.combined);
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         renderizar.hitboxDraw(shapeRenderer, hitBox);
+        hudPause.draw(world);
+    }
+    public void desenharTiros(WorldTemplate world){
+        Batch batch = world.getBatch();
+        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+
+        batch.setProjectionMatrix(camera.combined);
+        for (TirosTamplate tiro : tiros) {
+            tiro.draw(batch, shapeRenderer);
+        }
     }
 
     public void drawHud(SpriteBatch batch, ShapeRenderer shapeRenderer) {

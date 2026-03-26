@@ -42,12 +42,12 @@ public class BlackBird extends PlayerTemplate{
 
     @Override
     protected float definirDuracaoTiro() {
-        return 0;
+        return 1;
     }
 
     @Override
     protected float definirCadenciaTiro() {
-        return 0;
+        return 1;
     }
 
     @Override

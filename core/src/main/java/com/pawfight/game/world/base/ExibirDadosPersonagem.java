@@ -4,9 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import static com.pawfight.game.engine.CommunVariable.GET_SCALE;
@@ -42,11 +44,14 @@ public class ExibirDadosPersonagem {
         float offsetX = playerX - 400 * scale; // desloca para a esquerda do player
         float centerY = playerY + 100 * scale; // altura alinhada ao player
 
+        float widthFundo = 330 * scale;
+        float heightFundo = 250 * scale;
+
         // Caixa de fundo
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
-        shapeRenderer.rect(offsetX - 10 * scale, centerY - 125 * scale, 320 * scale, 250 * scale);
+        shapeRenderer.rect(offsetX - 10 * scale, centerY - 125 * scale,widthFundo, heightFundo);
         shapeRenderer.end();
 
         batch.begin();
@@ -55,17 +60,23 @@ public class ExibirDadosPersonagem {
         font.setColor(Color.WHITE);
 
         // Status alinhados à esquerda do player
-        font.draw(batch, "Status", offsetX + 90 * scale, centerY + 110 * scale);
-        font.draw(batch, player.getName(), offsetX + 50 * scale, centerY + 80 * scale);
+        font.draw(batch,"Status", offsetX + 80 * scale, centerY + 110 * scale);
+        font.draw(batch,player.getName(), offsetX * scale, centerY + 80 * scale);
 
-        font.draw(batch, "Life: " + player.getVidaBase(), offsetX, centerY + 20 * scale);
-        batch.draw(coracao, offsetX + 250 * scale, centerY, 24 * scale, 24 * scale);
+        String textoLife = "Life: " + player.getVidaBase();
+        GlyphLayout layoutLife = new GlyphLayout(font,textoLife);
+        font.draw(batch, textoLife, offsetX, centerY + 20 * scale);
+        batch.draw(coracao, offsetX + 10 + layoutLife.width * scale, centerY, 24 * scale, 24 * scale);
 
-        font.draw(batch, "Speed: " + player.getVelocidade() / 100, offsetX, centerY - 10 * scale);
-        batch.draw(raio, offsetX + 235 * scale, centerY - 45 * scale, 56 * scale, 56 * scale);
+        String textoSpeed = "Speed: " + player.getVelocidade() / 100;
+        GlyphLayout layoutSpeed = new GlyphLayout(font,textoSpeed);
+        font.draw(batch, textoSpeed, offsetX, centerY - 10 * scale);
+        batch.draw(raio, offsetX + layoutSpeed.width * scale, centerY - 45 * scale, 56 * scale, 56 * scale);
 
-        font.draw(batch, "Strength: " + player.getForca(), offsetX, centerY - 40 * scale);
-        batch.draw(musculo, offsetX + 235 * scale, centerY - 85 * scale, 56 * scale, 56 * scale);
+        String textoMuscle = "Strength: " + player.getForca();
+        GlyphLayout layoutMuscle = new GlyphLayout(font,textoMuscle);
+        font.draw(batch, textoMuscle, offsetX, centerY - 40 * scale);
+        batch.draw(musculo, offsetX + layoutMuscle.width * scale, centerY - 85 * scale, 56 * scale, 56 * scale);
 
         font.draw(batch, "Size: " + player.getTamanho() + " cm", offsetX, centerY - 70 * scale);
         batch.draw(requa, offsetX + 235 * scale, centerY - 120 * scale, 56 * scale, 56 * scale);

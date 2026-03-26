@@ -11,6 +11,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
@@ -35,9 +37,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+
 public abstract class WorldTemplate implements Screen {
 
     // Física
+    private final Stage stage;
     protected TilemapHitboxFactory tilemapHitboxFactory;
 
     // Base
@@ -97,6 +103,7 @@ public abstract class WorldTemplate implements Screen {
         desenharMiniMapa = new DesenharMiniMapa();
         screenTransition = new ScreenTransition(game);
         carregarPortas = new CarregarPortas();
+        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE()), batch);
     }
 
 
@@ -162,7 +169,7 @@ public abstract class WorldTemplate implements Screen {
 
     protected void updatePlayer(float delta) {
         player.update(delta);
-        player.draw(batch, shapeRenderer);
+        player.draw(this);
     }
 
     public void carregarParede() {
@@ -352,4 +359,7 @@ public abstract class WorldTemplate implements Screen {
         return viewport;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
 }

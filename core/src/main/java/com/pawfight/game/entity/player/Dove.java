@@ -1,11 +1,10 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.entity.tiro.TirosTamplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
+import com.pawfight.game.world.WorldTemplate;
 
 public class Dove extends PlayerTemplate {
 
@@ -87,20 +86,11 @@ public class Dove extends PlayerTemplate {
 
     @Override
     public void ataqueBasico(float delta) {
-        if (podeAtacar) {
-            if (tirosModelos == null || tirosModelos.isEmpty()){return;}
-            atirar.atira(tirosModelos, this, delta);
-        }
     }
 
     @Override
-    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        batch.setProjectionMatrix(camera.combined);
-
-        for (TirosTamplate coco : tiros) {
-            coco.draw(batch, shapeRenderer);
-        }
-        super.draw(batch, shapeRenderer);
+    public void draw(WorldTemplate world) {
+        super.draw(world);
     }
 
     @Override

@@ -48,7 +48,7 @@ public class Hud {
         coin = new Texture("Hud/coin.png");
         coracaoDefinition = new SpriteDefinition(new Texture("Hud/coracao.png"), 5, 1f, false, false);
         animationEngine = new AnimationEngine();
-        Gdx.app.log("Hud", "Hud sendo carregado e desenhado...");
+        Gdx.app.log("Hud", "Sendo carregado e desenhado...");
     }
 
     public void draw(Batch batch, PlayerTemplate playerTemplate, ShapeRenderer shapeRenderer) {
@@ -180,5 +180,17 @@ public class Hud {
 
     public DesenharTexto getDesenharTexto() {
         return desenharTexto;
+    }
+
+    public AnimationEngine getAnimationEngine() {
+        return animationEngine;
+    }
+
+    public DesenharTextura getDesenharTextura() {
+        return desenharTextura;
+    }
+
+    public Viewport getHudViewport() {
+        return hudViewport;
     }
 }
