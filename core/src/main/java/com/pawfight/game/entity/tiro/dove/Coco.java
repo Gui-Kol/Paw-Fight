@@ -52,6 +52,6 @@ public class Coco extends TirosTamplate {
 
     @Override
     protected float definirIntervalo() {
-        return 4;
+        return 1;
     }
 }

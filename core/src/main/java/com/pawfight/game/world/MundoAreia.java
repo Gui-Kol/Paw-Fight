@@ -10,7 +10,7 @@ import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomGenerator;
 import com.pawfight.game.engine.procedural.room.RoomType;
-import com.pawfight.game.entity.enemy.EnemySkeleton;
+import com.pawfight.game.entity.enemy.Skeleton;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -90,7 +90,7 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public List<EnemyTemplate> getInimigosModelo() {
-        EnemyTemplate enemySkeleton = new EnemySkeleton(0, 0, false, player);
+        EnemyTemplate enemySkeleton = new Skeleton(0, 0, false, player);
         return List.of(enemySkeleton);
     }
 
@@ -121,11 +121,8 @@ public class MundoAreia extends WorldTemplate {
 
             if (player != null && !player.isMorto()) {
                 super.render(delta);
-                int indiceAtual = rooms.indexOf(currentRoom);
-                desenharMiniMapa.desenharSalaAtual(indiceAtual, currentRoom.getType(), batch, player.getHud().getHudCamera());
-
                 renderizar.atualizarListaInimigos(delta,listaInimigos);
-                renderizar.renderizarInimigos(batch,shapeRenderer,listaInimigos);
+                renderizar.renderizarInimigos(this);
 
                 cactoDano();
 
@@ -190,8 +187,8 @@ public class MundoAreia extends WorldTemplate {
             layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
 
             if (shapeRenderer != null && !shapeRenderer.isDrawing()) {
-                if (desenharMiniMapa != null && roomGenerator != null) {
-                    desenharMiniMapa.desenharMiniMapa(player.getHud().getHudCamera(), batch, shapeRenderer, salasVisitadas, currentRoom, roomGenerator.getRoomMap());
+                if (desenharMiniMapa != null && roomGenerator != null && player != null) {
+                    desenharMiniMapa.desenharMiniMapa(this);
                 }
             }
         } catch (Exception e) {

@@ -11,7 +11,7 @@ public abstract class TirosTamplate {
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
-    protected float duracao, intervalo;
+    protected float duracao, cadencia, intervalo;
     protected Texture texture;
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
     protected Renderizar renderizar;
@@ -20,8 +20,9 @@ public abstract class TirosTamplate {
     public TirosTamplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         renderizar = new Renderizar();
         duracao = definirDuracao();
-        intervalo = definirIntervalo();
+        cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
+        intervalo = 0;
 
         this.tamanho = tamanho + tamanhoPadrao;
         this.tamanhoDraw = tamanho + tamanhoPadrao;
@@ -64,8 +65,8 @@ public abstract class TirosTamplate {
 
     protected abstract float definirIntervalo();
 
-    public float getIntervalo() {
-        return intervalo;
+    public float getCadencia() {
+        return cadencia;
     }
 
     public float getDuracao() {
@@ -78,6 +79,18 @@ public abstract class TirosTamplate {
 
     public Rectangle getHitBox() {
         return hitBox;
+    }
+
+    public float getIntervalo() {
+        return intervalo;
+    }
+
+    public void setDuracao(float duracao) {
+        this.duracao = duracao;
+    }
+
+    public void setIntervalo(float intervalo) {
+        this.intervalo = intervalo;
     }
 }
 

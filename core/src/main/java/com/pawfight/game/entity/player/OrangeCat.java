@@ -2,6 +2,8 @@ package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.entity.tiro.TirosTamplate;
+import com.pawfight.game.entity.tiro.dove.Coco;
 
 public class OrangeCat extends PlayerTemplate{
     public OrangeCat(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -51,6 +53,11 @@ public class OrangeCat extends PlayerTemplate{
     @Override
     protected int definirForca() {
         return 1;
+    }
+
+    @Override
+    protected TirosTamplate modeloTiroExclusivo() {
+        return new Coco(tamanhoTiro, this);
     }
 
     @Override

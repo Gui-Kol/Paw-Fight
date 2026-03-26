@@ -28,11 +28,16 @@ public class Home implements Screen {
     private final ScreenTransition screenTransition;
 
     // Texturas para os estados do botão
-    private final Texture normalTexture = new Texture("menu/new_game_normal.png");
-    private final Texture hoverTexture = new Texture("menu/new_game_hover.png");
-    private final Texture pressedTexture = new Texture("menu/new_game_pressed.png");
+    private final Texture normalTexturePlay = new Texture("menu/button/play/play1.png");
+    private final Texture hoverTexturePlay = new Texture("menu/button/play/play2.png");
+    private final Texture pressedTexturePlay = new Texture("menu/button/play/play3.png");
 
-    private ImageButton newGameButton;
+    private final Texture normalTextureQuit = new Texture("menu/button/quit/quit1.png");
+    private final Texture hoverTextureQuit = new Texture("menu/button/quit/quit2.png");
+    private final Texture pressedTextureQuit = new Texture("menu/button/quit/quit3.png");
+
+    private ImageButton playButton;
+    private ImageButton quitButton;
     private final CreateButton createButton;
     private final Stage stage;
 
@@ -96,18 +101,30 @@ public class Home implements Screen {
 
     @Override
     public void show() {
-        if (newGameButton == null) {
+        if (playButton == null && quitButton == null) {
             try {
-                newGameButton = createButton.create(stage,
-                    (int) (stage.getViewport().getWorldWidth() / 2 - 100),
-                    (int) (stage.getViewport().getWorldHeight() / 3),
-                    200, 80,
-                    normalTexture, hoverTexture, pressedTexture);
+                playButton = createButton.create(stage,
+                    GET_LARGURA_TELA_BASE()/2,
+                    GET_ALTURA_TELA_BASE()/2,
+                    200, 105,
+                    normalTexturePlay, hoverTexturePlay, pressedTexturePlay);
 
-                newGameButton.addListener(new ClickListener() {
+                quitButton = createButton.create(stage,
+                    GET_LARGURA_TELA_BASE()/2,
+                    GET_ALTURA_TELA_BASE()/2 - 150,
+                    200, 105,
+                    normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
+
+                playButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        botaoNewGameApertado();
+                        botaoPlayApertado();
+                    }
+                });
+                quitButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        botaoQuitApertado();
                     }
                 });
             } catch (Exception e) {
@@ -116,9 +133,13 @@ public class Home implements Screen {
         }
     }
 
-    public void botaoNewGameApertado() {
+    private void botaoPlayApertado() {
         screenTransition.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
         backMusic.stop();
+    }
+
+    public void botaoQuitApertado() {
+        Gdx.app.exit();
     }
 
     @Override

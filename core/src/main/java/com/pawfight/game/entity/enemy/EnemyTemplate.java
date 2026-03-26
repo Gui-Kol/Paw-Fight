@@ -106,6 +106,9 @@ public abstract class EnemyTemplate {
 
     // Métodos comuns
     public void update(float delta) {
+        if (player != null && player.isPause()){
+            return;
+        }
         TAMANHO_PX = getTamanho();
         if (!morto) {
             executarIA(delta);

@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-public class EnemySkeleton extends EnemyTemplate{
-    public EnemySkeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
+public class Skeleton extends EnemyTemplate{
+    public Skeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
         float multiplicador = forte ? 1.8f : 1;
         nome = "Esqueleto";
@@ -34,7 +34,7 @@ public class EnemySkeleton extends EnemyTemplate{
 
     @Override
     public EnemyTemplate cloneEnemy() {
-        return new EnemySkeleton(dx, dy, false, player);
+        return new Skeleton(dx, dy, false, player);
     }
 
     @Override

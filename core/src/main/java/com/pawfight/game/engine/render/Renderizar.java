@@ -26,9 +26,9 @@ public class Renderizar {
         }
         listaInimigos.removeAll(inimigosMortos);
     }
-    public void renderizarInimigos(SpriteBatch batch, ShapeRenderer shapeRenderer, List<EnemyTemplate> listaInimigos) {
-        for (EnemyTemplate enemy : listaInimigos) {
-            enemy.draw(batch, shapeRenderer);
+    public void renderizarInimigos(WorldTemplate world) {
+        for (EnemyTemplate enemy : world.getListaInimigos()) {
+            enemy.draw(world.getBatch(), world.getShapeRenderer());
         }
     }
 

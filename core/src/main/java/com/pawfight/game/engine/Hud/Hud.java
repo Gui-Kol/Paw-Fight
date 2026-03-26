@@ -18,6 +18,9 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import static com.pawfight.game.engine.CommunVariable.*;
 
 public class Hud {
+    private float atualizarDesenho;
+    private float deltaTexto;
+    private final float tempoParaDesenhar;
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
     private final AnimationEngine animationEngine;
     private final SpriteDefinition coracaoDefinition;
@@ -38,6 +41,9 @@ public class Hud {
         desenharTexto = new DesenharTexto(hudViewport, hudCamera);
         desenharTextura = new DesenharTextura();
         opacidadeHud = 0.5f;
+        atualizarDesenho = 0;
+        tempoParaDesenhar = 2;
+        deltaTexto = 0;
 
         coin = new Texture("Hud/coin.png");
         coracaoDefinition = new SpriteDefinition(new Texture("Hud/coracao.png"), 5, 1f, false, false);
@@ -46,6 +52,10 @@ public class Hud {
     }
 
     public void draw(Batch batch, PlayerTemplate playerTemplate, ShapeRenderer shapeRenderer) {
+        if (playerTemplate.isPause()){return;}
+        float delta = Gdx.graphics.getDeltaTime();
+        atualizarDesenho += delta;
+
         hudCamera.update();
 
         batch.setProjectionMatrix(hudCamera.combined);
@@ -64,6 +74,7 @@ public class Hud {
             desenharCoordenadas(batch, shapeRenderer, x, y);
             desenharDirecaoOlhar(batch, shapeRenderer, playerTemplate.isOlhandoEsquerda());
             desenharScale(batch, shapeRenderer);
+            desenharDeltaTime(batch,shapeRenderer, delta);
         }
         batch.end();
     }
@@ -126,6 +137,18 @@ public class Hud {
 
         desenharTexto.desenhar(batch, shapeRenderer, corFundo, olhando, font, x, y, 0, false);
     }
+    private void desenharDeltaTime(Batch batch, ShapeRenderer shapeRenderer, float delta) {
+        String deltaT = "Delta timer: " + deltaTexto;
+        GlyphLayout layout = new GlyphLayout(font, deltaT);
+        Color corFundo = new Color();
+        var x = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE() - layout.height) - 100;
+        if (atualizarDesenho >= tempoParaDesenhar) {
+            atualizarDesenho = 0;
+            deltaTexto = delta;
+        }
+        desenharTexto.desenhar(batch, shapeRenderer, corFundo, deltaT, font, x, y, 0, false);
+    }
 
     private void desenharScale(Batch batch, ShapeRenderer shapeRenderer) {
         float screenW = Gdx.graphics.getWidth();
@@ -153,5 +176,9 @@ public class Hud {
 
     public OrthographicCamera getHudCamera() {
         return hudCamera;
+    }
+
+    public DesenharTexto getDesenharTexto() {
+        return desenharTexto;
     }
 }

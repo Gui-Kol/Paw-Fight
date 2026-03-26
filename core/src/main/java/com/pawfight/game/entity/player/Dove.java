@@ -1,6 +1,5 @@
 package com.pawfight.game.entity.player;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -60,6 +59,11 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
+    protected TirosTamplate modeloTiroExclusivo() {
+        return new Coco(tamanhoTiro, this);
+    }
+
+    @Override
     public void texture() {
         idleSheet = new Texture("entitys/player/dove/Idle.png");
         walkSheet = new Texture("entitys/player/dove/Walk.png");
@@ -84,15 +88,9 @@ public class Dove extends PlayerTemplate {
     @Override
     public void ataqueBasico(float delta) {
         if (podeAtacar) {
-            cagando();
-            Gdx.app.log("PlayerDove", "Atacando...");
-            podeAtacar = false;
+            if (tirosModelos == null || tirosModelos.isEmpty()){return;}
+            atirar.atira(tirosModelos, this, delta);
         }
-    }
-
-    private void cagando() {
-        Coco cocoModelo = new Coco(tamanhoTiro, this);
-        atirar.atira(cocoModelo, this);
     }
 
     @Override

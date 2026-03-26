@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.Timer;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
-import com.pawfight.game.engine.Hud.StatusMenu;
 import com.pawfight.game.engine.design.SpriteDefinition;
 import com.pawfight.game.engine.design.ZoomChanger;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
@@ -35,6 +34,7 @@ public abstract class PlayerTemplate {
     protected int moedas;
 
     // Atributos comuns
+    protected List<TirosTamplate> tirosModelos;
     protected float cadenciaTiro;
     protected float duracaoTiro;
     protected final List<TirosTamplate> tiros;
@@ -63,8 +63,7 @@ public abstract class PlayerTemplate {
 
     // Spritesheets e animações
     private boolean menuAberto;
-    private boolean pause;
-    protected StatusMenu statusMenu;
+    protected boolean pause;
     protected TilemapHitboxFactory tilemapHitboxFactory;
     protected SpriteDefinition idleDefinition;
     protected SpriteDefinition walkDefinition;
@@ -148,12 +147,12 @@ public abstract class PlayerTemplate {
         pause = false;
 
         tiros = new ArrayList<>();
+        tirosModelos = new ArrayList<>();
         atirar = new Atirar();
         hud = new Hud();
 
         tilemapHitboxFactory = new TilemapHitboxFactory();
         listColisores = new ArrayList<>();
-        statusMenu = new StatusMenu(this);
         renderizar = new Renderizar();
 
         // Hitbox inicial (quadrada e ajustável)
@@ -182,6 +181,8 @@ public abstract class PlayerTemplate {
         camera.position.y = MathUtils.clamp(camera.position.y, camera.viewportHeight / 2f, mapHeight - camera.viewportHeight / 2f);
         camera.update();
         texture();
+
+        tirosModelos.add(modeloTiroExclusivo());
     }
 
     protected abstract int definirTamanhoTiro();
@@ -201,6 +202,8 @@ public abstract class PlayerTemplate {
     protected abstract float definirCadenciaTiro();
 
     protected abstract int definirForca();
+
+    protected abstract TirosTamplate modeloTiroExclusivo();
 
     public SaveDataPlayer saveData() {
         SaveDataPlayer data = new SaveDataPlayer();
@@ -244,10 +247,11 @@ public abstract class PlayerTemplate {
 
     // Atualização
     public void update(float delta) {
+        pauseControl();
         if (pause) {
-            pauseControl();
             return;
         }
+
         if (!morto) {
 
             entityControl(delta);
@@ -336,7 +340,6 @@ public abstract class PlayerTemplate {
         camera.zoom = zoomChanger.changeZoom();
 
         controleTestes();
-        pauseControl();
     }
 
     private void controleTestes() {
@@ -352,7 +355,6 @@ public abstract class PlayerTemplate {
     //Controle para pausar
     public void pauseControl() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            statusMenu.criarMenu();
             menuAberto = !menuAberto;
             pause = menuAberto;
         }
@@ -432,12 +434,6 @@ public abstract class PlayerTemplate {
         renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
 
-    public void drawStatusMenu(SpriteBatch batch) {
-        if (menuAberto) {
-            statusMenu.draw(batch, hud.getHudCamera());
-        }
-    }
-
     public void drawHud(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         hud.draw(batch, this, shapeRenderer);
     }
@@ -468,7 +464,6 @@ public abstract class PlayerTemplate {
         walkSheet.dispose();
         deadSheet.dispose();
         hurtSheet.dispose();
-        statusMenu.dispose();
     }
 
     public void clearList() {
@@ -599,8 +594,8 @@ public abstract class PlayerTemplate {
         return morto;
     }
 
-    public StatusMenu getStatusMenu() {
-        return statusMenu;
+    public boolean isPause() {
+        return pause;
     }
 
     public List<TirosTamplate> getTiros() {

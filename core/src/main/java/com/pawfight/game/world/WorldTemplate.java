@@ -148,18 +148,16 @@ public abstract class WorldTemplate implements Screen {
         renderLayers();
         if (player != null) {
             updatePlayer(delta);
+            if (player.isPause()){
+                pause();
+            }
         }
         renderLayersUp();
 
         if (player != null) {
             player.drawHud(batch, shapeRenderer);
-            player.drawStatusMenu(batch);
         }
         checkPortals();
-
-        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            pause();
-        }
     }
 
     protected void updatePlayer(float delta) {
@@ -353,4 +351,5 @@ public abstract class WorldTemplate implements Screen {
     public Viewport getViewport() {
         return viewport;
     }
+
 }

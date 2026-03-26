@@ -8,14 +8,18 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.pawfight.game.engine.design.desenhar.DesenharTexto;
 import com.pawfight.game.engine.font.FontFactory;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomType;
+import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.world.WorldTemplate;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
+import static com.pawfight.game.engine.CommunVariable.*;
 
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
@@ -24,29 +28,39 @@ public class DesenharMiniMapa {
     private final GlyphLayout layoutTypeSalaAtual = new GlyphLayout();
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
 
-    public void desenharSalaAtual(int atual, RoomType type, Batch batch, OrthographicCamera hudCamera) {
+    private void desenharSalaAtual(WorldTemplate world) {
         if (HITBOX_ISVISIBLE) {
-            batch.setProjectionMatrix(hudCamera.combined); // <-- garante HUD
+            Room currentRoom = world.getCurrentRoom();
+            Batch batch = world.getBatch();
+            int atual = world.getRooms().indexOf(currentRoom);
+
             batch.begin();
-            layoutNumSalaAtual.setText(font, String.valueOf(atual));
-            layoutTypeSalaAtual.setText(font, type.toString());
-
-            float screenWidth = Gdx.graphics.getWidth();
-            float screenHeight = Gdx.graphics.getHeight();
-
-            float posX = screenWidth - layoutNumSalaAtual.width - 10;
-            float posXType = screenWidth - layoutTypeSalaAtual.width - 10;
-            float posY = screenHeight - 80;
-
-            font.draw(batch, layoutNumSalaAtual, posX, posY);
-            font.draw(batch, layoutTypeSalaAtual, posXType, posY - 40);
+            Hud hud = world.getPlayer().getHud();
+            String texto = "Sala Atual: " + atual + "\nTipo da sala: " + currentRoom.getType();
+            GlyphLayout layout = new GlyphLayout(font, texto);
+            Color corFundo = new Color();
+            var xW = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
+            var yH = (GET_ALTURA_TELA_BASE() - layout.height) - 130;
+            hud.getDesenharTexto().desenhar(batch, world.getShapeRenderer(), corFundo, texto, font, xW, yH, 0, false);
             batch.end();
         }
     }
 
-    public void desenharMiniMapa(OrthographicCamera camera, Batch batch, ShapeRenderer shapeRenderer,
-                                 Set<String> salasVisitadas, Room currentRoom, Map<String, Room> roomMap) {
+
+    public void desenharMiniMapa(WorldTemplate world) {
+        PlayerTemplate player = world.getPlayer();
+
+        if (player.isPause()){return;}
+
+        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+        Batch batch = world.getBatch();
+        Map<String, Room> roomMap = world.getRoomGenerator().getRoomMap();
+        Set<String> salasVisitadas = world.getSalasVisitadas();
+        OrthographicCamera camera = player.getHud().getHudCamera();
         shapeRenderer.setProjectionMatrix(camera.combined);
+        Room currentRoom = world.getCurrentRoom();
+
+        desenharSalaAtual(world);
 
         int tamanho = 10; // tamanho de cada quadrado
         int offsetX = 150;

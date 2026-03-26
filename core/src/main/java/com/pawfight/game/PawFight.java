@@ -91,7 +91,6 @@ public class PawFight extends Game {
         if (getScreen() instanceof WorldTemplate world) {
             if (world.getPlayer() != null) {
                 world.getPlayer().getHud().resize(width, height);
-                world.getPlayer().getStatusMenu().resize(width, height);
             }
         }
 
