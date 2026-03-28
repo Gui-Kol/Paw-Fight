@@ -1,7 +1,6 @@
 package com.pawfight.game.world;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -12,26 +11,25 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.procedural.CarregarPortas;
-import com.pawfight.game.engine.render.LayerRenderer;
 import com.pawfight.game.engine.Validar;
-import com.pawfight.game.engine.render.Renderizar;
-import com.pawfight.game.entity.tiro.DanoTiro;
+import com.pawfight.game.engine.design.transition.ScreenTransition;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.GerarObjetos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.room.Room;
 import com.pawfight.game.engine.procedural.room.RoomGenerator;
+import com.pawfight.game.engine.render.LayerRenderer;
+import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.entity.tiro.DanoTiro;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -126,8 +124,8 @@ public abstract class WorldTemplate implements Screen {
         carregarMapaCompleto();
     }
 
-    private void carregarMapaCompleto(){
-        if (deveCarregarMapaCompleto()){
+    private void carregarMapaCompleto() {
+        if (deveCarregarMapaCompleto()) {
             if (errorFinal) {
                 Gdx.app.error(getWorldName(), "show() chamado mas errorFinal = true");
                 return;
@@ -156,10 +154,15 @@ public abstract class WorldTemplate implements Screen {
         renderLayers();
         if (player != null) {
             updatePlayer(delta);
-            if (player.isPause()){
+            if (player.isPause()) {
                 pause();
             }
+            if (listaInimigos != null && !listaInimigos.isEmpty()) {
+                renderizar.atualizarListaInimigos(Gdx.graphics.getDeltaTime(), listaInimigos);
+                renderizar.renderizarInimigos(this);
+            }
         }
+
         renderLayersUp();
 
         if (player != null) {
@@ -190,11 +193,11 @@ public abstract class WorldTemplate implements Screen {
 
     public abstract List<InfoGeraObjeto> getInfoObjetos();
 
-    public void gerarObjetos(){
-        if (getInfoObjetos() == null || getInfoObjetos().isEmpty()){
+    public void gerarObjetos() {
+        if (getInfoObjetos() == null || getInfoObjetos().isEmpty()) {
             return;
         }
-        gerarObjetos.gerar(this,getInfoObjetos());
+        gerarObjetos.gerar(this, getInfoObjetos());
     }
 
     public abstract String getWorldName();
@@ -237,7 +240,7 @@ public abstract class WorldTemplate implements Screen {
         if (map != null) map.dispose();
         if (layerRenderer != null) layerRenderer.dispose();
         if (player != null) player.dispose();
-        Gdx.app.log(getWorldName(),"foi disposed");
+        Gdx.app.log(getWorldName(), "foi disposed");
     }
 
     public boolean currentRoomFoiVisitada() {
@@ -314,10 +317,12 @@ public abstract class WorldTemplate implements Screen {
     public List<Rectangle> getListaObjetosHitbox() {
         return listaObjetosHitbox;
     }
-    public void addListaObjetos(List<ObjetoGerado> objetoGerados){
+
+    public void addListaObjetos(List<ObjetoGerado> objetoGerados) {
         listaObjetos.addAll(objetoGerados);
     }
-    public void addListaObjetosHitbox(List<Rectangle> hitBoxs){
+
+    public void addListaObjetosHitbox(List<Rectangle> hitBoxs) {
         listaObjetosHitbox.addAll(hitBoxs);
     }
 

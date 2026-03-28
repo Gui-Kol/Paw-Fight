@@ -20,6 +20,7 @@ import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.phisics.ChecarColisao;
 import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
 import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.tiro.Atirar;
 import com.pawfight.game.entity.tiro.TirosTamplate;
 import com.pawfight.game.engine.save.SaveDataPlayer;

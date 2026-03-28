@@ -121,8 +121,7 @@ public class MundoAreia extends WorldTemplate {
 
             if (player != null && !player.isMorto()) {
                 super.render(delta);
-                renderizar.atualizarListaInimigos(delta,listaInimigos);
-                renderizar.renderizarInimigos(this);
+
 
                 cactoDano();
 
