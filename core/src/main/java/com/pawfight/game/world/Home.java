@@ -89,11 +89,10 @@ public class Home implements Screen {
 
     @Override
     public void render(float delta) {
-        float scale = GET_SCALE();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        batch.draw(background, 0, 0, 1920 * scale, 1080 * scale);
+        batch.draw(background, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.end();
         hudStage.render();
 

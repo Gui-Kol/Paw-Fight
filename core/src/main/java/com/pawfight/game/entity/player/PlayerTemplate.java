@@ -431,7 +431,6 @@ public abstract class PlayerTemplate {
         shapeRenderer.setProjectionMatrix(camera.combined);
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         renderizar.hitboxDraw(shapeRenderer, hitBox);
-        hudPause.draw(world);
     }
     public void desenharTiros(WorldTemplate world){
         Batch batch = world.getBatch();
@@ -443,8 +442,9 @@ public abstract class PlayerTemplate {
         }
     }
 
-    public void drawHud(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    public void drawHud(SpriteBatch batch, ShapeRenderer shapeRenderer, WorldTemplate world) {
         hud.draw(batch, this, shapeRenderer);
+        hudPause.draw(world);
     }
 
     // Métodos comuns já implementados

@@ -12,11 +12,7 @@ public class CommunVariable {
     public static float GET_SCALE(){
         float screenW = Gdx.graphics.getWidth();
         float screenH = Gdx.graphics.getHeight();
-        float scale = Math.min(screenW / GET_LARGURA_TELA_BASE(), screenH / GET_ALTURA_TELA_BASE());
-        if (scale < 1){
-            return 1;
-        }
-        return scale;
+        return Math.min(screenW / GET_LARGURA_TELA_BASE(), screenH / GET_ALTURA_TELA_BASE());
     }
     public static int GET_ALTURA_TELA_BASE(){
         return 1080;

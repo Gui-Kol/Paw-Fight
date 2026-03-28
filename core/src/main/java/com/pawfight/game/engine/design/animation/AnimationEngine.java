@@ -1,6 +1,7 @@
 package com.pawfight.game.engine.design.animation;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -78,6 +79,9 @@ public class AnimationEngine {
             return obterFrame(anim, true);
         }
         return anim.getKeyFrame(stateTime, false);
+    }
+    public boolean desenharFundo(Batch batch, boolean abrirMenu, DefinirSprite sprite, int tamanhoFundo, Camera camera) {
+        return desenharFundo(batch, abrirMenu, sprite, tamanhoFundo, (OrthographicCamera) camera);
     }
 
     public boolean desenharFundo(Batch batch, boolean abrirMenu, DefinirSprite sprite, int tamanhoFundo, OrthographicCamera camera) {

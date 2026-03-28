@@ -163,7 +163,7 @@ public abstract class WorldTemplate implements Screen {
         renderLayersUp();
 
         if (player != null) {
-            player.drawHud(batch, shapeRenderer);
+            player.drawHud(batch, shapeRenderer, this);
         }
         checkPortals();
     }

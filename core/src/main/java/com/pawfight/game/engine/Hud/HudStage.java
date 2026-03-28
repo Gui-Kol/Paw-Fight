@@ -4,18 +4,20 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.pawfight.game.engine.CommunVariable;
+
+import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
 
 public class HudStage {
     private Stage stage;
 
     public HudStage() {
         OrthographicCamera camera = new OrthographicCamera();
-        camera.setToOrtho(false, CommunVariable.GET_LARGURA_TELA_BASE(), CommunVariable.GET_ALTURA_TELA_BASE());
+        camera.setToOrtho(false, GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
 
         FitViewport viewport = new FitViewport(
-            CommunVariable.GET_LARGURA_TELA_BASE(),
-            CommunVariable.GET_ALTURA_TELA_BASE(),
+            GET_LARGURA_TELA_BASE(),
+            GET_ALTURA_TELA_BASE(),
             camera
         );
         stage = new Stage(viewport);
@@ -30,6 +32,7 @@ public class HudStage {
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }
+
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         Gdx.input.setInputProcessor(stage);

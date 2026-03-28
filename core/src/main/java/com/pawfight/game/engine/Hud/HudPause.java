@@ -60,9 +60,13 @@ public class HudPause {
         boolean jogoPausado = world.getPlayer().isPause();
 
         DefinirSprite animacao = new DefinirSprite(fundo, 6, 0.05f, false, false);
-        boolean renderizaBotao = animationEngine.desenharFundo(batch, jogoPausado, animacao, 1024, world.getPlayer().getHud().getHudCamera());
-        if (jogoPausado && renderizaBotao) {
-            hudStage.render();
+        boolean renderizaBotao = animationEngine.desenharFundo(
+            batch, jogoPausado, animacao, 1024, hudStage.getStage().getCamera());
+        if (jogoPausado) {
+            hudStage.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            if (renderizaBotao) {
+                hudStage.render();
+            }
         }
     }
 

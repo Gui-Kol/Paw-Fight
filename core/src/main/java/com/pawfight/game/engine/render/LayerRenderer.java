@@ -6,6 +6,8 @@ import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LayerRenderer {
 
@@ -44,9 +46,25 @@ public class LayerRenderer {
 
     // Renderiza múltiplos layers pelo nome
     public void renderLayers(String[] layerNames, OrthographicCamera camera) {
+        if (layerNames == null || layerNames.length == 0) return;
+        List<Integer> indices = new ArrayList<>();
         for (String name : layerNames) {
-            renderLayer(name, camera); // chama um por um, na ordem
+            MapLayer layer = map.getLayers().get(name);
+            if (layer == null) {
+                Gdx.app.error("LayerRenderer", name + " não encontrado!");
+                continue;
+            }
+            int idx = map.getLayers().getIndex(layer);
+            if (idx != -1) indices.add(idx);
         }
+
+        if (indices.isEmpty()) return;
+
+        int[] idxArray = new int[indices.size()];
+        for (int i = 0; i < indices.size(); i++) idxArray[i] = indices.get(i);
+
+        renderer.setView(camera);
+        renderer.render(idxArray);
     }
 
     public void dispose() {
