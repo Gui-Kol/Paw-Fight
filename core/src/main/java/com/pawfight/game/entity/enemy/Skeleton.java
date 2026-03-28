@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class Skeleton extends EnemyTemplate{
@@ -24,9 +24,9 @@ public class Skeleton extends EnemyTemplate{
         idleSheet = new Texture("entitys/enemy/Skeleton/Idle.png");
         walkSheet = new Texture("entitys/enemy/Skeleton/Walk.png");
         deadSheet = new Texture("entitys/enemy/Skeleton/Death.png");
-        idleDefinition = new SpriteDefinition(idleSheet, 4, 0.1f, false, olhandoEsquerda);
-        walkDefinition = new SpriteDefinition(walkSheet, 6, 0.1f, false, olhandoEsquerda);
-        deadDefinition = new SpriteDefinition(deadSheet, 8, 0.1f, false, olhandoEsquerda);
+        idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
+        walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
+        deadDefinition = new DefinirSprite(deadSheet, 8, 0.1f, false, olhandoEsquerda);
         hurtDefinition = walkDefinition;
         atackDefinition = walkDefinition;
         specialAtackDefinition = walkDefinition;

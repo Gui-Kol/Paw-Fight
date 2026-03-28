@@ -127,6 +127,7 @@ public class PawFight extends Game {
         if (transition != null) {
             transition.dispose();
         }
+        Gdx.app.log("PawFight","foi disposed");
     }
 
     public void savePlayer(PlayerTemplate player) {

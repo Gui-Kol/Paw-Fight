@@ -11,12 +11,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Timer;
-import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.CommunVariable;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.HudPause;
-import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.ZoomChanger;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.phisics.ChecarColisao;
@@ -29,7 +27,6 @@ import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.SocketHandler;
 
 import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
 
@@ -70,10 +67,10 @@ public abstract class PlayerTemplate {
     protected HudPause hudPause;
     protected boolean pause;
     protected TilemapHitboxFactory tilemapHitboxFactory;
-    protected SpriteDefinition idleDefinition;
-    protected SpriteDefinition walkDefinition;
-    protected SpriteDefinition deadDefinition;
-    protected SpriteDefinition hurtDefinition;
+    protected DefinirSprite idleDefinition;
+    protected DefinirSprite walkDefinition;
+    protected DefinirSprite deadDefinition;
+    protected DefinirSprite hurtDefinition;
     protected Texture idleSheet;
     protected Texture walkSheet;
     protected Texture deadSheet;
@@ -159,7 +156,7 @@ public abstract class PlayerTemplate {
         tilemapHitboxFactory = new TilemapHitboxFactory();
         listColisores = new ArrayList<>();
         renderizar = new Renderizar();
-        hudPause = new HudPause();
+        hudPause = new HudPause(this);
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
@@ -628,5 +625,10 @@ public abstract class PlayerTemplate {
 
     public float getDuracaoTiro() {
         return duracaoTiro;
+    }
+
+    public void setPause(boolean pause) {
+        this.pause = pause;
+        this.menuAberto = pause;
     }
 }

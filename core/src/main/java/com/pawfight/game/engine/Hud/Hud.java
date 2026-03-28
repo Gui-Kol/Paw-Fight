@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
 import com.pawfight.game.engine.design.desenhar.DesenharTexto;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
@@ -23,7 +23,7 @@ public class Hud {
     private final float tempoParaDesenhar;
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
     private final AnimationEngine animationEngine;
-    private final SpriteDefinition coracaoDefinition;
+    private final DefinirSprite coracaoDefinition;
     private final Texture coin;
     private final DesenharTexto desenharTexto;
     private final DesenharTextura desenharTextura;
@@ -46,7 +46,7 @@ public class Hud {
         deltaTexto = 0;
 
         coin = new Texture("Hud/coin.png");
-        coracaoDefinition = new SpriteDefinition(new Texture("Hud/coracao.png"), 5, 1f, false, false);
+        coracaoDefinition = new DefinirSprite(new Texture("Hud/coracao.png"), 5, 1f, false, false);
         animationEngine = new AnimationEngine();
         Gdx.app.log("Hud", "Sendo carregado e desenhado...");
     }

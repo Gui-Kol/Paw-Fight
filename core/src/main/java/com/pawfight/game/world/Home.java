@@ -14,18 +14,21 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.CreateButton;
+import com.pawfight.game.engine.Hud.HudStage;
+import com.pawfight.game.engine.design.desenhar.DesenharTextura;
 import com.pawfight.game.engine.design.transition.ScreenTransition;
+import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.world.base.Base;
 
-import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.CommunVariable.*;
 
 public class Home implements Screen {
     private final ScreenTransition screenTransition;
+    private final HudStage hudStage;
+    private final DesenharTextura desenharTextura;
 
     // Texturas para os estados do botão
     private final Texture normalTexturePlay = new Texture("menu/button/play/play1.png");
@@ -39,7 +42,6 @@ public class Home implements Screen {
     private ImageButton playButton;
     private ImageButton quitButton;
     private final CreateButton createButton;
-    private final Stage stage;
 
     private final PawFight game;
     private final SpriteBatch batch;
@@ -55,6 +57,8 @@ public class Home implements Screen {
         this.viewport = viewport;
 
         batch = new SpriteBatch();
+        hudStage = new HudStage();
+        desenharTextura = new DesenharTextura();
 
         try {
             background = new Texture("menu/menu.png");
@@ -77,11 +81,6 @@ public class Home implements Screen {
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
-
-        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE()), batch);
-        stage.addActor(backgroundImage);
-
-        Gdx.input.setInputProcessor(stage);
         createButton = new CreateButton();
 
         screenTransition = new ScreenTransition(game);
@@ -90,10 +89,13 @@ public class Home implements Screen {
 
     @Override
     public void render(float delta) {
+        float scale = GET_SCALE();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-
-        stage.act(delta);
-        stage.draw();
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        batch.draw(background, 0, 0, 1920 * scale, 1080 * scale);
+        batch.end();
+        hudStage.render();
 
         screenTransition.update(delta);
         screenTransition.render(batch);
@@ -103,28 +105,30 @@ public class Home implements Screen {
     public void show() {
         if (playButton == null && quitButton == null) {
             try {
+                Stage stage = hudStage.getStage();
                 playButton = createButton.create(stage,
-                    GET_LARGURA_TELA_BASE()/2,
-                    GET_ALTURA_TELA_BASE()/2,
+                    GET_LARGURA_TELA_BASE() / 2,
+                    GET_ALTURA_TELA_BASE() / 2,
                     200, 105,
                     normalTexturePlay, hoverTexturePlay, pressedTexturePlay);
 
                 quitButton = createButton.create(stage,
-                    GET_LARGURA_TELA_BASE()/2,
-                    GET_ALTURA_TELA_BASE()/2 - 150,
+                    GET_LARGURA_TELA_BASE() / 2,
+                    GET_ALTURA_TELA_BASE() / 2 - 150,
                     200, 105,
                     normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
 
                 playButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        botaoPlayApertado();
+                        screenTransition.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
+                        backMusic.stop();
                     }
                 });
-                quitButton.addListener(new ClickListener(){
+                quitButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        botaoQuitApertado();
+                        Gdx.app.exit();
                     }
                 });
             } catch (Exception e) {
@@ -133,32 +137,30 @@ public class Home implements Screen {
         }
     }
 
-    private void botaoPlayApertado() {
-        screenTransition.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
-        backMusic.stop();
-    }
-
-    public void botaoQuitApertado() {
-        Gdx.app.exit();
-    }
-
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
-        Gdx.input.setInputProcessor(stage);
+        hudStage.resize(width, height);
     }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
     public void hide() {
         if (backMusic != null) {
             backMusic.stop();
         }
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                dispose();
+            }
+        },5);
     }
 
     @Override
@@ -166,9 +168,10 @@ public class Home implements Screen {
         batch.dispose();
         if (background != null) background.dispose();
         if (backMusic != null) backMusic.dispose();
-        if (stage != null) stage.dispose();
+        if (hudStage != null) hudStage.dispose();
         if (screenTransition != null) {
             screenTransition.dispose();
         }
+        Gdx.app.log("Home","foi disposed");
     }
 }

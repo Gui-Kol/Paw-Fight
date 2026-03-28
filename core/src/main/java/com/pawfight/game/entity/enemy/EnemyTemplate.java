@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.design.animation.AnimationEngine;
-import com.pawfight.game.engine.design.SpriteDefinition;
+import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -18,12 +18,12 @@ public abstract class EnemyTemplate {
     protected PlayerTemplate player;
 
     //animação
-    protected SpriteDefinition idleDefinition;
-    protected SpriteDefinition walkDefinition;
-    protected SpriteDefinition deadDefinition;
-    protected SpriteDefinition hurtDefinition;
-    protected SpriteDefinition atackDefinition;
-    protected SpriteDefinition specialAtackDefinition;
+    protected DefinirSprite idleDefinition;
+    protected DefinirSprite walkDefinition;
+    protected DefinirSprite deadDefinition;
+    protected DefinirSprite hurtDefinition;
+    protected DefinirSprite atackDefinition;
+    protected DefinirSprite specialAtackDefinition;
     protected Texture idleSheet;
     protected Texture walkSheet;
     protected Texture deadSheet;
