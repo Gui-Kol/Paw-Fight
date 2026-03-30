@@ -1,0 +1,48 @@
+name: Build and Release Paw-Fight
+
+on:
+  push:
+    tags:
+      - 'v*'   # dispara quando você cria uma tag de versão, ex: v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest   # usar Windows para gerar .exe
+
+    steps:
+      # 1. Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Configurar JDK
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Build com Gradle
+      - name: Build with Gradle
+        run: ./gradlew lwjgl3:build
+
+      # 4. Instalar Launch4j
+      - name: Install Launch4j
+        run: choco install launch4j -y
+
+      # 5. Converter JAR para EXE
+      - name: Convert JAR to EXE
+        run: |
+          launch4j ^
+            --dontwrapjar ^
+            --outfile PawFight.exe ^
+            --jar lwjgl3/build/libs/PawFight-0.0.0.jar ^
+            --mainclass com.pawfight.lwjgl3.Lwjgl3Launcher ^
+            --headerType gui
+
+      # 6. Publicar no Release
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: PawFight.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
