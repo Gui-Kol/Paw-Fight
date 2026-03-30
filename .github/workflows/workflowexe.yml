@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'   # dispara quando você cria uma tag de versão, ex: v1.0.0
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest   # usar Windows para gerar .exe
