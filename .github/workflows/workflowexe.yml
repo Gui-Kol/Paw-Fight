@@ -26,23 +26,29 @@ jobs:
         run: ./gradlew lwjgl3:build
 
       # 4. Instalar Launch4j
-      - name: Install Launch4j
-        run: choco install launch4j -y
+      # 4. (Optional) Install 7zip - helps extracting downloaded JDK archives on Windows runners
+      - name: Install 7zip
+        run: choco install 7zip -y
 
-      # 5. Converter JAR para EXE
-      - name: Convert JAR to EXE
+      # 5. Debug: list Gradle tasks that mention construo (runs quickly, safe to keep)
+      - name: List Gradle construo tasks
+        shell: powershell
         run: |
-          launch4j ^
-            --dontwrapjar ^
-            --outfile PawFight.exe ^
-            --jar lwjgl3/build/libs/PawFight-0.0.0.jar ^
-            --mainclass com.pawfight.lwjgl3.Lwjgl3Launcher ^
-            --headerType gui
+          ./gradlew :lwjgl3:tasks --all | Select-String -Pattern construo || exit 0
+
+      # 6. Build native Windows distribution using construo (runs the construo task in the lwjgl3 module)
+      - name: Build native Windows distribution (construo)
+        run: |
+          ./gradlew :lwjgl3:construo --no-daemon --info
 
       # 6. Publicar no Release
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          files: PawFight.exe
+          # upload constructed native outputs and fallback artifacts (jar/distributions)
+          files: |
+            lwjgl3/build/construo/**
+            lwjgl3/build/distributions/**
+            lwjgl3/build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
