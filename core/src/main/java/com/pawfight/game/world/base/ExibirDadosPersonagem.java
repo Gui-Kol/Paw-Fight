@@ -60,23 +60,25 @@ public class ExibirDadosPersonagem {
         font.setColor(Color.WHITE);
 
         // Status alinhados à esquerda do player
-        font.draw(batch,"Status", offsetX + 80 * scale, centerY + 110 * scale);
-        font.draw(batch,player.getName(), offsetX * scale, centerY + 80 * scale);
+        GlyphLayout layoutStatus = new GlyphLayout(font, "Status");
+        float statusX = offsetX + (widthFundo - layoutStatus.width) / 2 - 10 * scale;
+        font.draw(batch, "Status", statusX, centerY + 110 * scale);
+        font.draw(batch, player.getName(), offsetX, centerY + 80 * scale);
 
         String textoLife = "Life: " + player.getVidaBase();
-        GlyphLayout layoutLife = new GlyphLayout(font,textoLife);
+        GlyphLayout layoutLife = new GlyphLayout(font, textoLife);
         font.draw(batch, textoLife, offsetX, centerY + 20 * scale);
-        batch.draw(coracao, offsetX + 10 + layoutLife.width * scale, centerY, 24 * scale, 24 * scale);
+        batch.draw(coracao, offsetX + layoutLife.width + 10 * scale, centerY, 24 * scale, 24 * scale);
 
         String textoSpeed = "Speed: " + player.getVelocidade() / 100;
-        GlyphLayout layoutSpeed = new GlyphLayout(font,textoSpeed);
+        GlyphLayout layoutSpeed = new GlyphLayout(font, textoSpeed);
         font.draw(batch, textoSpeed, offsetX, centerY - 10 * scale);
-        batch.draw(raio, offsetX + layoutSpeed.width * scale, centerY - 45 * scale, 56 * scale, 56 * scale);
+        batch.draw(raio, offsetX + layoutSpeed.width, centerY - 45 * scale, 56 * scale, 56 * scale);
 
         String textoMuscle = "Strength: " + player.getForca();
-        GlyphLayout layoutMuscle = new GlyphLayout(font,textoMuscle);
+        GlyphLayout layoutMuscle = new GlyphLayout(font, textoMuscle);
         font.draw(batch, textoMuscle, offsetX, centerY - 40 * scale);
-        batch.draw(musculo, offsetX + layoutMuscle.width * scale, centerY - 85 * scale, 56 * scale, 56 * scale);
+        batch.draw(musculo, offsetX + layoutMuscle.width, centerY - 85 * scale, 56 * scale, 56 * scale);
 
         font.draw(batch, "Size: " + player.getTamanho() + " cm", offsetX, centerY - 70 * scale);
         batch.draw(requa, offsetX + 235 * scale, centerY - 120 * scale, 56 * scale, 56 * scale);

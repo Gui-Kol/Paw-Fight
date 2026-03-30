@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 4. (Optional) Install 7zip - helps extracting downloaded JDK archives on Windows runners
+      # 4. (Optional) Install 7zip - helps to extract downloaded JDK archives on Windows runners
       - name: Install 7zip
         run: choco install 7zip -y
 

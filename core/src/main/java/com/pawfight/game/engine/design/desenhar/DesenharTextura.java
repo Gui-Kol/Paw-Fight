@@ -19,7 +19,7 @@ public class DesenharTextura {
         float tamanho  = tamanhoPx * scale;
 
         if (textureRegion != null) {
-            batch.draw(textureRegion, x, y, tamanho, tamanho);
+            batch.draw(textureRegion, x - tamanho, y, tamanho, tamanho);
         } else {
             batch.draw(textura, x, y, tamanho, tamanho);
         }

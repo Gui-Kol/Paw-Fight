@@ -89,10 +89,10 @@ public class Hud {
         float porcentagemVida = (float) vidaAtual / vidaMaxima;
         int frameIndex = (int) ((1 - porcentagemVida) * (coracaoAnimation.getKeyFrames().length - 1));
         frameIndex = Math.max(0, Math.min(frameIndex, coracaoAnimation.getKeyFrames().length - 1));
-        var x = GET_LARGURA_TELA_BASE() - 180;
+        var x = GET_LARGURA_TELA_BASE() - 15;
         var y = 40;
 
-        desenharTextura.desenhar(batch, null, coracaoAnimation.getKeyFrames()[frameIndex], x, y, 128);
+        desenharTextura.desenhar(batch, null, coracaoAnimation.getKeyFrames()[frameIndex], x, y, 256);
     }
 
     private void desenharMoeda(Batch batch, int moedas, ShapeRenderer shapeRenderer) {
@@ -180,17 +180,5 @@ public class Hud {
 
     public DesenharTexto getDesenharTexto() {
         return desenharTexto;
-    }
-
-    public AnimationEngine getAnimationEngine() {
-        return animationEngine;
-    }
-
-    public DesenharTextura getDesenharTextura() {
-        return desenharTextura;
-    }
-
-    public Viewport getHudViewport() {
-        return hudViewport;
     }
 }
