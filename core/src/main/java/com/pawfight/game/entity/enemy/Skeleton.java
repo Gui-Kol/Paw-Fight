@@ -8,7 +8,7 @@ import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class Skeleton extends EnemyTemplate{
-    private final MoverDirecaoPlayer MoverDirecaoPlayer = new MoverDirecaoPlayer();
+    private final MoverDirecaoPlayer moverDirecaoPlayer = new MoverDirecaoPlayer();
 
     public Skeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
@@ -59,7 +59,7 @@ public class Skeleton extends EnemyTemplate{
 
     @Override
     public void andarIA(float delta) {
-        MoverDirecaoPlayer.mover(this);
+        moverDirecaoPlayer.mover(this);
     }
 
     @Override
