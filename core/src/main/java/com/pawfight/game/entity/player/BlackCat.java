@@ -2,7 +2,7 @@ package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.design.DefinirSprite;
-import com.pawfight.game.entity.tiro.TirosTamplate;
+import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
 
 public class BlackCat extends PlayerTemplate {
@@ -57,17 +57,20 @@ public class BlackCat extends PlayerTemplate {
     }
 
     @Override
-    protected TirosTamplate modeloTiroExclusivo() {
+    protected TirosTemplate modeloTiroExclusivo() {
         return new Coco(tamanhoTiro, this);
     }
 
     @Override
-    public void texture() {
-        // Spritesheets específicos
+    public void loadTextures() {
         idleSheet = new Texture("entitys/player/black_cat/Idle.png");
         walkSheet = new Texture("entitys/player/black_cat/Walk.png");
         deadSheet = new Texture("entitys/player/black_cat/Death.png");
         hurtSheet = new Texture("entitys/player/black_cat/Hurt.png");
+    }
+
+    @Override
+    public void updateSpriteDefinitions() {
         idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
         walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
         deadDefinition = new DefinirSprite(deadSheet, 4, 0.1f, false, olhandoEsquerda);

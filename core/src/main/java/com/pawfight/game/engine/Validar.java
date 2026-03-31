@@ -2,13 +2,12 @@ package com.pawfight.game.engine;
 
 import java.util.List;
 
-public class Validar {
+public final class Validar {
 
-    public boolean validarLista(List list){
-        if (list == null || list.isEmpty()){
-            return false;
-        }
-        return true;
+    private Validar() {
     }
 
+    public static <T> boolean validarLista(List<T> list) {
+        return list != null && !list.isEmpty();
+    }
 }

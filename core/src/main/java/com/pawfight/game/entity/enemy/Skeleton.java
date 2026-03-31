@@ -8,6 +8,8 @@ import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class Skeleton extends EnemyTemplate{
+    private final MoverDirecaoPlayer MoverDirecaoPlayer = new MoverDirecaoPlayer();
+
     public Skeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
         float multiplicador = forte ? 1.8f : 1;
@@ -20,10 +22,14 @@ public class Skeleton extends EnemyTemplate{
     }
 
     @Override
-    public void texture() {
+    public void loadTextures() {
         idleSheet = new Texture("entitys/enemy/Skeleton/Idle.png");
         walkSheet = new Texture("entitys/enemy/Skeleton/Walk.png");
         deadSheet = new Texture("entitys/enemy/Skeleton/Death.png");
+    }
+
+    @Override
+    public void updateSpriteDefinitions() {
         idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
         walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
         deadDefinition = new DefinirSprite(deadSheet, 8, 0.1f, false, olhandoEsquerda);
@@ -33,8 +39,17 @@ public class Skeleton extends EnemyTemplate{
     }
 
     @Override
+    protected void aplicarStatsForte() {
+        float multiplicador = forte ? 1.8f : 1;
+        vidaBase = (int) (50 * multiplicador);
+        vida = vidaBase;
+        forca = (int) (1 * multiplicador);
+        velocidade = (int) (300 * multiplicador);
+    }
+
+    @Override
     public EnemyTemplate cloneEnemy() {
-        return new Skeleton(dx, dy, false, player);
+        return new Skeleton(dx, dy, this.forte, player);
     }
 
     @Override
@@ -44,9 +59,7 @@ public class Skeleton extends EnemyTemplate{
 
     @Override
     public void andarIA(float delta) {
-        if (player != null && !player.isMorto()) {
-            moverEmDirecaoAoPlayer(delta);
-        }
+        MoverDirecaoPlayer.mover(this);
     }
 
     @Override

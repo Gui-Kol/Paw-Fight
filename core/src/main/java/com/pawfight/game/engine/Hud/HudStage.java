@@ -1,12 +1,14 @@
 package com.pawfight.game.engine.Hud;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
 
 public class HudStage {
     private Stage stage;
@@ -21,7 +23,24 @@ public class HudStage {
             camera
         );
         stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
+        registerInputProcessor();
+    }
+
+    private void registerInputProcessor() {
+        InputProcessor current = Gdx.input.getInputProcessor();
+        if (current instanceof InputMultiplexer) {
+            InputMultiplexer multiplexer = (InputMultiplexer) current;
+            if (!multiplexer.getProcessors().contains(stage, true)) {
+                multiplexer.addProcessor(0, stage); // HUD tem prioridade
+            }
+        } else {
+            InputMultiplexer multiplexer = new InputMultiplexer();
+            multiplexer.addProcessor(stage); // HUD tem prioridade
+            if (current != null) {
+                multiplexer.addProcessor(current);
+            }
+            Gdx.input.setInputProcessor(multiplexer);
+        }
     }
 
     public Stage getStage() {
@@ -35,10 +54,15 @@ public class HudStage {
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-        Gdx.input.setInputProcessor(stage);
+        // Não redefine o InputProcessor — o InputMultiplexer já está configurado.
     }
 
     public void dispose() {
+        // Remove este stage do InputMultiplexer ao fazer dispose
+        InputProcessor current = Gdx.input.getInputProcessor();
+        if (current instanceof InputMultiplexer) {
+            ((InputMultiplexer) current).removeProcessor(stage);
+        }
         stage.dispose();
     }
 }

@@ -5,11 +5,12 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.Validar;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
-import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
-import com.pawfight.game.engine.procedural.room.Room;
-import com.pawfight.game.engine.procedural.room.RoomGenerator;
-import com.pawfight.game.engine.procedural.room.RoomType;
+import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
+import com.pawfight.game.engine.procedural.sala.Sala;
+import com.pawfight.game.engine.procedural.sala.GeradorSalas;
+import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.enemy.Skeleton;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -19,11 +20,12 @@ import java.util.List;
 
 public class MundoAreia extends WorldTemplate {
 
+    private Texture cactoTexture;
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
-        roomGenerator = new RoomGenerator();
+        GeradorSalas = new GeradorSalas();
         setPlayer(player);
 
         // Reseta estado do player
@@ -32,7 +34,7 @@ public class MundoAreia extends WorldTemplate {
 
         // Gera salas APENAS aqui, não carrega mapa
         try {
-            roomGenerator.gerarRooms(this);
+            GeradorSalas.gerarRooms(this);
             if (currentRoom == null) {
                 throw new RuntimeException("Erro: currentRoom não foi inicializado.");
             }
@@ -45,37 +47,39 @@ public class MundoAreia extends WorldTemplate {
     }
 
     @Override
-    public void logRoomInfo(Room room) {
-        if (room == null) {
-            Gdx.app.error("MundoAreia", "Room é null em logRoomInfo!");
+    public void logRoomInfo(Sala Sala) {
+        if (Sala == null) {
+            Gdx.app.error("MundoAreia", "Sala é null em logRoomInfo!");
             return;
         }
         if (!currentRoom.hasEast() && !currentRoom.hasWest() && !currentRoom.hasNorth() && !currentRoom.hasSouth()) {
             Gdx.app.error("MundoAreia", "Sala não tem portas.");
         } else {
-            Gdx.app.log("MundoAreia", "Room [" + room.getX() + "," + room.getY() + "] Type: " + room.getType());
-            Gdx.app.log("MundoAreia", "hasNorth: " + room.hasNorth() + ", hasSouth: " + room.hasSouth() +
-                ", hasEast: " + room.hasEast() + ", hasWest: " + room.hasWest());
+            Gdx.app.log("MundoAreia", "Sala [" + Sala.getX() + "," + Sala.getY() + "] Type: " + Sala.getType());
+            Gdx.app.log("MundoAreia", "hasNorth: " + Sala.hasNorth() + ", hasSouth: " + Sala.hasSouth() +
+                ", hasEast: " + Sala.hasEast() + ", hasWest: " + Sala.hasWest());
         }
     }
 
 
     @Override
     public List<InfoGeraObjeto> getInfoObjetos() {
-        Texture cacto = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
+        if (cactoTexture == null) {
+            cactoTexture = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
+        }
         List<InfoGeraObjeto> infoGeraObjetoList = new ArrayList<>();
 
-        infoGeraObjetoList.add(new InfoGeraObjeto("Obj", "cacto", RoomType.INIMIGOS, cacto, 6, 2,
+        infoGeraObjetoList.add(new InfoGeraObjeto("Obj", "cacto", TipoSala.INIMIGOS, cactoTexture, 6, 2,
             -245, -235, 15, 10, 10,48));
 
         return infoGeraObjetoList;
     }
 
     private void cactoDano() {
-        if (validar.validarLista(listaObjetos)) {
+        if (Validar.validarLista(listaObjetos)) {
             for (ObjetoGerado obj : listaObjetos) {
-                if (obj.nomeObjeto.equals("cacto")) {
-                    if (obj.areaToque.overlaps(player.getHitBox())) {
+                if (obj.getNomeObjeto().equals("cacto")) {
+                    if (obj.getAreaToque().overlaps(player.getHitBox())) {
                         player.dano(1);
                     }
                 }
@@ -108,14 +112,14 @@ public class MundoAreia extends WorldTemplate {
     public void render(float delta) {
         try {
             if (errorFinal) {
-                screenTransition.update(Gdx.graphics.getDeltaTime());
-                screenTransition.render(batch);
+                TransicaoTela.update(Gdx.graphics.getDeltaTime());
+                TransicaoTela.render(batch);
                 return;
             }
 
-            if (currentRoom == null || map == null || layerRenderer == null) {
+            if (currentRoom == null || map == null || RenderizadorCamada == null) {
                 Gdx.app.error("MundoAreia", "render() - objeto null: currentRoom=" + (currentRoom == null) +
-                    ", map=" + (map == null) + ", layerRenderer=" + (layerRenderer == null));
+                    ", map=" + (map == null) + ", RenderizadorCamada=" + (RenderizadorCamada == null));
                 return;
             }
 
@@ -127,12 +131,21 @@ public class MundoAreia extends WorldTemplate {
 
                 renderizar.renderizarObjects(this);
                 renderizar.hitBoxListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
-                podeEntrarPorta = !validar.validarLista(listaInimigos);
+                podeEntrarPorta = !Validar.validarLista(listaInimigos);
                 danoTiro.darDanoListaInimigos(this);
 
             }
         } catch (Exception e) {
+            // Log original PRIMEIRO — para não perder o erro real
             Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);
+
+            // Cleanup seguro — não pode lançar exceção, senão esconde o erro original
+            try {
+                if (batch != null && batch.isDrawing()) batch.end();
+            } catch (Exception ignored) { }
+            try {
+                if (shapeRenderer != null && shapeRenderer.isDrawing()) shapeRenderer.end();
+            } catch (Exception ignored) { }
         }
     }
 
@@ -161,7 +174,7 @@ public class MundoAreia extends WorldTemplate {
                     layers.add("PortaDireita");
                 }
             }
-            layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            RenderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em renderLayers: " + e.getMessage(), e);
         }
@@ -179,14 +192,14 @@ public class MundoAreia extends WorldTemplate {
                 layers.add("Up");
             }
             if (podeEntrarPorta) {
-                if (currentRoom.getType() != RoomType.SPAWN && currentRoom.hasSouth() && map.getLayers().get("PortaBaixo") != null) {
+                if (currentRoom.getType() != TipoSala.SPAWN && currentRoom.hasSouth() && map.getLayers().get("PortaBaixo") != null) {
                     layers.add("PortaBaixo");
                 }
             }
-            layerRenderer.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            RenderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
 
             if (shapeRenderer != null && !shapeRenderer.isDrawing()) {
-                if (desenharMiniMapa != null && roomGenerator != null && player != null) {
+                if (desenharMiniMapa != null && GeradorSalas != null && player != null) {
                     desenharMiniMapa.desenharMiniMapa(this);
                 }
             }
@@ -221,11 +234,14 @@ public class MundoAreia extends WorldTemplate {
     @Override
     public void dispose() {
         super.dispose();
+        if (cactoTexture != null) {
+            cactoTexture.dispose();
+        }
         if (desenharMiniMapa != null) {
             desenharMiniMapa.dispose();
         }
-        if (screenTransition != null) {
-            screenTransition.dispose();
+        if (TransicaoTela != null) {
+            TransicaoTela.dispose();
         }
         // Dispor inimigos restantes
         for (EnemyTemplate enemy : listaInimigos) {

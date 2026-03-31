@@ -1,11 +1,11 @@
-package com.pawfight.game.engine.procedural.room;
+package com.pawfight.game.engine.procedural.sala;
 
 import com.badlogic.gdx.graphics.Texture;
 
 public record InfoGeraObjeto(
     String layerName,
     String nomeObjeto,
-    RoomType typeRoom,
+    TipoSala typeRoom,
     Texture texture,
     int qntMax,
     int qntMin,

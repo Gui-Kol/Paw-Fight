@@ -12,21 +12,21 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.save.SaveDataPlayer;
-import com.pawfight.game.engine.save.SaveGame;
+import com.pawfight.game.engine.design.transition.TransicaoTela;
+import com.pawfight.game.engine.save.DadosSalvosJogador;
+import com.pawfight.game.engine.save.SalvarJogo;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.Home;
 import com.pawfight.game.world.WorldTemplate;
 
-import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
 
 public class PawFight extends Game {
     private final PawFight game = this;
     private SpriteBatch batch;
     private Texture image;
-    private ScreenTransition transition;
+    private TransicaoTela transition;
     private boolean telaCheia = true;
     private boolean podeAlterarTelaCheia = true;
 
@@ -47,7 +47,7 @@ public class PawFight extends Game {
 
         toggleFullscreen();
 
-        transition = new ScreenTransition(this);
+        transition = new TransicaoTela(this);
 
         Timer.schedule(new Timer.Task() {
             @Override
@@ -131,13 +131,13 @@ public class PawFight extends Game {
     }
 
     public void savePlayer(PlayerTemplate player) {
-        SaveGame saveGame = new SaveGame();
-        saveGame.saveGame(player.saveData());
+        SalvarJogo SalvarJogo = new SalvarJogo();
+        SalvarJogo.SalvarJogo(player.saveData());
     }
 
     public PlayerTemplate loadPlayer(PlayerTemplate player, String nomePersonagem) {
-        SaveGame saveGame = new SaveGame();
-        SaveDataPlayer data = saveGame.loadGame(nomePersonagem);
+        SalvarJogo SalvarJogo = new SalvarJogo();
+        DadosSalvosJogador data = SalvarJogo.loadGame(nomePersonagem);
         if (data != null) {
             player.loadSaveData(data);
         }
@@ -146,5 +146,9 @@ public class PawFight extends Game {
 
     public void setPodeAlterarTelaCheia(boolean podeAlterarTelaCheia) {
         this.podeAlterarTelaCheia = podeAlterarTelaCheia;
+    }
+
+    public SpriteBatch getBatch() {
+        return batch;
     }
 }

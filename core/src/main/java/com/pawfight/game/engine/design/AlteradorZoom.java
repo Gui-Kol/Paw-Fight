@@ -3,7 +3,7 @@ package com.pawfight.game.engine.design;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
-public class ZoomChanger {
+public class AlteradorZoom {
     private float zoom = 0.5f;
 
     public float changeZoom() {

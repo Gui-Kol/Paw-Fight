@@ -1,15 +1,15 @@
-package com.pawfight.game.engine.procedural.room;
+package com.pawfight.game.engine.procedural.sala;
 
-public class Room {
+public class Sala {
     private final int x, y;
     private final String index;
     private boolean north, south, east, west;
-    private final RoomType type;
+    private final TipoSala type;
 
     // Referências para salas vizinhas
-    private Room northRoom, southRoom, eastRoom, westRoom;
+    private Sala northRoom, southRoom, eastRoom, westRoom;
 
-    public Room(int x, int y, RoomType type) {
+    public Sala(int x, int y, TipoSala type) {
         this.x = x;
         this.y = y;
         this.type = type;
@@ -18,7 +18,7 @@ public class Room {
 
     public int getX() { return x; }
     public int getY() { return y; }
-    public RoomType getType() { return type; }
+    public TipoSala getType() { return type; }
 
     public boolean hasNorth() { return north; }
     public boolean hasSouth() { return south; }
@@ -26,24 +26,24 @@ public class Room {
     public boolean hasWest() { return west; }
 
     // Métodos de conexão que também guardam referência
-    public void connectNorth(Room room) {
+    public void connectNorth(Sala Sala) {
         this.north = true;
-        this.northRoom = room;
+        this.northRoom = Sala;
     }
-    public void connectSouth(Room room) {
+    public void connectSouth(Sala Sala) {
         this.south = true;
-        this.southRoom = room;
+        this.southRoom = Sala;
     }
-    public void connectEast(Room room) {
+    public void connectEast(Sala Sala) {
         this.east = true;
-        this.eastRoom = room;
+        this.eastRoom = Sala;
     }
-    public void connectWest(Room room) {
+    public void connectWest(Sala Sala) {
         this.west = true;
-        this.westRoom = room;
+        this.westRoom = Sala;
     }
 
-    public Room getRoom(Direction dir){
+    public Sala getRoom(Direction dir){
         switch (dir) {
             case NORTH -> { return northRoom; }
             case SOUTH -> { return southRoom; }

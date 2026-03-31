@@ -2,9 +2,8 @@ package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.design.DefinirSprite;
-import com.pawfight.game.entity.tiro.TirosTamplate;
+import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
-import com.pawfight.game.world.WorldTemplate;
 
 public class Dove extends PlayerTemplate {
 
@@ -58,16 +57,20 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
-    protected TirosTamplate modeloTiroExclusivo() {
+    protected TirosTemplate modeloTiroExclusivo() {
         return new Coco(tamanhoTiro, this);
     }
 
     @Override
-    public void texture() {
+    public void loadTextures() {
         idleSheet = new Texture("entitys/player/dove/Idle.png");
         walkSheet = new Texture("entitys/player/dove/Walk.png");
         deadSheet = new Texture("entitys/player/dove/Death.png");
         hurtSheet = new Texture("entitys/player/dove/Hurt.png");
+    }
+
+    @Override
+    public void updateSpriteDefinitions() {
         idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
         walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
         deadDefinition = new DefinirSprite(deadSheet, 4, 0.1f, false, olhandoEsquerda);
@@ -88,10 +91,6 @@ public class Dove extends PlayerTemplate {
     public void ataqueBasico(float delta) {
     }
 
-    @Override
-    public void draw(WorldTemplate world) {
-        super.draw(world);
-    }
 
     @Override
     public void ataqueEspecial() {

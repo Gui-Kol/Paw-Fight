@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.pawfight.game.PawFight;
 
-public class ScreenTransition {
+public class TransicaoTela {
     private boolean transitioning = false;
     private boolean fadingOut = true;
     private Screen nextScreen;
@@ -15,11 +15,11 @@ public class ScreenTransition {
     private TransitionEffect currentEffect;
     private static final float DEFAULT_DURATION = 1.2f;
 
-    public ScreenTransition(PawFight game) {
+    public TransicaoTela(PawFight game) {
         this(game, DEFAULT_DURATION);
     }
 
-    public ScreenTransition(PawFight game, float duration) {
+    public TransicaoTela(PawFight game, float duration) {
         this.game = game;
         this.transitionDuration = duration;
         this.currentEffect = new FadeTransitionEffect(duration);

@@ -4,12 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.render.LayerRenderer;
-import com.pawfight.game.engine.phisics.ChecarColisao;
-import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
-import com.pawfight.game.engine.procedural.room.Room;
-import com.pawfight.game.engine.procedural.room.RoomGenerator;
-import com.pawfight.game.engine.procedural.room.RoomType;
+import com.pawfight.game.engine.render.RenderizadorCamada;
+import com.pawfight.game.engine.fisica.ChecarColisao;
+import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.sala.Sala;
+import com.pawfight.game.engine.procedural.sala.GeradorSalas;
+import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.WorldTemplate;
@@ -39,13 +39,13 @@ public class CarregarPortas {
 
     public void carregar(WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
-        Room currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getCurrentRoom();
         TiledMap map = world.getMap();
-        RoomGenerator roomGenerator = world.getRoomGenerator();
+        GeradorSalas GeradorSalas = world.getRoomGenerator();
         TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
 
-        if (player == null || currentRoom == null || map == null || roomGenerator == null || !world.isPodeEntrarPorta()) {
+        if (player == null || currentRoom == null || map == null || GeradorSalas == null || !world.isPodeEntrarPorta()) {
             return;
         }
 
@@ -53,9 +53,9 @@ public class CarregarPortas {
 
         for (Direcao dir : Direcao.values()) {
             // SPAWN não tem porta para baixo
-            if (dir == Direcao.BAIXO && currentRoom.getType() == RoomType.SPAWN) continue;
+            if (dir == Direcao.BAIXO && currentRoom.getType() == TipoSala.SPAWN) continue;
 
-            Room destino = roomGenerator.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
+            Sala destino = GeradorSalas.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
 
             // só continua se a sala atual realmente tiver conexão nessa direção
             boolean conexaoValida =
@@ -83,34 +83,35 @@ public class CarregarPortas {
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
         TiledMap map = world.getMap();
-        RoomGenerator roomGenerator = world.getRoomGenerator();
-        LayerRenderer layerRenderer = world.getLayerRenderer();
+        GeradorSalas GeradorSalas = world.getRoomGenerator();
+        RenderizadorCamada RenderizadorCamada = world.getLayerRenderer();
         String nomeClasseOrigem = world.getWorldName();
 
         player.clearList();
         world.carregarParede();
-        Room room = roomGenerator.getRoomMap().get(x + "," + y);
+        Sala Sala = GeradorSalas.getRoomMap().get(x + "," + y);
 
-        if (room == null) {
+        if (Sala == null) {
             Gdx.app.error(nomeClasseOrigem, "Erro: Sala não encontrada em " + x + "," + y);
             return;
         }
 
         if (map != null) {
             map.dispose();
-            if (layerRenderer != null) layerRenderer.dispose();
+            if (RenderizadorCamada != null) RenderizadorCamada.dispose();
         }
 
         try {
-            world.setCurrentRoom(room);
+            world.setCurrentRoom(Sala);
+            world.getTilemapHitboxFactory().clearCache();
             map = new TmxMapLoader().load(world.getMapPath());
-            world.setLayerRenderer(new LayerRenderer(map));
+            world.setLayerRenderer(new RenderizadorCamada(map));
 
             moverSalaInimigos(world);
 
             world.getSalasVisitadas().add(x + "," + y);
             Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
-            world.logRoomInfo(room);
+            world.logRoomInfo(Sala);
 
             world.gerarObjetos(); // agora garante que os objetos sejam carregados
         } catch (Exception e) {
@@ -119,7 +120,7 @@ public class CarregarPortas {
     }
 
     private void moverSalaInimigos(WorldTemplate world) {
-        Room currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getCurrentRoom();
         String nomeClasseOrigem = world.getWorldName();
         List<EnemyTemplate> listaInimigos = world.getListaInimigos();
         GerarInimigos gerarInimigos = world.getGerarInimigos();

@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-import static com.pawfight.game.engine.CommunVariable.GET_SCALE;
+import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
 
 public class ExibirDadosPersonagem {
     private BitmapFont font;

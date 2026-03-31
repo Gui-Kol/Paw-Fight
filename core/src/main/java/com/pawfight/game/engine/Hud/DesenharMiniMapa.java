@@ -10,8 +10,8 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.engine.design.desenhar.DesenharTexto;
 import com.pawfight.game.engine.font.FontFactory;
-import com.pawfight.game.engine.procedural.room.Room;
-import com.pawfight.game.engine.procedural.room.RoomType;
+import com.pawfight.game.engine.procedural.sala.Sala;
+import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.WorldTemplate;
 
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.pawfight.game.engine.CommunVariable.*;
+import static com.pawfight.game.engine.VariavelComum.*;
 
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
@@ -28,7 +28,7 @@ public class DesenharMiniMapa {
 
     private void desenharSalaAtual(WorldTemplate world) {
         if (HITBOX_ISVISIBLE) {
-            Room currentRoom = world.getCurrentRoom();
+            Sala currentRoom = world.getCurrentRoom();
             Batch batch = world.getBatch();
             int atual = world.getRooms().indexOf(currentRoom);
 
@@ -52,11 +52,11 @@ public class DesenharMiniMapa {
 
         ShapeRenderer shapeRenderer = world.getShapeRenderer();
         Batch batch = world.getBatch();
-        Map<String, Room> roomMap = world.getRoomGenerator().getRoomMap();
+        Map<String, Sala> roomMap = world.getRoomGenerator().getRoomMap();
         Set<String> salasVisitadas = world.getSalasVisitadas();
         OrthographicCamera camera = player.getHud().getHudCamera();
         shapeRenderer.setProjectionMatrix(camera.combined);
-        Room currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getCurrentRoom();
 
         desenharSalaAtual(world);
 
@@ -106,11 +106,11 @@ public class DesenharMiniMapa {
             float centroX = posX + tamanho / 2f;
             float centroY = posY + tamanho / 2f;
 
-            Room room = roomMap.get(key);
-            if (room != null) {
+            Sala Sala = roomMap.get(key);
+            if (Sala != null) {
                 shapeRenderer.setColor(Color.WHITE);
 
-                if (room.hasNorth()) {
+                if (Sala.hasNorth()) {
                     String destinoKey = x + "," + (y + 1);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + x * SEPARACAO;
@@ -120,7 +120,7 @@ public class DesenharMiniMapa {
                         shapeRenderer.line(centroX, centroY - AJUSTE, destCentroX, destCentroY - AJUSTE);
                     }
                 }
-                if (room.hasSouth()) {
+                if (Sala.hasSouth()) {
                     String destinoKey = x + "," + (y - 1);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + x * SEPARACAO;
@@ -130,7 +130,7 @@ public class DesenharMiniMapa {
                         shapeRenderer.line(centroX, centroY - AJUSTE, destCentroX, destCentroY - AJUSTE);
                     }
                 }
-                if (room.hasEast()) {
+                if (Sala.hasEast()) {
                     String destinoKey = (x + 1) + "," + y;
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + (x + 1) * SEPARACAO;
@@ -140,7 +140,7 @@ public class DesenharMiniMapa {
                         shapeRenderer.line(centroX, centroY - AJUSTE, destCentroX, destCentroY - AJUSTE);
                     }
                 }
-                if (room.hasWest()) {
+                if (Sala.hasWest()) {
                     String destinoKey = (x - 1) + "," + y;
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + (x - 1) * SEPARACAO;

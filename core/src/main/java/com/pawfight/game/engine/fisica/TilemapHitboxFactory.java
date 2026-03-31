@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.phisics;
+package com.pawfight.game.engine.fisica;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,17 +15,40 @@ import com.badlogic.gdx.math.Ellipse;
 import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
+import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
 
 public class TilemapHitboxFactory {
 
-    // Cria os retângulos de colisão
+    // Cache: evita recriar listas de Rectangle a cada frame para o mesmo mapa/layer
+    private final Map<String, List<Rectangle>> cache = new HashMap<>();
+
+    /**
+     * Limpa o cache de hitboxes. Deve ser chamado sempre que o mapa (TiledMap) mudar.
+     */
+    public void clearCache() {
+        cache.clear();
+    }
+
+    // Cria os retângulos de colisão (cacheado por layerName)
     public List<Rectangle> createHitboxes(TiledMap map, String layerName) {
+        List<Rectangle> cached = cache.get(layerName);
+        if (cached != null) {
+            return cached;
+        }
+
         List<Rectangle> hitboxes = new ArrayList<>();
 
-        for (MapObject object : map.getLayers().get(layerName).getObjects()) {
+        var layer = map.getLayers().get(layerName);
+        if (layer == null) {
+            cache.put(layerName, hitboxes);
+            return hitboxes;
+        }
+
+        for (MapObject object : layer.getObjects()) {
             if (object instanceof RectangleMapObject) {
                 hitboxes.add(((RectangleMapObject) object).getRectangle());
             } else if (object instanceof PolygonMapObject) {
@@ -41,17 +64,24 @@ public class TilemapHitboxFactory {
                 hitboxes.add(new Rectangle(x, y, w, h));
             }
         }
+
+        cache.put(layerName, hitboxes);
         return hitboxes;
     }
 
 
     public void drawObjects(TiledMap map, String layerName, Batch batch, OrthographicCamera camera, boolean isInvertido) {
+        var layer = map.getLayers().get(layerName);
+        if (layer == null) {
+            return;
+        }
+
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
         // Copia os objetos para uma lista
         List<MapObject> objects = new ArrayList<>();
-        for (MapObject obj : map.getLayers().get(layerName).getObjects()) {
+        for (MapObject obj : layer.getObjects()) {
             objects.add(obj);
         }
 
@@ -85,6 +115,13 @@ public class TilemapHitboxFactory {
 
 
     public List<Rectangle> createTileLayerHitboxes(TiledMap map, String layerName, int tileWidth, int tileHeight) {
+        // Chave de cache com prefixo "tile:" para não colidir com createHitboxes
+        String cacheKey = "tile:" + layerName;
+        List<Rectangle> cached = cache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
         List<Rectangle> hitboxes = new ArrayList<>();
 
         // pega apenas a ‘layer’ com o nome especificado
@@ -109,6 +146,7 @@ public class TilemapHitboxFactory {
             }
         }
 
+        cache.put(cacheKey, hitboxes);
         return hitboxes;
     }
 

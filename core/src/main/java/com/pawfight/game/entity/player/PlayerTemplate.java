@@ -11,35 +11,42 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.CommunVariable;
+import com.pawfight.game.engine.VariavelComum;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.HudPause;
 import com.pawfight.game.engine.design.DefinirSprite;
-import com.pawfight.game.engine.design.ZoomChanger;
-import com.pawfight.game.engine.design.animation.AnimationEngine;
-import com.pawfight.game.engine.phisics.ChecarColisao;
-import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.design.AlteradorZoom;
+import com.pawfight.game.engine.design.animation.MotorAnimacao;
+import com.pawfight.game.engine.fisica.ChecarColisao;
+import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.render.Renderizar;
-import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.tiro.Atirar;
-import com.pawfight.game.entity.tiro.TirosTamplate;
-import com.pawfight.game.engine.save.SaveDataPlayer;
+import com.pawfight.game.entity.tiro.TirosTemplate;
+import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
-import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
 
-public abstract class PlayerTemplate {
+public abstract class PlayerTemplate implements Entidade {
+    // Debug
+    private static final boolean DEBUG_MODE = false;
+
+    // Constantes
+    private static final float HURT_DURATION = 0.5f;
+    private static final float DANO_COOLDOWN_DURATION = 0.5f;
+
     //Moedas
     protected int moedas;
 
     // Atributos comuns
-    protected List<TirosTamplate> tirosModelos;
+    protected List<TirosTemplate> tirosModelos;
     protected float cadenciaTiro;
     protected float duracaoTiro;
-    protected final List<TirosTamplate> tiros;
+    protected final List<TirosTemplate> tiros;
     protected final Atirar atirar;
     protected int pontosDisponiveis;
     protected int xp;
@@ -60,7 +67,6 @@ public abstract class PlayerTemplate {
 
     protected float stateTime;
     protected float hurtTime = 0f;
-    protected static final float HURT_DURATION = 0.5f;
     private float danoCooldown = 0f;
 
     // Spritesheets e animações
@@ -80,15 +86,16 @@ public abstract class PlayerTemplate {
     protected Animation<TextureRegion> idleAnimation;
     protected Animation<TextureRegion> walkAnimation;
     protected Animation<TextureRegion> deadAnimation;
-    protected final AnimationEngine animationEngine = new AnimationEngine();
+    protected final MotorAnimacao MotorAnimacao = new MotorAnimacao();
     protected boolean olhandoEsquerda = false;
+    private boolean lastOlhandoEsquerda = false;
+    private boolean animationsDirty = true;
 
-    // Constantes
-    protected int TAMANHO_PX;       // tamanho fixo do sprite
-    // Configuração da hitbox (você pode alterar livremente)
-    protected static int HITBOX_SIZE = 20;       // tamanho da hitbox (largura e altura)
-    protected static int HITBOX_OFFSET_X = -10;   // deslocamento horizontal (esquerda/direita)
-    protected static int HITBOX_OFFSET_Y = 0;  // deslocamento vertical (abaixar ou subir)
+    // Configuração da hitbox (campos de INSTÂNCIA, não static)
+    protected int TAMANHO_PX;
+    protected int hitboxSize;
+    protected int hitboxOffsetX;
+    protected int hitboxOffsetY;
 
     // Posição e colisão
     protected List<Rectangle> listColisores;
@@ -101,11 +108,13 @@ public abstract class PlayerTemplate {
     protected final float mapHeight;
     protected final OrthographicCamera camera;
     protected final Hud hud;
-    protected final ZoomChanger zoomChanger;
-    protected final Renderizar renderizar;
+    protected final AlteradorZoom AlteradorZoom;
+    protected final Renderizar renderizar = Renderizar.INSTANCE;
 
     // Métodos abstratos (cada player define os seus)
-    public abstract void texture();
+    public abstract void loadTextures();
+
+    public abstract void updateSpriteDefinitions();
 
     public abstract String getName();
 
@@ -124,7 +133,7 @@ public abstract class PlayerTemplate {
     public PlayerTemplate(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         this.dx = dx;
         this.dy = dy;
-        this.zoomChanger = new ZoomChanger();
+        this.AlteradorZoom = new AlteradorZoom();
 
         pontosDisponiveis = 0;
 
@@ -140,9 +149,9 @@ public abstract class PlayerTemplate {
         TAMANHO_PX = definirTamanho();
         tamanhoTiro = definirTamanhoTiro();
 
-        HITBOX_SIZE = definirHitBoxSize();
-        HITBOX_OFFSET_Y = definirHitBoxOffY();
-        HITBOX_OFFSET_X = definirHitBoxOffX();
+        hitboxSize = definirHitBoxSize();
+        hitboxOffsetY = definirHitBoxOffY();
+        hitboxOffsetX = definirHitBoxOffX();
 
         vida = vidaBase;
 
@@ -156,15 +165,14 @@ public abstract class PlayerTemplate {
 
         tilemapHitboxFactory = new TilemapHitboxFactory();
         listColisores = new ArrayList<>();
-        renderizar = new Renderizar();
         hudPause = new HudPause(this);
 
         // Hitbox inicial (quadrada e ajustável)
         hitBox = new Rectangle(
-            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
-            dy + HITBOX_OFFSET_Y,
-            HITBOX_SIZE,
-            HITBOX_SIZE
+            dx + (TAMANHO_PX - hitboxSize) / 2f + hitboxOffsetX,
+            dy + hitboxOffsetY,
+            hitboxSize,
+            hitboxSize
         );
 
         stateTime = 0f;
@@ -184,7 +192,12 @@ public abstract class PlayerTemplate {
         camera.position.x = MathUtils.clamp(camera.position.x, camera.viewportWidth / 2f, mapWidth - camera.viewportWidth / 2f);
         camera.position.y = MathUtils.clamp(camera.position.y, camera.viewportHeight / 2f, mapHeight - camera.viewportHeight / 2f);
         camera.update();
-        texture();
+
+        // Carrega texturas UMA VEZ e cria definições iniciais
+        loadTextures();
+        updateSpriteDefinitions();
+        rebuildAnimations();
+
         if (modeloTiroExclusivo() != null) {
             tirosModelos.add(modeloTiroExclusivo());
         }
@@ -208,32 +221,40 @@ public abstract class PlayerTemplate {
 
     protected abstract int definirForca();
 
-    protected abstract TirosTamplate modeloTiroExclusivo();
+    protected abstract TirosTemplate modeloTiroExclusivo();
 
-    public SaveDataPlayer saveData() {
-        SaveDataPlayer data = new SaveDataPlayer();
-        data.nomePersonagem = getName(); // cada player define o nome
-        data.vidaBase = this.vidaBase;
-        data.velocidade = this.velocidade;
-        data.forca = this.forca;
-        data.level = this.level;
-        data.xp = this.xp;
-        data.xpNecessario = this.xpNecessario;
-        data.moedas = this.moedas;
-        data.pontosDisponiveis = this.pontosDisponiveis;
+    private void rebuildAnimations() {
+        idleAnimation = MotorAnimacao.animar(idleDefinition);
+        walkAnimation = MotorAnimacao.animar(walkDefinition);
+        hurtAnimation = MotorAnimacao.animar(hurtDefinition);
+        deadAnimation = MotorAnimacao.animar(deadDefinition);
+        animationsDirty = false;
+    }
+
+    public DadosSalvosJogador saveData() {
+        DadosSalvosJogador data = new DadosSalvosJogador();
+        data.setNomePersonagem(getName());
+        data.setVidaBase(this.vidaBase);
+        data.setVelocidade(this.velocidade);
+        data.setForca(this.forca);
+        data.setLevel(this.level);
+        data.setXp(this.xp);
+        data.setXpNecessario(this.xpNecessario);
+        data.setMoedas(this.moedas);
+        data.setPontosDisponiveis(this.pontosDisponiveis);
         return data;
     }
 
-    public void loadSaveData(SaveDataPlayer data) {
-        this.vidaBase = data.vidaBase;
-        this.vida = data.vidaBase;
-        this.velocidade = data.velocidade;
-        this.forca = data.forca;
-        this.level = data.level;
-        this.xp = data.xp;
-        this.xpNecessario = data.xpNecessario;
-        this.moedas = data.moedas;
-        this.pontosDisponiveis = data.pontosDisponiveis;
+    public void loadSaveData(DadosSalvosJogador data) {
+        this.vidaBase = data.getVidaBase();
+        this.vida = data.getVidaBase();
+        this.velocidade = data.getVelocidade();
+        this.forca = data.getForca();
+        this.level = data.getLevel();
+        this.xp = data.getXp();
+        this.xpNecessario = data.getXpNecessario();
+        this.moedas = data.getMoedas();
+        this.pontosDisponiveis = data.getPontosDisponiveis();
         Gdx.app.log("PlayerTemplate", "Save carregado para " + getName());
     }
 
@@ -245,17 +266,22 @@ public abstract class PlayerTemplate {
         }
 
         if (!morto) {
-
             entityControl(delta);
 
+            // Atualiza animações apenas quando a direção muda
+            if (olhandoEsquerda != lastOlhandoEsquerda) {
+                lastOlhandoEsquerda = olhandoEsquerda;
+                updateSpriteDefinitions();
+                animationsDirty = true;
+            }
+
             // Se estiver olhando para a esquerda, inverte o offset horizontal
-            int offsetX = olhandoEsquerda ? -(HITBOX_OFFSET_X) : HITBOX_OFFSET_X;
+            int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
 
             hitBox.setPosition(
-                dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
-                dy + HITBOX_OFFSET_Y
+                dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+                dy + hitboxOffsetY
             );
-            texture();
         }
         stateTime += delta;
         if (hurt) {
@@ -267,14 +293,29 @@ public abstract class PlayerTemplate {
         }
         if (!podeTomarDano) {
             danoCooldown += delta;
-            if (danoCooldown >= 0.5f) {
+            if (danoCooldown >= DANO_COOLDOWN_DURATION) {
                 podeTomarDano = true;
-                danoCooldown =  0f;
+                danoCooldown = 0f;
             }
         }
+
+        // Atualiza tiros e remove os expirados (via game loop, sem Timer)
+        updateTiros(delta);
+
         checarColisao();
         updateCamera();
-        texture();
+    }
+
+    private void updateTiros(float delta) {
+        Iterator<TirosTemplate> it = tiros.iterator();
+        while (it.hasNext()) {
+            TirosTemplate tiro = it.next();
+            tiro.update(delta);
+            if (tiro.isExpirado()) {
+                it.remove();
+                tiro.dispose();
+            }
+        }
     }
 
     protected abstract int definirTamanho();
@@ -330,20 +371,19 @@ public abstract class PlayerTemplate {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
             drawHitBoxes = !drawHitBoxes;
-            Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + HITBOX_ISVISIBLE);
-            CommunVariable.setHitboxIsvisible(drawHitBoxes);
+            Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + drawHitBoxes);
+            VariavelComum.setHitboxIsvisible(drawHitBoxes);
         }
-        camera.zoom = zoomChanger.changeZoom();
+        camera.zoom = AlteradorZoom.changeZoom();
 
-        controleTestes();
+        if (DEBUG_MODE) {
+            controleTestes();
+        }
     }
 
     private void controleTestes() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
             xpUp(999999999);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
             vida = 999999999;
         }
     }
@@ -393,18 +433,17 @@ public abstract class PlayerTemplate {
         listColisores.addAll(colisores);
     }
 
-    public void adicionarTiro(TirosTamplate tiro) {
+    public void adicionarTiro(TirosTemplate tiro) {
         tiros.add(tiro);
     }
-    public void removerTiro(TirosTamplate tiro) {
+    public void removerTiro(TirosTemplate tiro) {
         tiros.remove(tiro);
     }
-    // Animação
+    // Animação — usa cache, reconstrói apenas quando direção muda
     protected TextureRegion animaAtual() {
-        idleAnimation = animationEngine.animar(idleDefinition);
-        walkAnimation = animationEngine.animar(walkDefinition);
-        hurtAnimation = animationEngine.animar(hurtDefinition);
-        deadAnimation = animationEngine.animar(deadDefinition);
+        if (animationsDirty) {
+            rebuildAnimations();
+        }
         if (morto) {
             if (deadAnimation.isAnimationFinished(stateTime)) {
                 return deadAnimation.getKeyFrames()[deadAnimation.getKeyFrames().length - 1];
@@ -424,6 +463,7 @@ public abstract class PlayerTemplate {
 
         Batch batch = world.getBatch();
         ShapeRenderer shapeRenderer = world.getShapeRenderer();
+
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
@@ -433,13 +473,27 @@ public abstract class PlayerTemplate {
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
         renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
+
     public void desenharTiros(WorldTemplate world){
+        if (tiros.isEmpty()) return;
+
+        // Cópia defensiva — evita ConcurrentModificationException
+        List<TirosTemplate> tirosSnapshot = new ArrayList<>(tiros);
+
         Batch batch = world.getBatch();
         ShapeRenderer shapeRenderer = world.getShapeRenderer();
 
         batch.setProjectionMatrix(camera.combined);
-        for (TirosTamplate tiro : tiros) {
-            tiro.draw(batch, shapeRenderer);
+        batch.begin();
+        for (TirosTemplate tiro : tirosSnapshot) {
+            tiro.desenhar(batch);
+        }
+        batch.end();
+
+        // Hitboxes desenhados fora do batch
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        for (TirosTemplate tiro : tirosSnapshot) {
+            tiro.desenharHitbox(shapeRenderer);
         }
     }
 
@@ -470,10 +524,10 @@ public abstract class PlayerTemplate {
     }
 
     public void dispose() {
-        idleSheet.dispose();
-        walkSheet.dispose();
-        deadSheet.dispose();
-        hurtSheet.dispose();
+        if (idleSheet != null) idleSheet.dispose();
+        if (walkSheet != null) walkSheet.dispose();
+        if (deadSheet != null) deadSheet.dispose();
+        if (hurtSheet != null) hurtSheet.dispose();
     }
 
     public void clearList() {
@@ -534,16 +588,16 @@ public abstract class PlayerTemplate {
         return olhandoEsquerda;
     }
 
-    public static int getHitboxSize() {
-        return HITBOX_SIZE;
+    public int getHitboxSize() {
+        return hitboxSize;
     }
 
-    public static int getHitboxOffsetX() {
-        return HITBOX_OFFSET_X;
+    public int getHitboxOffsetX() {
+        return hitboxOffsetX;
     }
 
-    public static int getHitboxOffsetY() {
-        return HITBOX_OFFSET_Y;
+    public int getHitboxOffsetY() {
+        return hitboxOffsetY;
     }
 
     public float getNextY() {
@@ -583,10 +637,10 @@ public abstract class PlayerTemplate {
         pause = false;
         menuAberto = false;
 
-        int offsetX = olhandoEsquerda ? -(HITBOX_OFFSET_X) : HITBOX_OFFSET_X;
+        int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
         hitBox.setPosition(
-            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
-            dy + HITBOX_OFFSET_Y
+            dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+            dy + hitboxOffsetY
         );
 
         updateCamera();
@@ -608,7 +662,7 @@ public abstract class PlayerTemplate {
         return pause;
     }
 
-    public List<TirosTamplate> getTiros() {
+    public List<TirosTemplate> getTiros() {
         return tiros;
     }
 

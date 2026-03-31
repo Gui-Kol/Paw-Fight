@@ -2,9 +2,8 @@ package com.pawfight.game.engine.procedural;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
-import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
-import com.pawfight.game.engine.procedural.room.RoomType;
+import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
@@ -29,36 +28,13 @@ public class GerarObjetos {
                     return;
                 }
 
-                switch (world.getCurrentRoom().getType()) {
-                    case BOSS -> {
-                        if (infoObj.typeRoom().equals(RoomType.BOSS)) {
-                            objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
-                        }
-                    }
-                    case INIMIGOS -> {
-                        if (infoObj.typeRoom().equals(RoomType.INIMIGOS)) {
-                            objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
-                        }
-                    }
-                    case INIMIGOS_FORTES -> {
-                        if (infoObj.typeRoom().equals(RoomType.INIMIGOS_FORTES)) {
-                            objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
-                        }
-                    }
-                    case TESOURO -> {
-                        if (infoObj.typeRoom().equals(RoomType.TESOURO)) {
-                            objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
-                        }
-                    }
-                    case SPAWN -> {
-                        if (infoObj.typeRoom().equals(RoomType.SPAWN)) {
-                            objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
-                        }
-                    }
+                // Gera objetos apenas se o tipo da sala combina com o tipo do objeto
+                if (world.getCurrentRoom().getType() == infoObj.typeRoom()) {
+                    objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
                 }
             }
             for (ObjetoGerado obj : objetosGerados) {
-                hitBoxes.add(obj.hitbox);
+                hitBoxes.add(obj.getHitbox());
             }
 
             world.addListaObjetosHitbox(hitBoxes);

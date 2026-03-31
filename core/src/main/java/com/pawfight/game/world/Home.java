@@ -13,20 +13,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.Hud.CreateButton;
+import com.pawfight.game.engine.Hud.CriarBotao;
 import com.pawfight.game.engine.Hud.HudStage;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.world.base.Base;
 
-import static com.pawfight.game.engine.CommunVariable.*;
+import static com.pawfight.game.engine.VariavelComum.*;
 
 public class Home implements Screen {
-    private final ScreenTransition screenTransition;
+    private final TransicaoTela TransicaoTela;
     private final HudStage hudStage;
     private final DesenharTextura desenharTextura;
 
@@ -41,7 +39,7 @@ public class Home implements Screen {
 
     private ImageButton playButton;
     private ImageButton quitButton;
-    private final CreateButton createButton;
+    private final CriarBotao CriarBotao;
 
     private final PawFight game;
     private final SpriteBatch batch;
@@ -55,8 +53,7 @@ public class Home implements Screen {
         this.game = game;
         this.camera = camera;
         this.viewport = viewport;
-
-        batch = new SpriteBatch();
+        this.batch = game.getBatch();
         hudStage = new HudStage();
         desenharTextura = new DesenharTextura();
 
@@ -72,18 +69,12 @@ public class Home implements Screen {
             backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/time_for_adventure.wav"));
             backMusic.setLooping(true);
             backMusic.setVolume(0.1f);
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    backMusic.play();
-                }
-            }, 2f);
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
-        createButton = new CreateButton();
+        CriarBotao = new CriarBotao();
 
-        screenTransition = new ScreenTransition(game);
+        TransicaoTela = new TransicaoTela(game);
         Gdx.app.log("Home", "Iniciando Home...");
     }
 
@@ -96,22 +87,25 @@ public class Home implements Screen {
         batch.end();
         hudStage.render();
 
-        screenTransition.update(delta);
-        screenTransition.render(batch);
+        TransicaoTela.update(delta);
+        TransicaoTela.render(batch);
     }
 
     @Override
     public void show() {
+        if (backMusic != null && !backMusic.isPlaying()) {
+            backMusic.play();
+        }
         if (playButton == null && quitButton == null) {
             try {
                 Stage stage = hudStage.getStage();
-                playButton = createButton.create(stage,
+                playButton = CriarBotao.create(stage,
                     GET_LARGURA_TELA_BASE() / 2,
                     GET_ALTURA_TELA_BASE() / 2,
                     200, 105,
                     normalTexturePlay, hoverTexturePlay, pressedTexturePlay);
 
-                quitButton = createButton.create(stage,
+                quitButton = CriarBotao.create(stage,
                     GET_LARGURA_TELA_BASE() / 2,
                     GET_ALTURA_TELA_BASE() / 2 - 150,
                     200, 105,
@@ -120,7 +114,7 @@ public class Home implements Screen {
                 playButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        screenTransition.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
+                        TransicaoTela.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
                         backMusic.stop();
                     }
                 });
@@ -154,22 +148,15 @@ public class Home implements Screen {
         if (backMusic != null) {
             backMusic.stop();
         }
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                dispose();
-            }
-        },5);
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
         if (background != null) background.dispose();
         if (backMusic != null) backMusic.dispose();
         if (hudStage != null) hudStage.dispose();
-        if (screenTransition != null) {
-            screenTransition.dispose();
+        if (TransicaoTela != null) {
+            TransicaoTela.dispose();
         }
         Gdx.app.log("Home","foi disposed");
     }

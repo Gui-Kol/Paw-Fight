@@ -10,11 +10,12 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import static com.pawfight.game.engine.CommunVariable.GET_SCALE;
+import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
 
 public class DesenharTexto {
     private final Viewport viewport;
     private final OrthographicCamera camera;
+    private final GlyphLayout layout = new GlyphLayout();
 
     public DesenharTexto(Viewport viewport, OrthographicCamera camera) {
         this.viewport = viewport;
@@ -23,10 +24,13 @@ public class DesenharTexto {
 
     public void desenhar(Batch batch, ShapeRenderer shapeRenderer, Color corFundo, String texto, BitmapFont font,
                          float x, float y, float fundo, boolean renderizarFundo) {
-        batch.end();
+        // Só encerra o batch se ele estiver ativo
+        if (batch.isDrawing()) {
+            batch.end();
+        }
         font.getData().setScale(GET_SCALE());
 
-        GlyphLayout layout = new GlyphLayout(font, texto);
+        layout.setText(font, texto);
 
         float posX = x;
         float posY = y;

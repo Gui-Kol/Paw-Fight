@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
-public class CreateButton {
+public class CriarBotao {
 
     public ImageButton create(Stage stage, int x, int y, int width, int height,
                               Texture normalTexture, Texture hoverTexture, Texture pressedTexture) {

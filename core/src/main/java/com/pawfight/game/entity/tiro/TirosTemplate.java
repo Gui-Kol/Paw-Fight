@@ -7,18 +7,18 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-public abstract class TirosTamplate {
+public abstract class TirosTemplate {
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
     protected float duracao, cadencia, intervalo;
+    protected float tempoVida = 0f;
     protected Texture texture;
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
-    protected Renderizar renderizar;
+    protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int xHitBox, yHitBox;
 
-    public TirosTamplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
-        renderizar = new Renderizar();
+    public TirosTemplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         duracao = definirDuracao();
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
@@ -46,20 +46,35 @@ public abstract class TirosTamplate {
 
     protected abstract float definirDuracao();
 
-    public void draw(Batch batch, ShapeRenderer shapeRenderer) {
-        batch.begin();
+    public void desenhar(Batch batch) {
+        if (texture == null) return;
         batch.draw(texture, x, y, tamanhoDraw, tamanhoDraw);
-        batch.end();
+    }
+
+    public void desenharHitbox(ShapeRenderer shapeRenderer) {
         renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
-    protected void update() {
+
+    public void draw(Batch batch, ShapeRenderer shapeRenderer) {
+        batch.begin();
+        desenhar(batch);
+        batch.end();
+        desenharHitbox(shapeRenderer);
+    }
+
+    public void update(float delta) {
+        tempoVida += delta;
+    }
+
+    public boolean isExpirado() {
+        return tempoVida >= duracao;
     }
 
     protected abstract Texture randomTex();
 
     protected abstract Rectangle gerarHitBox();
 
-    protected abstract TirosTamplate clonar(PlayerTemplate player);
+    protected abstract TirosTemplate clonar(PlayerTemplate player);
 
     protected abstract Texture singleTex();
 
@@ -91,6 +106,12 @@ public abstract class TirosTamplate {
 
     public void setIntervalo(float intervalo) {
         this.intervalo = intervalo;
+    }
+
+    public void dispose() {
+        if (texture != null) {
+            texture.dispose();
+        }
     }
 }
 

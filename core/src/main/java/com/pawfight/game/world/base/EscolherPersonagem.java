@@ -14,7 +14,7 @@ import com.pawfight.game.entity.player.Dove;
 
 import java.util.Random;
 
-import static com.pawfight.game.engine.CommunVariable.*;
+import static com.pawfight.game.engine.VariavelComum.*;
 
 public class EscolherPersonagem {
     private ExibirDadosPersonagem exibirDadosPersonagem;
@@ -42,7 +42,7 @@ public class EscolherPersonagem {
 
     public EscolherPersonagem(PawFight game) {
         this.game = game;
-        batch = new SpriteBatch();
+        batch = game.getBatch();
         viewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
 
         personagens = new Texture[]{
@@ -216,7 +216,6 @@ public class EscolherPersonagem {
         exibirDadosPersonagem.dispose();
         backGroud.dispose();
         nuvem.dispose();
-        batch.dispose();
         exibirDadosPersonagem.dispose();
     }
 }

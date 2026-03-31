@@ -2,7 +2,8 @@ package com.pawfight.game.engine;
 
 import com.badlogic.gdx.Gdx;
 
-public class CommunVariable {
+public class VariavelComum {
+    public static final boolean DEBUG_MODE = false;
     public static boolean HITBOX_ISVISIBLE = false;
 
     public static void setHitboxIsvisible(boolean hitboxIsvisible) {

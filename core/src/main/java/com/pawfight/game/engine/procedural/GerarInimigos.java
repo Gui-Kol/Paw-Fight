@@ -3,9 +3,8 @@ package com.pawfight.game.engine.procedural;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Timer;
-import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
-import com.pawfight.game.engine.procedural.room.Room;
+import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
+import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.bosses.BossesTemplate;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
@@ -60,7 +59,7 @@ public class GerarInimigos {
     }
 
     public List<EnemyTemplate> gerarInimigos(WorldTemplate world) {
-        Room currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getCurrentRoom();
         TiledMap map = world.getMap();
         TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
@@ -99,12 +98,7 @@ public class GerarInimigos {
     }
 
     private void clear() {
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                listaInimigosFortes.clear();
-                listaBosses.clear();
-            }
-        }, 1.5f);
+        listaInimigosFortes.clear();
+        listaBosses.clear();
     }
 }

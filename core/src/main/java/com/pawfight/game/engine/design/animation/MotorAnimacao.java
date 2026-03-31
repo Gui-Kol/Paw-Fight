@@ -9,10 +9,10 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pawfight.game.engine.design.DefinirSprite;
 
-import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
 
-public class AnimationEngine {
+public class MotorAnimacao {
     private Animation<TextureRegion> animation;
     private boolean fundoAtivo = false;
     private float stateTime = 0;

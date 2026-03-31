@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import static com.pawfight.game.engine.CommunVariable.GET_SCALE;
+import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
 
 public class DesenharTextura {
 

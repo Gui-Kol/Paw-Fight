@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.phisics;
+package com.pawfight.game.engine.fisica;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -33,11 +33,11 @@ public class ChecarColisao {
         Rectangle hitBox = player.getHitBox();
 
         int offsetX = player.isOlhandoEsquerda()
-            ? -(PlayerTemplate.getHitboxOffsetX())
-            : PlayerTemplate.getHitboxOffsetX();
+            ? -(player.getHitboxOffsetX())
+            : player.getHitboxOffsetX();
 
-        player.setDx((int) (hitBox.x - (player.getTamanho() - PlayerTemplate.getHitboxSize()) / 2f - offsetX));
-        player.setDy((int) (hitBox.y - PlayerTemplate.getHitboxOffsetY()));
+        player.setDx((int) (hitBox.x - (player.getTamanho() - player.getHitboxSize()) / 2f - offsetX));
+        player.setDy((int) (hitBox.y - player.getHitboxOffsetY()));
     }
 
 

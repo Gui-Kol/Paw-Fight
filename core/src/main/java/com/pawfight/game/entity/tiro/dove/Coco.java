@@ -2,13 +2,18 @@ package com.pawfight.game.entity.tiro.dove;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.entity.tiro.TirosTamplate;
+import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-public class Coco extends TirosTamplate {
+public class Coco extends TirosTemplate {
+    private final Texture coco1, coco2, coco3;
 
     public Coco(int tamanho, PlayerTemplate player) {
         super(player.getDx() - tamanho / 2, player.getDy() - tamanho / 2, player.getForca(), tamanho, player);
+        // Texturas devem ser carregadas ANTES de randomTex()
+        coco1 = new Texture("entitys/player/dove/coco/2.png");
+        coco2 = new Texture("entitys/player/dove/coco/3.png");
+        coco3 = new Texture("entitys/player/dove/coco/1.png");
         texture = randomTex();
     }
 
@@ -21,7 +26,7 @@ public class Coco extends TirosTamplate {
     }
 
     @Override
-    protected TirosTamplate clonar(PlayerTemplate player) {
+    protected TirosTemplate clonar(PlayerTemplate player) {
         return new Coco(tamanho,player);
     }
 
@@ -39,9 +44,9 @@ public class Coco extends TirosTamplate {
     protected Texture randomTex() {
         int random = (int) (Math.random() * 3);
         return switch (random) {
-            case 1 -> new Texture("entitys/player/dove/coco/2.png");
-            case 2 -> new Texture("entitys/player/dove/coco/3.png");
-            default -> new Texture("entitys/player/dove/coco/1.png");
+            case 1 -> coco1;
+            case 2 -> coco2;
+            default -> coco3;
         };
     }
 

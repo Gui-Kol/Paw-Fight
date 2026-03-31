@@ -5,9 +5,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
-import com.pawfight.game.engine.procedural.room.Room;
+import com.pawfight.game.engine.design.transition.TransicaoTela;
+import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
+import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
 
@@ -16,15 +16,21 @@ import java.util.List;
 public class Base extends WorldTemplate {
     private EntradaPortais entradaPortais;
     private final EscolherPersonagem escolherPersonagem;
-    private final ScreenTransition screenTransition;
+    private final TransicaoTela TransicaoTela;
     private boolean entrouPortal;
     private Portoes portoes;
     private int carregarPosPlayer = 0;
 
+    // Hitboxes cacheadas — criadas uma única vez em vez de cada frame
+    private List<Rectangle> entradaPortalAreia;
+    private List<Rectangle> entradaPortalNeve;
+    private List<Rectangle> portaoNeve;
+    private List<Rectangle> portaoNeveMensagem;
+
     public Base(PawFight game, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
         Gdx.app.log("Base", "Iniciando Base...");
-        screenTransition = new ScreenTransition(game);
+        TransicaoTela = new TransicaoTela(game);
         escolherPersonagem = new EscolherPersonagem(game);
         entrouPortal = false;
     }
@@ -48,8 +54,15 @@ public class Base extends WorldTemplate {
         if (carregarPosPlayer == 0) {
             portoes = new Portoes(player.getHud());
             game.resize(viewport.getScreenWidth(), viewport.getScreenHeight());
-            entradaPortais = new EntradaPortais(screenTransition, player.getHud());
+            entradaPortais = new EntradaPortais(TransicaoTela, player.getHud());
             carregarParede();
+
+            // Cachear hitboxes dos portais uma única vez
+            entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
+            entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
+            portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
+            portaoNeveMensagem = tilemapHitboxFactory.createHitboxes(map, "portaoNeveMensagem");
+
             carregarPosPlayer++;
         }
 
@@ -62,34 +75,28 @@ public class Base extends WorldTemplate {
 
     @Override
     protected void renderLayers() {
-        layerRenderer.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
+        RenderizadorCamada.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
     }
 
     @Override
     protected void renderLayersUp() {
-        layerRenderer.renderLayer("DetalhesMapaCima", player.getCamera());
+        RenderizadorCamada.renderLayer("DetalhesMapaCima", player.getCamera());
     }
 
 
     @Override
     protected void checkPortals() {
         try {
-            List<Rectangle> entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
-            List<Rectangle> entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
-
-            if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, shapeRenderer,game, camera, viewport)) {
+            if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, shapeRenderer, game, camera, viewport)) {
                 entrouPortal = true;
             }
             if (entradaPortais.entrarPortalNeve(player, entradaPortalNeve, batch, game)) {
                 entrouPortal = true;
             }
 
-            List<Rectangle> portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
-            List<Rectangle> portaoNeveMenssagem = tilemapHitboxFactory.createHitboxes(map, "PortaoNeveMenssagem");
-
             if (player.getLevel() < 5) {
                 tilemapHitboxFactory.drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
-                portoes.menssagemPortao(player, portaoNeveMenssagem, batch, shapeRenderer,"Level 5 necessario!");
+                portoes.mensagemPortao(player, portaoNeveMensagem, batch, shapeRenderer, "Level 5 necessario!");
             }
             player.adicionarColisaoPorLevel(portaoNeve, 5);
         } catch (Exception e) {
@@ -98,7 +105,7 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    public void logRoomInfo(Room room) {
+    public void logRoomInfo(Sala Sala) {
 
     }
 
@@ -139,8 +146,8 @@ public class Base extends WorldTemplate {
     public void dispose() {
         super.dispose();
         escolherPersonagem.dispose();
-        if (screenTransition != null) {
-            screenTransition.dispose();
+        if (TransicaoTela != null) {
+            TransicaoTela.dispose();
         }
     }
 }

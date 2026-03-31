@@ -7,14 +7,18 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.design.animation.AnimationEngine;
+import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
 
-public abstract class EnemyTemplate {
+public abstract class EnemyTemplate implements Entidade {
+    // Constantes
+    private static final float DANO_COOLDOWN_DURATION = 0.5f;
+
     protected PlayerTemplate player;
 
     //animação
@@ -36,8 +40,10 @@ public abstract class EnemyTemplate {
     protected Animation<TextureRegion> deadAnimation;
     protected Animation<TextureRegion> atackAnimation;
     protected Animation<TextureRegion> specialAtackAnimation;
-    protected final AnimationEngine animationEngine = new AnimationEngine();
+    protected final MotorAnimacao MotorAnimacao = new MotorAnimacao();
     protected boolean olhandoEsquerda = false;
+    private boolean lastOlhandoEsquerda = false;
+    private boolean animationsDirty = true;
     protected boolean moving = false;
     protected boolean atacando = false;
     protected boolean atacandoEspecial = false;
@@ -56,13 +62,13 @@ public abstract class EnemyTemplate {
     protected final float HURT_DURATION = 0.3f;
     protected float stateTime;
     protected float ataqueTimer = 0f;
-    protected final float ATAQUE_COOLDOWN = 1.5f; // Cooldown entre ataques
-    protected final float ATAQUE_DURATION = 0.5f; // Duração da animação de ataque
-    protected final float DISTANCIA_ATAQUE = 60f; // Distância para atacar
+    protected final float ATAQUE_COOLDOWN = 1.5f;
+    protected final float ATAQUE_DURATION = 0.5f;
+    protected final float DISTANCIA_ATAQUE = 60f;
     private float danoCooldown = 0f;
 
     protected Rectangle hitBox;
-    protected Renderizar renderizar;
+    protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int TAMANHO_PX = 64;
     protected int HITBOX_SIZE = 20;
     protected int HITBOX_OFFSET_X = -10;
@@ -76,23 +82,37 @@ public abstract class EnemyTemplate {
         this.dy = dy;
         this.stateTime = 0f;
         this.forte = forte;
-        this.renderizar = new Renderizar();
         criarHitBox();
-        texture();
+        // Carrega texturas UMA VEZ e cria definições iniciais
+        loadTextures();
+        updateSpriteDefinitions();
+        rebuildAnimations();
     }
 
-    // Métodos abstratos de ataque
+    // Métodos abstratos
     public abstract void ataqueBasico();
 
     public abstract void criarHitBox();
 
     public abstract void ataqueEspecial();
 
-    public abstract void texture();
+    public abstract void loadTextures();
+
+    public abstract void updateSpriteDefinitions();
 
     public abstract EnemyTemplate cloneEnemy();
 
-    public abstract String  getNome();
+    public abstract String getNome();
+
+    private void rebuildAnimations() {
+        idleAnimation = MotorAnimacao.animar(idleDefinition);
+        walkAnimation = MotorAnimacao.animar(walkDefinition);
+        hurtAnimation = MotorAnimacao.animar(hurtDefinition);
+        deadAnimation = MotorAnimacao.animar(deadDefinition);
+        atackAnimation = MotorAnimacao.animar(atackDefinition);
+        specialAtackAnimation = MotorAnimacao.animar(specialAtackDefinition);
+        animationsDirty = false;
+    }
 
     public void setLocation(int x, int y) {
         dx = x;
@@ -115,12 +135,19 @@ public abstract class EnemyTemplate {
             stateTime += delta;
             ataqueTimer += delta;
 
+            // Atualiza animações apenas quando direção muda
+            if (olhandoEsquerda != lastOlhandoEsquerda) {
+                lastOlhandoEsquerda = olhandoEsquerda;
+                updateSpriteDefinitions();
+                animationsDirty = true;
+            }
+
             // Atualizar cooldown de dano
             if (!podeTomarDano) {
                 danoCooldown += delta;
-                if (danoCooldown >= 0.5f) {
+                if (danoCooldown >= DANO_COOLDOWN_DURATION) {
                     podeTomarDano = true;
-                    danoCooldown =  0f;
+                    danoCooldown = 0f;
                 }
             }
 
@@ -162,58 +189,6 @@ public abstract class EnemyTemplate {
         return (float) Math.sqrt(dx * dx + dy * dy);
     }
 
-    protected void moverEmDirecaoAoPlayer(float delta) {
-        if (player == null) return;
-
-        float playerX = player.getDx();
-        float playerY = player.getDy();
-
-        float deltaX = playerX - this.dx;
-        float deltaY = playerY - this.dy;
-        float distanciaTotal = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-        if (distanciaTotal > 0) {
-            float moveX = (deltaX / distanciaTotal) * velocidade * delta;
-            float moveY = (deltaY / distanciaTotal) * velocidade * delta;
-
-            // Calcular nova posição
-            float newDx = this.dx + moveX;
-            float newDy = this.dy + moveY;
-
-            // Criar hitbox temporária para nova posição
-            Rectangle tempHitBox = new Rectangle(
-                newDx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
-                newDy + HITBOX_OFFSET_Y,
-                HITBOX_SIZE,
-                HITBOX_SIZE
-            );
-
-            // Verificar se a nova posição sobrepõe outro inimigo
-            boolean canMove = true;
-            if (enemiesList != null) {
-                for (EnemyTemplate other : enemiesList) {
-                    if (other != this && tempHitBox.overlaps(other.getHitBox())) {
-                        canMove = false;
-                        break;
-                    }
-                }
-            }
-
-            if (canMove) {
-                this.dx = (int) newDx;
-                this.dy = (int) newDy;
-                olhandoEsquerda = deltaX < 0;
-                moving = true;
-            } else {
-                moving = false;
-            }
-
-            hitBox.setPosition(dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X, dy + HITBOX_OFFSET_Y);
-        } else {
-            moving = false;
-        }
-    }
-
     public void dano(int forca) {
         if (podeTomarDano) {
             podeTomarDano = false;
@@ -230,12 +205,9 @@ public abstract class EnemyTemplate {
     }
 
     protected TextureRegion animaAtual() {
-        idleAnimation = animationEngine.animar(idleDefinition);
-        walkAnimation = animationEngine.animar(walkDefinition);
-        hurtAnimation = animationEngine.animar(hurtDefinition);
-        deadAnimation = animationEngine.animar(deadDefinition);
-        atackAnimation = animationEngine.animar(atackDefinition);
-        specialAtackAnimation = animationEngine.animar(specialAtackDefinition);
+        if (animationsDirty) {
+            rebuildAnimations();
+        }
 
         if (morto) {
             if (deadAnimation.isAnimationFinished(stateTime)) {
@@ -255,16 +227,35 @@ public abstract class EnemyTemplate {
         }
         return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
     }
+    /**
+     * Desenha APENAS o sprite do inimigo. O batch já deve estar aberto (begin chamado).
+     */
+    public void drawSprite(SpriteBatch batch) {
+        batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
+    }
+
+    /**
+     * Desenha hitbox e extras (debug). Deve ser chamado FORA de batch.begin/end.
+     */
+    public void drawHitbox(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        renderizar.hitboxDraw(shapeRenderer, hitBox);
+        extraDraw(batch, shapeRenderer);
+    }
+
+    /**
+     * Desenho completo (abre/fecha batch). Usar apenas se desenhar UM inimigo isolado.
+     * Para listas, prefira drawSprite() + drawHitbox() em batch batching.
+     */
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         var cameraCombined = player.getCamera().combined;
+
         shapeRenderer.setProjectionMatrix(cameraCombined);
         batch.setProjectionMatrix(cameraCombined);
 
         batch.begin();
-        batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
+        drawSprite(batch);
         batch.end();
-        renderizar.hitboxDraw(shapeRenderer, hitBox);
-        extraDraw(batch,shapeRenderer);
+        drawHitbox(batch, shapeRenderer);
     }
 
     protected abstract int moedasMorte();
@@ -292,7 +283,42 @@ public abstract class EnemyTemplate {
         return morto;
     }
 
+    // ── Getters do contrato Entidade ──────────────────────────
+
+    public int getDx() {
+        return dx;
+    }
+
+    public int getDy() {
+        return dy;
+    }
+
+    public int getVida() {
+        return vida;
+    }
+
+    public int getVidaBase() {
+        return vidaBase;
+    }
+
+    public int getForca() {
+        return forca;
+    }
+
+    public boolean isOlhandoEsquerda() {
+        return olhandoEsquerda;
+    }
+
+    // ─────────────────────────────────────────────────────────
+
     public void setForte(boolean forte) {
-        this.forte = forte;
+        if (this.forte != forte) {
+            this.forte = forte;
+            aplicarStatsForte();
+        }
+    }
+
+    protected void aplicarStatsForte() {
+        // implementação padrão vazia — subclasses sobrescrevem
     }
 }

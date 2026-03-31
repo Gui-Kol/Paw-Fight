@@ -12,9 +12,12 @@ import com.pawfight.game.world.WorldTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pawfight.game.engine.CommunVariable.HITBOX_ISVISIBLE;
+import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
 
 public class Renderizar {
+    /** Instância compartilhada — Renderizar é stateless, não precisa de cópias. */
+    public static final Renderizar INSTANCE = new Renderizar();
+
     //Inimigo
     public void atualizarListaInimigos(float delta, List<EnemyTemplate> listaInimigos) {
         List<EnemyTemplate> inimigosMortos = new ArrayList<>();
@@ -27,8 +30,25 @@ public class Renderizar {
         listaInimigos.removeAll(inimigosMortos);
     }
     public void renderizarInimigos(WorldTemplate world) {
-        for (EnemyTemplate enemy : world.getListaInimigos()) {
-            enemy.draw(world.getBatch(), world.getShapeRenderer());
+        List<EnemyTemplate> inimigos = world.getListaInimigos();
+        if (inimigos.isEmpty()) return;
+
+        SpriteBatch batch = world.getBatch();
+        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+        var cameraCombined = world.getPlayer().getCamera().combined;
+
+        // 1 único begin/end para TODOS os sprites
+        batch.setProjectionMatrix(cameraCombined);
+        batch.begin();
+        for (EnemyTemplate enemy : inimigos) {
+            enemy.drawSprite(batch);
+        }
+        batch.end();
+
+        // Hitboxes e extras — fora do batch
+        shapeRenderer.setProjectionMatrix(cameraCombined);
+        for (EnemyTemplate enemy : inimigos) {
+            enemy.drawHitbox(batch, shapeRenderer);
         }
     }
 
@@ -37,13 +57,19 @@ public class Renderizar {
         if (world.getListaObjetos() == null || world.getListaObjetos().isEmpty()) {
             return;
         }
-        world.getBatch().setProjectionMatrix(world.getPlayer().getCamera().combined);
-        world.getBatch().begin();
-        for (ObjetoGerado objeto : world.getListaObjetos()) {
-            world.getBatch().draw(objeto.textura, objeto.x, objeto.y,
-                objeto.tamanhoPx, objeto.tamanhoPx);
+        SpriteBatch batch = world.getBatch();
+        if (batch.isDrawing()) {
+            batch.end();
         }
-        world.getBatch().end();
+        batch.setProjectionMatrix(world.getPlayer().getCamera().combined);
+        batch.begin();
+        for (ObjetoGerado objeto : world.getListaObjetos()) {
+            if (objeto.getTextura() != null) {
+                batch.draw(objeto.getTextura(), objeto.getX(), objeto.getY(),
+                    objeto.getTamanhoPx(), objeto.getTamanhoPx());
+            }
+        }
+        batch.end();
     }
 
     //HitBox
@@ -72,9 +98,9 @@ public class Renderizar {
             for (ObjetoGerado obj : objetoGerados) {
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
                 shapeRenderer.setColor(Color.GREEN);
-                shapeRenderer.rect(obj.hitbox.x, obj.hitbox.y, obj.hitbox.width, obj.hitbox.height);
+                shapeRenderer.rect(obj.getHitbox().x, obj.getHitbox().y, obj.getHitbox().width, obj.getHitbox().height);
                 shapeRenderer.setColor(Color.RED);
-                shapeRenderer.rect(obj.areaToque.x, obj.areaToque.y, obj.areaToque.width, obj.areaToque.height);
+                shapeRenderer.rect(obj.getAreaToque().x, obj.getAreaToque().y, obj.getAreaToque().width, obj.getAreaToque().height);
                 shapeRenderer.end();
             }
         }

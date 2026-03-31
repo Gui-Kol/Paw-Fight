@@ -15,17 +15,17 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
-import com.pawfight.game.engine.Validar;
-import com.pawfight.game.engine.design.transition.ScreenTransition;
-import com.pawfight.game.engine.phisics.TilemapHitboxFactory;
+import com.pawfight.game.engine.design.transition.TransicaoTela;
+import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.GerarObjetos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
-import com.pawfight.game.engine.procedural.room.InfoGeraObjeto;
-import com.pawfight.game.engine.procedural.room.Room;
-import com.pawfight.game.engine.procedural.room.RoomGenerator;
-import com.pawfight.game.engine.render.LayerRenderer;
+import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
+import com.pawfight.game.engine.procedural.sala.Sala;
+import com.pawfight.game.engine.procedural.sala.GeradorSalas;
+import com.pawfight.game.engine.render.RenderizadorCamada;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -36,8 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.pawfight.game.engine.CommunVariable.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.CommunVariable.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
 
 public abstract class WorldTemplate implements Screen {
 
@@ -46,7 +46,7 @@ public abstract class WorldTemplate implements Screen {
     protected TilemapHitboxFactory tilemapHitboxFactory;
 
     // Base
-    protected LayerRenderer layerRenderer;
+    protected RenderizadorCamada RenderizadorCamada;
     protected TiledMap map;
 
     // Entidades
@@ -54,17 +54,16 @@ public abstract class WorldTemplate implements Screen {
 
     // Mundo
     protected final DesenharMiniMapa desenharMiniMapa;
-    protected final ScreenTransition screenTransition;
+    protected final TransicaoTela TransicaoTela;
     protected final CarregarPortas carregarPortas;
     protected final GerarObjetos gerarObjetos;
-    protected final Renderizar renderizar;
-    protected final Validar validar;
+    protected final Renderizar renderizar = Renderizar.INSTANCE;
     protected boolean errorFinal = false;
     protected final List<ObjetoGerado> listaObjetos;
     protected final List<Rectangle> listaObjetosHitbox;
-    protected List<Room> rooms;
-    protected RoomGenerator roomGenerator;
-    protected Room currentRoom;
+    protected List<Sala> rooms;
+    protected GeradorSalas GeradorSalas;
+    protected Sala currentRoom;
     protected boolean podeEntrarPorta;
     protected Set<String> salasVisitadas;
     protected DanoTiro danoTiro;
@@ -83,13 +82,12 @@ public abstract class WorldTemplate implements Screen {
         this.game = game;
         this.camera = camera;
         this.viewport = viewport;
+        this.batch = game.getBatch();
 
         gerarObjetos = new GerarObjetos();
-        validar = new Validar();
         listaObjetos = new ArrayList<>();
         listaObjetosHitbox = new ArrayList<>();
         listaInimigos = new ArrayList<>();
-        batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         background = new Texture(backgroundPath);
         backMusic = Gdx.audio.newMusic(Gdx.files.internal(musicPath));
@@ -97,10 +95,9 @@ public abstract class WorldTemplate implements Screen {
         danoTiro = new DanoTiro();
         salasVisitadas = new HashSet<>();
         podeEntrarPorta = true;
-        renderizar = new Renderizar();
         gerarInimigos = new GerarInimigos();
         desenharMiniMapa = new DesenharMiniMapa();
-        screenTransition = new ScreenTransition(game);
+        TransicaoTela = new TransicaoTela(game);
         carregarPortas = new CarregarPortas();
         stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE()), batch);
     }
@@ -113,8 +110,9 @@ public abstract class WorldTemplate implements Screen {
     @Override
     public void show() {
         try {
+            tilemapHitboxFactory.clearCache();
             map = new TmxMapLoader().load(getMapPath());
-            layerRenderer = new LayerRenderer(map);
+            RenderizadorCamada = new RenderizadorCamada(map);
             backMusic.setLooping(true);
             backMusic.setVolume(0);
             backMusic.play();
@@ -146,7 +144,7 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void render(float delta) {
-        if (map == null || layerRenderer == null) {
+        if (map == null || RenderizadorCamada == null) {
             Gdx.app.error(getWorldName(), "Mapa não carregado!");
             return;
         }
@@ -189,7 +187,7 @@ public abstract class WorldTemplate implements Screen {
 
     protected abstract void checkPortals();
 
-    public abstract void logRoomInfo(Room room);
+    public abstract void logRoomInfo(Sala Sala);
 
     public abstract List<InfoGeraObjeto> getInfoObjetos();
 
@@ -233,18 +231,17 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void dispose() {
-        batch.dispose();
         shapeRenderer.dispose();
         background.dispose();
         backMusic.dispose();
         if (map != null) map.dispose();
-        if (layerRenderer != null) layerRenderer.dispose();
+        if (RenderizadorCamada != null) RenderizadorCamada.dispose();
         if (player != null) player.dispose();
         Gdx.app.log(getWorldName(), "foi disposed");
     }
 
     public boolean currentRoomFoiVisitada() {
-        Room currentRoom = getCurrentRoom();
+        Sala currentRoom = getCurrentRoom();
 
         String key = currentRoom.getX() + "," + currentRoom.getY();
         return getSalasVisitadas().contains(key);
@@ -262,8 +259,8 @@ public abstract class WorldTemplate implements Screen {
         return tilemapHitboxFactory;
     }
 
-    public LayerRenderer getLayerRenderer() {
-        return layerRenderer;
+    public RenderizadorCamada getLayerRenderer() {
+        return RenderizadorCamada;
     }
 
     public TiledMap getMap() {
@@ -274,12 +271,12 @@ public abstract class WorldTemplate implements Screen {
         return podeEntrarPorta;
     }
 
-    public Room getCurrentRoom() {
+    public Sala getCurrentRoom() {
         return currentRoom;
     }
 
-    public RoomGenerator getRoomGenerator() {
-        return roomGenerator;
+    public GeradorSalas getRoomGenerator() {
+        return GeradorSalas;
     }
 
     public GerarInimigos getGerarInimigos() {
@@ -290,19 +287,19 @@ public abstract class WorldTemplate implements Screen {
         return listaInimigos;
     }
 
-    public void setLayerRenderer(LayerRenderer layerRenderer) {
-        this.layerRenderer = layerRenderer;
+    public void setLayerRenderer(RenderizadorCamada RenderizadorCamada) {
+        this.RenderizadorCamada = RenderizadorCamada;
     }
 
-    public void setCurrentRoom(Room currentRoom) {
+    public void setCurrentRoom(Sala currentRoom) {
         this.currentRoom = currentRoom;
     }
 
-    public List<Room> getRooms() {
+    public List<Sala> getRooms() {
         return rooms;
     }
 
-    public void setRooms(List<Room> rooms) {
+    public void setRooms(List<Sala> rooms) {
         this.rooms = rooms;
     }
 

@@ -9,12 +9,12 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayerRenderer {
+public class RenderizadorCamada {
 
     private final OrthogonalTiledMapRenderer renderer;
     private final TiledMap map;
 
-    public LayerRenderer(TiledMap map) {
+    public RenderizadorCamada(TiledMap map) {
         this.map = map;
         this.renderer = new OrthogonalTiledMapRenderer(map);
     }
@@ -23,7 +23,7 @@ public class LayerRenderer {
     public void renderLayer(String layerName, OrthographicCamera camera) {
         MapLayer layer = map.getLayers().get(layerName);
         if (layer == null) {
-            Gdx.app.error("LayerRenderer", layerName + " não encontrado!");
+            Gdx.app.error("RenderizadorCamada", layerName + " não encontrado!");
             return;
         }
 
@@ -51,7 +51,7 @@ public class LayerRenderer {
         for (String name : layerNames) {
             MapLayer layer = map.getLayers().get(name);
             if (layer == null) {
-                Gdx.app.error("LayerRenderer", name + " não encontrado!");
+                Gdx.app.error("RenderizadorCamada", name + " não encontrado!");
                 continue;
             }
             int idx = map.getLayers().getIndex(layer);
