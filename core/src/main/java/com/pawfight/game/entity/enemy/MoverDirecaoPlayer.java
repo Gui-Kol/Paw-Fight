@@ -4,10 +4,9 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class MoverDirecaoPlayer {
-    // Rectangle reutilizável (evita alocação por frame)
     private final Rectangle tempHitBox = new Rectangle();
 
-    protected void mover(EnemyTemplate enemy) {
+    public void mover(EnemyTemplate enemy) {
         PlayerTemplate player = enemy.player;
         if (player == null) return;
 
