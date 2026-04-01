@@ -1,9 +1,7 @@
 package com.pawfight.game;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -29,6 +27,7 @@ public class PawFight extends Game {
     private TransicaoTela transition;
     private boolean telaCheia = true;
     private boolean podeAlterarTelaCheia = true;
+    private Music audio;
 
     // Camera + Viewport
     private OrthographicCamera camera;
@@ -56,6 +55,8 @@ public class PawFight extends Game {
                 image = new Texture("menu/dark_back_groud.png");
             }
         }, 2.5f);
+        audio = Gdx.audio.newMusic(Gdx.files.internal("audio/sounds/MenuInicial/inicio.wav"));
+        audio.play();
 
         Gdx.app.log("PawFight", "Iniciando jogo...");
     }
@@ -124,6 +125,7 @@ public class PawFight extends Game {
     public void dispose() {
         batch.dispose();
         image.dispose();
+        audio.dispose();
         if (transition != null) {
             transition.dispose();
         }
