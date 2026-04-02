@@ -18,6 +18,8 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.pawfight.game.engine.Validar.validarLista;
+
 public class MundoAreia extends WorldTemplate {
 
     private Texture cactoTexture;
@@ -76,7 +78,7 @@ public class MundoAreia extends WorldTemplate {
     }
 
     private void cactoDano() {
-        if (Validar.validarLista(listaObjetos)) {
+        if (validarLista(listaObjetos)) {
             for (ObjetoGerado obj : listaObjetos) {
                 if (obj.getNomeObjeto().equals("cacto")) {
                     if (obj.getAreaToque().overlaps(player.getHitBox())) {
@@ -125,15 +127,9 @@ public class MundoAreia extends WorldTemplate {
 
             if (player != null && !player.isMorto()) {
                 super.render(delta);
-
-
                 cactoDano();
 
-                renderizar.renderizarObjects(this);
-                renderizar.hitBoxListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
-                podeEntrarPorta = !Validar.validarLista(listaInimigos);
-                danoTiro.darDanoListaInimigos(this);
-
+                podeEntrarPorta = !validarLista(listaInimigos);
             }
         } catch (Exception e) {
             // Log original PRIMEIRO — para não perder o erro real

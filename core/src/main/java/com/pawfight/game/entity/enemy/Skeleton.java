@@ -3,29 +3,37 @@ package com.pawfight.game.entity.enemy;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-public class Skeleton extends EnemyTemplate{
+public class Skeleton extends EnemyTemplate {
     private final MoverDirecaoPlayer moverDirecaoPlayer = new MoverDirecaoPlayer();
 
     public Skeleton(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
-        float multiplicador = forte ? 1.8f : 1;
-        nome = "Esqueleto";
-
-        vidaBase = (int)(50 * multiplicador);
-        vida = vidaBase;
-        forca = (int)(1 * multiplicador);
-        velocidade = (int)(300 * multiplicador);
     }
 
     @Override
-    public void loadTextures() {
-        idleSheet = new Texture("entitys/enemy/Skeleton/Idle.png");
-        walkSheet = new Texture("entitys/enemy/Skeleton/Walk.png");
-        deadSheet = new Texture("entitys/enemy/Skeleton/Death.png");
+    protected DadosInimigo dadosInimigo() {
+        return new DadosInimigo(
+            "Esqueleto",
+            50,
+            1,
+            300,
+            64,
+            20,
+            0,
+            -10,
+            new Texture("entitys/enemy/Skeleton/Idle.png"),
+            new Texture("entitys/enemy/Skeleton/Walk.png"),
+            new Texture("entitys/enemy/Skeleton/Death.png"),
+            null,
+            null,
+            null,
+            1.8f,
+            null,
+            audioEngine.criarAudio("entitys/enemy/Skeleton/audioMorte.wav")
+        );
     }
 
     @Override
@@ -53,11 +61,6 @@ public class Skeleton extends EnemyTemplate{
     }
 
     @Override
-    public String getNome() {
-        return "Skeleton";
-    }
-
-    @Override
     public void andarIA(float delta) {
         moverDirecaoPlayer.mover(this);
     }
@@ -67,10 +70,6 @@ public class Skeleton extends EnemyTemplate{
         return forte ? 128 : 64;
     }
 
-    @Override
-    protected void definirAudios() {
-        audioMorte = audioEngine.criarAudio("entitys/enemy/Skeleton/audioMorte.wav");
-    }
 
     @Override
     protected int moedasMorte() {
@@ -85,15 +84,6 @@ public class Skeleton extends EnemyTemplate{
         }
     }
 
-    @Override
-    public void criarHitBox() {
-        this.hitBox = new Rectangle(
-            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
-            dy + HITBOX_OFFSET_Y,
-            HITBOX_SIZE,
-            HITBOX_SIZE
-        );
-    }
 
     @Override
     public void ataqueEspecial() {

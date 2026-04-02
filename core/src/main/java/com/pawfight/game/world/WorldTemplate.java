@@ -16,15 +16,14 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.design.transition.TransicaoTela;
-import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.GerarObjetos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
+import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
-import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.render.RenderizadorCamada;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
@@ -162,10 +161,14 @@ public abstract class WorldTemplate implements Screen {
 
         renderLayersUp();
 
+        renderizar.renderizarObjects(this);
+        renderizar.hitBoxListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
+
         if (player != null) {
             player.drawHud(batch, shapeRenderer, this);
         }
         checkPortals();
+        danoTiro.darDanoListaInimigos(this);
     }
 
     protected void updatePlayer(float delta) {

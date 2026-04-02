@@ -83,33 +83,56 @@ public abstract class EnemyTemplate implements Entidade {
     protected List<EnemyTemplate> enemiesList;
 
     public EnemyTemplate(int dx, int dy, boolean forte, PlayerTemplate player) {
+        DadosInimigo dadosInimigo = dadosInimigo();
+        float multiplicador = forte ? dadosInimigo.multiplicador() : 1;
+
+        nome = dadosInimigo.nome();
+        vidaBase = dadosInimigo.VidaBase() * (int)multiplicador;
+        vida = vidaBase;
+        forca = dadosInimigo.Forca() * (int)multiplicador;
+        velocidade = dadosInimigo.Velocidade() * (int)multiplicador;
         this.player = player;
         this.dx = dx;
         this.dy = dy;
         this.stateTime = 0f;
         this.forte = forte;
+
+        idleSheet = dadosInimigo.idleSheet();
+        walkSheet = dadosInimigo.walkSheet();
+        deadSheet = dadosInimigo.deadSheet();
+        hurtSheet = dadosInimigo.hurtSheet();
+        atackSheet = dadosInimigo.atackSheet();
+        specialAtackSheet = dadosInimigo.specialAtackSheet();
+
+        audioDano = dadosInimigo.audioDano();
+        audioMorte = dadosInimigo.audioMorte();
+
         criarHitBox();
         // Carrega texturas UMA VEZ e cria definições iniciais
-        loadTextures();
         updateSpriteDefinitions();
         rebuildAnimations();
-        definirAudios();
     }
+
+    protected abstract DadosInimigo dadosInimigo();
 
     // Métodos abstratos
     public abstract void ataqueBasico();
 
-    public abstract void criarHitBox();
+    public void criarHitBox() {
+        this.hitBox = new Rectangle(
+            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
+            dy + HITBOX_OFFSET_Y,
+            HITBOX_SIZE,
+            HITBOX_SIZE
+        );
+    }
 
     public abstract void ataqueEspecial();
 
-    public abstract void loadTextures();
 
     public abstract void updateSpriteDefinitions();
 
     public abstract EnemyTemplate cloneEnemy();
-
-    public abstract String getNome();
 
     private void rebuildAnimations() {
         idleAnimation = MotorAnimacao.animar(idleDefinition);
@@ -209,7 +232,7 @@ public abstract class EnemyTemplate implements Entidade {
                 hurtTime = 0f;
                 audioEngine.efeito(audioDano);
             }
-            Gdx.app.log(getNome(), "Tomou " + forca + " de dano!");
+            Gdx.app.log(nome, "Tomou " + forca + " de dano!");
         }
     }
 
@@ -236,7 +259,6 @@ public abstract class EnemyTemplate implements Entidade {
         }
         return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
     }
-    protected abstract void definirAudios();
 
     public void drawSprite(SpriteBatch batch) {
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
