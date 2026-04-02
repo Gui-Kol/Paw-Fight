@@ -6,67 +6,38 @@ import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
 
 public class BlackCat extends PlayerTemplate {
-    // Construtor
     public BlackCat(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         super(dx, dy, tileWidth, numTilesX, tileHeight, numTilesY, zoomCamera);
     }
 
     @Override
-    protected int definirTamanhoTiro() {
-        return 0;
+    public DadosPlayer dadosPlayer() {
+        return new DadosPlayer(
+            2,      // forca
+            1f,     // cadenciaTiro
+            1f,     // duracaoTiro
+            10,     // vidaBase
+            350,    // velocidade
+            64,     // tamanho
+            0,      // tamanhoTiro
+            25,     // hitboxSize
+            0,      // hitboxOffsetY
+            -5,     // hitboxOffsetX
+            new Texture("entitys/player/black_cat/Idle.png"),
+            new Texture("entitys/player/black_cat/Walk.png"),
+            new Texture("entitys/player/black_cat/Death.png"),
+            new Texture("entitys/player/black_cat/Hurt.png"),
+            audioEngine.criarAudio("entitys/player/audios/passos.wav")
+        );
     }
 
     @Override
-    protected int definirHitBoxOffY() {
-        return 0;
-    }
-
-    @Override
-    protected int definirHitBoxOffX() {
-        return -5;
-    }
-
-    @Override
-    protected int definirHitBoxSize() {
-        return 25;
-    }
-
-    @Override
-    protected int definirVelocidade() {
-        return 350;
-    }
-
-    @Override
-    protected int definirVidaBase() {
-        return 10;
-    }
-
-    @Override
-    protected float definirDuracaoTiro() {
-        return 1;
-    }
-
-    @Override
-    protected float definirCadenciaTiro() {
-        return 1;
-    }
-
-    @Override
-    protected int definirForca() {
-        return 2;
+    protected void definirAudios() {
     }
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new Coco(tamanhoTiro, this);
-    }
-
-    @Override
-    public void loadTextures() {
-        idleSheet = new Texture("entitys/player/black_cat/Idle.png");
-        walkSheet = new Texture("entitys/player/black_cat/Walk.png");
-        deadSheet = new Texture("entitys/player/black_cat/Death.png");
-        hurtSheet = new Texture("entitys/player/black_cat/Hurt.png");
     }
 
     @Override
@@ -78,29 +49,19 @@ public class BlackCat extends PlayerTemplate {
     }
 
     @Override
-    protected int definirTamanho() {
-        return 64;
-    }
-
-    @Override
     public String getName() {
         return "Black Cat";
     }
 
     @Override
     public void ataqueBasico(float delta) {
-
     }
 
     @Override
     public void ataqueEspecial() {
-
     }
 
     @Override
     public void usarHabilidadeEspecial() {
-
     }
-
-
 }

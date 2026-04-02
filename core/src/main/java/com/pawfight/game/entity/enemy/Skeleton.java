@@ -68,6 +68,11 @@ public class Skeleton extends EnemyTemplate{
     }
 
     @Override
+    protected void definirAudios() {
+        audioMorte = audioEngine.criarAudio("entitys/enemy/Skeleton/audioMorte.wav");
+    }
+
+    @Override
     protected int moedasMorte() {
         return 1;
     }

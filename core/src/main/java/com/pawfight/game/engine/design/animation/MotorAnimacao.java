@@ -86,8 +86,8 @@ public class MotorAnimacao {
 
     public boolean desenharFundo(Batch batch, boolean abrirMenu, DefinirSprite sprite, int tamanhoFundo, OrthographicCamera camera) {
         batch.setProjectionMatrix(camera.combined);
-        int x = (GET_LARGURA_TELA_BASE() / 2) - (tamanhoFundo / 2);
-        int y = (GET_ALTURA_TELA_BASE() / 2) - (tamanhoFundo / 2);
+        int x = (GET_LARGURA_TELA_BASE / 2) - (tamanhoFundo / 2);
+        int y = (GET_ALTURA_TELA_BASE / 2) - (tamanhoFundo / 2);
 
         // Inicializa animação de abertura
         if (abrirMenu && animation == null && !fundoAtivo) {

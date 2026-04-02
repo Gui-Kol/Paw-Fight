@@ -17,8 +17,7 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.Home;
 import com.pawfight.game.world.WorldTemplate;
 
-import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.*;
 
 public class PawFight extends Game {
     private final PawFight game = this;
@@ -39,11 +38,12 @@ public class PawFight extends Game {
         image = new Texture("menu/BackGroundPawFight.png");
 
         camera = new OrthographicCamera();
-        viewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE(), camera);
+        viewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE, camera);
 
         // MUITO IMPORTANTE: posicionar a camera no centro do mundo
         camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);
 
+        toggleFullscreen();
         toggleFullscreen();
 
         transition = new TransicaoTela(this);
@@ -56,6 +56,7 @@ public class PawFight extends Game {
             }
         }, 2.5f);
         audio = Gdx.audio.newMusic(Gdx.files.internal("audio/sounds/MenuInicial/inicio.wav"));
+        audio.setVolume(VOLUME_MUSICA);
         audio.play();
 
         Gdx.app.log("PawFight", "Iniciando jogo...");

@@ -39,7 +39,7 @@ public class Home implements Screen {
 
     private ImageButton playButton;
     private ImageButton quitButton;
-    private final CriarBotao CriarBotao;
+    private final CriarBotao criarBotao;
 
     private final PawFight game;
     private final SpriteBatch batch;
@@ -66,13 +66,13 @@ public class Home implements Screen {
         }
 
         try {
-            backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/time_for_adventure.wav"));
+            backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/home.wav"));
             backMusic.setLooping(true);
-            backMusic.setVolume(0.1f);
+            backMusic.setVolume(VOLUME_MUSICA);
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
-        CriarBotao = new CriarBotao();
+        criarBotao = new CriarBotao();
 
         TransicaoTela = new TransicaoTela(game);
         Gdx.app.log("Home", "Iniciando Home...");
@@ -99,15 +99,15 @@ public class Home implements Screen {
         if (playButton == null && quitButton == null) {
             try {
                 Stage stage = hudStage.getStage();
-                playButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2,
+                playButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2,
                     200, 105,
                     normalTexturePlay, hoverTexturePlay, pressedTexturePlay);
 
-                quitButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2 - 150,
+                quitButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2 - 150,
                     200, 105,
                     normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
 
@@ -115,12 +115,14 @@ public class Home implements Screen {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         TransicaoTela.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
+                        criarBotao.playClickSound();
                         backMusic.stop();
                     }
                 });
                 quitButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                        criarBotao.playClickSound();
                         Gdx.app.exit();
                     }
                 });

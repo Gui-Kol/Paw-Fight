@@ -50,7 +50,7 @@ public class Hud {
 
     public Hud() {
         hudCamera = new OrthographicCamera();
-        hudViewport = new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE(), hudCamera); // mantém proporção
+        hudViewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE, hudCamera); // mantém proporção
         hudCamera.position.set(hudViewport.getWorldWidth() / 2f, hudViewport.getWorldHeight() / 2f, 0);
         hudCamera.update();
         desenharTexto = new DesenharTexto(hudViewport, hudCamera);
@@ -108,7 +108,7 @@ public class Hud {
         float porcentagemVida = (float) vidaAtual / vidaMaxima;
         int frameIndex = (int) ((1 - porcentagemVida) * (coracaoAnimation.getKeyFrames().length - 1));
         frameIndex = Math.max(0, Math.min(frameIndex, coracaoAnimation.getKeyFrames().length - 1));
-        var x = GET_LARGURA_TELA_BASE() - 15;
+        var x = GET_LARGURA_TELA_BASE - 15;
         var y = 40;
 
         desenharTextura.desenhar(batch, null, coracaoAnimation.getKeyFrames()[frameIndex], x, y, 256);
@@ -118,8 +118,8 @@ public class Hud {
         String moedaText = String.valueOf(moedas);
         layoutMoeda.setText(font,moedaText);
         var x = 20;
-        var y = (GET_ALTURA_TELA_BASE() - layoutMoeda.height) - 60;
-        var yC = (GET_ALTURA_TELA_BASE() - layoutMoeda.height) - 90;
+        var y = (GET_ALTURA_TELA_BASE - layoutMoeda.height) - 60;
+        var yC = (GET_ALTURA_TELA_BASE - layoutMoeda.height) - 90;
 
         desenharTextura.desenhar(batch, coin, null, x, yC, 48);
         desenharTexto.desenhar(batch, shapeRenderer, corMoeda, moedaText, font, x + 70, y, 10, true);
@@ -129,7 +129,7 @@ public class Hud {
         String texto = "Level: " + levelAtual;
         layoutLevel.setText(font, texto);
         var x = 20;
-        var y = (GET_ALTURA_TELA_BASE() - layoutLevel.height) - 10;
+        var y = (GET_ALTURA_TELA_BASE - layoutLevel.height) - 10;
 
         desenharTexto.desenhar(batch, shapeRenderer, corLevel, texto, font, x + 70, y, 10, true);
     }
@@ -137,8 +137,8 @@ public class Hud {
     private void desenharCoordenadas(Batch batch, ShapeRenderer shapeRenderer, int x, int y) {
         String coords = "X: " + x + " Y: " + y;
         layoutCoords.setText(font, coords);
-        var xW = (GET_LARGURA_TELA_BASE() - layoutCoords.width) - 10;
-        var yH = (GET_ALTURA_TELA_BASE() - layoutCoords.height) - 10;
+        var xW = (GET_LARGURA_TELA_BASE - layoutCoords.width) - 10;
+        var yH = (GET_ALTURA_TELA_BASE - layoutCoords.height) - 10;
 
         desenharTexto.desenhar(batch, shapeRenderer, corDebug, coords, font, xW, yH, 0, false);
     }
@@ -147,8 +147,8 @@ public class Hud {
         String direcaoOlhar = olhandoEsquerda ? "esquerda" : "direita";
         String olhando = "Olhando para: " + direcaoOlhar;
         layoutDirecao.setText(font, olhando);
-        var x = (GET_LARGURA_TELA_BASE() - layoutDirecao.width) - 10;
-        var y = (GET_ALTURA_TELA_BASE() - layoutDirecao.height) - 40;
+        var x = (GET_LARGURA_TELA_BASE - layoutDirecao.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE - layoutDirecao.height) - 40;
 
         desenharTexto.desenhar(batch, shapeRenderer, corDebug, olhando, font, x, y, 0, false);
     }
@@ -156,8 +156,8 @@ public class Hud {
     private void desenharDeltaTime(Batch batch, ShapeRenderer shapeRenderer, float delta) {
         String deltaT = "Delta timer: " + deltaTexto;
         layoutDelta.setText(font, deltaT);
-        var x = (GET_LARGURA_TELA_BASE() - layoutDelta.width) - 10;
-        var y = (GET_ALTURA_TELA_BASE() - layoutDelta.height) - 100;
+        var x = (GET_LARGURA_TELA_BASE - layoutDelta.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE - layoutDelta.height) - 100;
         if (atualizarDesenho >= tempoParaDesenhar) {
             atualizarDesenho = 0;
             deltaTexto = delta;
@@ -168,18 +168,18 @@ public class Hud {
     private void desenharScale(Batch batch, ShapeRenderer shapeRenderer) {
         float screenW = Gdx.graphics.getWidth();
         float screenH = Gdx.graphics.getHeight();
-        float scale = Math.min(screenW / GET_LARGURA_TELA_BASE(), screenH / GET_ALTURA_TELA_BASE());
+        float scale = Math.min(screenW / GET_LARGURA_TELA_BASE, screenH / GET_ALTURA_TELA_BASE);
         String scaleText = "Scale: " + String.format("%.2f", scale);
         layoutScale.setText(font, scaleText);
-        var x = (GET_LARGURA_TELA_BASE() - layoutScale.width) - 10;
-        var y = (GET_ALTURA_TELA_BASE() - layoutScale.height) - 70;
+        var x = (GET_LARGURA_TELA_BASE - layoutScale.width) - 10;
+        var y = (GET_ALTURA_TELA_BASE - layoutScale.height) - 70;
 
         desenharTexto.desenhar(batch, shapeRenderer, corDebug, scaleText, font, x, y, 0, false);
     }
 
     public void mostrarMensagemEmBaixo(Batch batch, ShapeRenderer shapeRenderer, String mensagem) {
         layoutMensagem.setText(font, mensagem);
-        var x = (GET_LARGURA_TELA_BASE() - layoutMensagem.width) / 2f;
+        var x = (GET_LARGURA_TELA_BASE - layoutMensagem.width) / 2f;
 
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();

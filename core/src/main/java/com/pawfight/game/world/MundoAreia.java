@@ -23,7 +23,7 @@ public class MundoAreia extends WorldTemplate {
     private Texture cactoTexture;
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
-        super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
+        super(game, "menu/menu.png", "audio/music/mundoAreia.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
         GeradorSalas = new GeradorSalas();
         setPlayer(player);

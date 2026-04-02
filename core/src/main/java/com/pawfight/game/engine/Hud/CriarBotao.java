@@ -1,19 +1,24 @@
 package com.pawfight.game.engine.Hud;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.pawfight.game.engine.AudioEngine;
 
 public class CriarBotao {
+    private final AudioEngine audioEngine = new AudioEngine();
+    private Music clickAudio;
 
     public ImageButton create(Stage stage, int x, int y, int width, int height,
-                              Texture normalTexture, Texture hoverTexture, Texture pressedTexture) {
-
-        // The stage/viewport already uses base screen units (FitViewport with base width/height).
-        // Do not apply additional manual scaling here – use the base coordinates directly so
-        // the Stage will correctly map actor positions to the scaled screen.
+                              Texture normalTexture, Texture hoverTexture, Texture pressedTexture, String buttonClickAudioPath) {
+        if (buttonClickAudioPath != null && !buttonClickAudioPath.isEmpty()) {
+            clickAudio = audioEngine.criarAudio(buttonClickAudioPath);
+        }else {
+            clickAudio = audioEngine.criarAudio("menu/button/button.wav");
+        }
 
         TextureRegionDrawable normalDrawable = new TextureRegionDrawable(new TextureRegion(normalTexture));
         TextureRegionDrawable hoverDrawable = new TextureRegionDrawable(new TextureRegion(hoverTexture));
@@ -39,5 +44,19 @@ public class CriarBotao {
 
     public ImageButton clone(ImageButton button) {
         return new ImageButton(button.getStyle());
+    }
+
+    public Music playClickSound() {
+        if (clickAudio != null) {
+            clickAudio.play();
+            return clickAudio;
+        }
+        return null;
+    }
+
+
+    public ImageButton create(Stage stage, int x, int y, int width, int height,
+                              Texture normalTexture, Texture hoverTexture, Texture pressedTexture) {
+        return create(stage,x,y,width,height,normalTexture,hoverTexture,pressedTexture,null);
     }
 }

@@ -37,8 +37,8 @@ public class DesenharMiniMapa {
             String texto = "Sala Atual: " + atual + "\nTipo da sala: " + currentRoom.getType();
             GlyphLayout layout = new GlyphLayout(font, texto);
             Color corFundo = new Color();
-            var xW = (GET_LARGURA_TELA_BASE() - layout.width) - 10;
-            var yH = (GET_ALTURA_TELA_BASE() - layout.height) - 130;
+            var xW = (GET_LARGURA_TELA_BASE - layout.width) - 10;
+            var yH = (GET_ALTURA_TELA_BASE - layout.height) - 130;
             hud.getDesenharTexto().desenhar(batch, world.getShapeRenderer(), corFundo, texto, font, xW, yH, 0, false);
             batch.end();
         }

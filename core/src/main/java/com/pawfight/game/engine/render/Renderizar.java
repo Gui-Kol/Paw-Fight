@@ -15,7 +15,6 @@ import java.util.List;
 import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
 
 public class Renderizar {
-    /** Instância compartilhada — Renderizar é stateless, não precisa de cópias. */
     public static final Renderizar INSTANCE = new Renderizar();
 
     //Inimigo

@@ -1,12 +1,14 @@
 package com.pawfight.game.entity.enemy;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.pawfight.game.engine.AudioEngine;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.render.Renderizar;
@@ -74,6 +76,10 @@ public abstract class EnemyTemplate implements Entidade {
     protected int HITBOX_OFFSET_X = -10;
     protected int HITBOX_OFFSET_Y = 0;
 
+    protected AudioEngine audioEngine = new AudioEngine();
+    protected Music audioDano;
+    protected Music audioMorte;
+
     protected List<EnemyTemplate> enemiesList;
 
     public EnemyTemplate(int dx, int dy, boolean forte, PlayerTemplate player) {
@@ -87,6 +93,7 @@ public abstract class EnemyTemplate implements Entidade {
         loadTextures();
         updateSpriteDefinitions();
         rebuildAnimations();
+        definirAudios();
     }
 
     // Métodos abstratos
@@ -196,9 +203,11 @@ public abstract class EnemyTemplate implements Entidade {
             if (vida <= 0) {
                 morto = true;
                 player.moedaUp(moedasMorte());
+                audioEngine.efeito(audioMorte);
             } else {
                 hurt = true;
                 hurtTime = 0f;
+                audioEngine.efeito(audioDano);
             }
             Gdx.app.log(getNome(), "Tomou " + forca + " de dano!");
         }
@@ -227,25 +236,17 @@ public abstract class EnemyTemplate implements Entidade {
         }
         return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
     }
-    /**
-     * Desenha APENAS o sprite do inimigo. O batch já deve estar aberto (begin chamado).
-     */
+    protected abstract void definirAudios();
+
     public void drawSprite(SpriteBatch batch) {
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
     }
 
-    /**
-     * Desenha hitbox e extras (debug). Deve ser chamado FORA de batch.begin/end.
-     */
     public void drawHitbox(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         renderizar.hitboxDraw(shapeRenderer, hitBox);
         extraDraw(batch, shapeRenderer);
     }
 
-    /**
-     * Desenho completo (abre/fecha batch). Usar apenas se desenhar UM inimigo isolado.
-     * Para listas, prefira drawSprite() + drawHitbox() em batch batching.
-     */
     public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         var cameraCombined = player.getCamera().combined;
 

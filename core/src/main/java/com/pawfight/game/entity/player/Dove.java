@@ -12,61 +12,33 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
-    protected int definirTamanhoTiro() {
-        return 0;
+    public DadosPlayer dadosPlayer() {
+        return new DadosPlayer(
+            1,      // forca
+            1f,     // cadenciaTiro
+            1f,     // duracaoTiro
+            6,      // vidaBase
+            600,    // velocidade
+            32,     // tamanho
+            0,      // tamanhoTiro
+            15,     // hitboxSize
+            0,      // hitboxOffsetY
+            -5,     // hitboxOffsetX
+            new Texture("entitys/player/dove/Idle.png"),
+            new Texture("entitys/player/dove/Walk.png"),
+            new Texture("entitys/player/dove/Death.png"),
+            new Texture("entitys/player/dove/Hurt.png"),
+            audioEngine.criarAudio("entitys/player/audios/asas_passaro.wav")
+        );
     }
 
     @Override
-    protected int definirHitBoxOffY() {
-        return 0;
-    }
-
-    @Override
-    protected int definirHitBoxOffX() {
-        return -5;
-    }
-
-    @Override
-    protected int definirHitBoxSize() {
-        return 15;
-    }
-
-    @Override
-    protected int definirVelocidade() {
-        return 600;
-    }
-
-    @Override
-    protected int definirVidaBase() {
-        return 6;
-    }
-
-    @Override
-    protected float definirDuracaoTiro() {
-        return 1;
-    }
-
-    @Override
-    protected float definirCadenciaTiro() {
-        return 1;
-    }
-
-    @Override
-    protected int definirForca() {
-        return 1;
+    protected void definirAudios() {
     }
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new Coco(tamanhoTiro, this);
-    }
-
-    @Override
-    public void loadTextures() {
-        idleSheet = new Texture("entitys/player/dove/Idle.png");
-        walkSheet = new Texture("entitys/player/dove/Walk.png");
-        deadSheet = new Texture("entitys/player/dove/Death.png");
-        hurtSheet = new Texture("entitys/player/dove/Hurt.png");
     }
 
     @Override
@@ -78,11 +50,6 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
-    protected int definirTamanho() {
-        return 32;
-    }
-
-    @Override
     public String getName() {
         return "Dove";
     }
@@ -91,7 +58,6 @@ public class Dove extends PlayerTemplate {
     public void ataqueBasico(float delta) {
     }
 
-
     @Override
     public void ataqueEspecial() {
     }
@@ -99,5 +65,4 @@ public class Dove extends PlayerTemplate {
     @Override
     public void usarHabilidadeEspecial() {
     }
-
 }

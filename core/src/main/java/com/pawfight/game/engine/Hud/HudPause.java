@@ -20,7 +20,7 @@ public class HudPause {
     private final HudStage hudStage;
     private final DesenharTextura desenharTextura;
     private final MotorAnimacao MotorAnimacao;
-    private final CriarBotao CriarBotao;
+    private final CriarBotao criarBotao;
     private final Texture fundo;
     private final DefinirSprite fundoAnimacao;
 
@@ -46,7 +46,7 @@ public class HudPause {
     private final Texture pressedTextureSettings = new Texture("menu/button/settings/settings3.png");
 
     public HudPause(PlayerTemplate player) {
-        CriarBotao = new CriarBotao();
+        criarBotao = new CriarBotao();
         desenharTextura = new DesenharTextura();
         MotorAnimacao = new MotorAnimacao();
         hudStage = new HudStage();
@@ -75,54 +75,58 @@ public class HudPause {
             try {
                 Stage stage = hudStage.getStage();
 
-                resumeButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2 + 300,
+                resumeButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2 + 300,
                     200, 105,
                     normalTextureResume, hoverTextureResume, pressedTextureResume);
 
                 resumeButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                        criarBotao.playClickSound();
                         player.setPause(false);
                     }
                 });
 
-                saveButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2 + 150,
+                saveButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2 + 150,
                     200, 105,
                     normalTextureSave, hoverTextureSave, pressedTextureSave);
 
                 saveButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                        criarBotao.playClickSound();
                         player.saveData();
                     }
                 });
 
-                settingsButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2 + 0,
+                settingsButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2,
                     200, 105,
                     normalTextureSettings, hoverTextureSettings, pressedTextureSettings);
 
                 settingsButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                        criarBotao.playClickSound();
                         player.setPause(false);
                     }
                 });
 
-                quitButton = CriarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE() / 2,
-                    GET_ALTURA_TELA_BASE() / 2 - 150,
+                quitButton = criarBotao.create(stage,
+                    GET_LARGURA_TELA_BASE / 2,
+                    GET_ALTURA_TELA_BASE / 2 - 150,
                     200, 102,
                     normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
 
                 quitButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
+                        criarBotao.playClickSound();
                         Gdx.app.exit();
                     }
                 });

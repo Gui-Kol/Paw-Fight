@@ -3,7 +3,6 @@ package com.pawfight.game.entity;
 import com.badlogic.gdx.math.Rectangle;
 
 public interface Entidade {
-
     // ── Posição ──────────────────────────────────────────────
     int getDx();
     int getDy();

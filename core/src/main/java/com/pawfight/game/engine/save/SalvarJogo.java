@@ -12,6 +12,7 @@ public class SalvarJogo {
 
         FileHandle file = Gdx.files.local("save/" + data.getNomePersonagem() + "Save.json"); // salva no diretório local
         file.writeString(saveString, false);
+        Gdx.app.log("SalvarJogo", "Jogo salvo com sucesso para o personagem: " + data.getNomePersonagem());
     }
 
     public DadosSalvosJogador loadGame(String nomePersonagem) {
@@ -19,6 +20,7 @@ public class SalvarJogo {
         if (!file.exists()) return null; // se não existir, retorna null
 
         Json json = new Json();
+        Gdx.app.log("SalvarJogo", "Jogo carregado com sucesso para o personagem: " + nomePersonagem);
         return json.fromJson(DadosSalvosJogador.class, file.readString());
     }
 }

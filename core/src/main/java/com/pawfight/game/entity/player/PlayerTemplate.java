@@ -2,6 +2,7 @@ package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -11,30 +12,31 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.VariavelComum;
+import com.pawfight.game.engine.AudioEngine;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.HudPause;
-import com.pawfight.game.engine.design.DefinirSprite;
+import com.pawfight.game.engine.VariavelComum;
 import com.pawfight.game.engine.design.AlteradorZoom;
+import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.render.Renderizar;
+import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.tiro.Atirar;
 import com.pawfight.game.entity.tiro.TirosTemplate;
-import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.world.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.pawfight.game.engine.VariavelComum.DEBUG_MODE;
+import static com.pawfight.game.engine.VariavelComum.VOLUME_EFEITOS;
+
 
 public abstract class PlayerTemplate implements Entidade {
-    // Debug
-    private static final boolean DEBUG_MODE = false;
-
     // Constantes
     private static final float HURT_DURATION = 0.5f;
     private static final float DANO_COOLDOWN_DURATION = 0.5f;
@@ -63,6 +65,10 @@ public abstract class PlayerTemplate implements Entidade {
     protected boolean podeTomarDano = true;
     protected boolean moving;
     protected boolean drawHitBoxes = false;
+    protected Music audioDano;
+    protected Music audioMorte;
+    protected Music audioLevelUp;
+    protected Music audioMoving;
 
 
     protected float stateTime;
@@ -104,6 +110,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final Rectangle hitBox;
 
     // Mundo e camera
+    protected final AudioEngine audioEngine = new AudioEngine();
     protected final float mapWidth;
     protected final float mapHeight;
     protected final OrthographicCamera camera;
@@ -112,7 +119,8 @@ public abstract class PlayerTemplate implements Entidade {
     protected final Renderizar renderizar = Renderizar.INSTANCE;
 
     // Métodos abstratos (cada player define os seus)
-    public abstract void loadTextures();
+
+    public abstract DadosPlayer dadosPlayer();
 
     public abstract void updateSpriteDefinitions();
 
@@ -134,6 +142,11 @@ public abstract class PlayerTemplate implements Entidade {
         this.dx = dx;
         this.dy = dy;
         this.AlteradorZoom = new AlteradorZoom();
+        DadosPlayer dadosPlayer = dadosPlayer();
+
+        audioLevelUp = audioEngine.criarAudio("entitys/player/audios/power_up.wav");
+        audioDano = audioEngine.criarAudio("entitys/player/audios/hurt.wav");
+        audioMoving = dadosPlayer.audioMoving();
 
         pontosDisponiveis = 0;
 
@@ -141,17 +154,17 @@ public abstract class PlayerTemplate implements Entidade {
         xpNecessario = 200;
         level = 1;
 
-        forca = definirForca();
-        cadenciaTiro = definirCadenciaTiro();
-        duracaoTiro = definirDuracaoTiro();
-        vidaBase = definirVidaBase();
-        velocidade = definirVelocidade();
-        TAMANHO_PX = definirTamanho();
-        tamanhoTiro = definirTamanhoTiro();
+        forca = dadosPlayer.forca();
+        cadenciaTiro = dadosPlayer.cadenciaTiro();
+        duracaoTiro = dadosPlayer.duracaoTiro();
+        vidaBase = dadosPlayer.vidaBase();
+        velocidade = dadosPlayer.velocidade();
+        TAMANHO_PX = dadosPlayer.tamanho();
+        tamanhoTiro = dadosPlayer.tamanhoTiro();
 
-        hitboxSize = definirHitBoxSize();
-        hitboxOffsetY = definirHitBoxOffY();
-        hitboxOffsetX = definirHitBoxOffX();
+        hitboxSize = dadosPlayer.hitboxSize();
+        hitboxOffsetY = dadosPlayer.hitboxOffsetY();
+        hitboxOffsetX = dadosPlayer.hitboxOffsetX();
 
         vida = vidaBase;
 
@@ -194,32 +207,20 @@ public abstract class PlayerTemplate implements Entidade {
         camera.update();
 
         // Carrega texturas UMA VEZ e cria definições iniciais
-        loadTextures();
+        idleSheet = dadosPlayer.idleSheet();
+        walkSheet = dadosPlayer.walkSheet();
+        deadSheet = dadosPlayer.deadSheet();
+        hurtSheet = dadosPlayer.hurtSheet();
         updateSpriteDefinitions();
         rebuildAnimations();
+        definirAudios();
 
         if (modeloTiroExclusivo() != null) {
             tirosModelos.add(modeloTiroExclusivo());
         }
     }
 
-    protected abstract int definirTamanhoTiro();
-
-    protected abstract int definirHitBoxOffY();
-
-    protected abstract int definirHitBoxOffX();
-
-    protected abstract int definirHitBoxSize();
-
-    protected abstract int definirVelocidade();
-
-    protected abstract int definirVidaBase();
-
-    protected abstract float definirDuracaoTiro();
-
-    protected abstract float definirCadenciaTiro();
-
-    protected abstract int definirForca();
+    protected abstract void definirAudios();
 
     protected abstract TirosTemplate modeloTiroExclusivo();
 
@@ -301,10 +302,21 @@ public abstract class PlayerTemplate implements Entidade {
 
         // Atualiza tiros e remove os expirados (via game loop, sem Timer)
         updateTiros(delta);
+        updateAudio();
 
         checarColisao();
         updateCamera();
     }
+
+    private void updateAudio() {
+        if (moving) {
+            audioEngine.passos(audioMoving);
+        } else if (audioMoving != null && audioMoving.isPlaying()) {
+            audioMoving.stop();
+        }
+    }
+
+
 
     private void updateTiros(float delta) {
         Iterator<TirosTemplate> it = tiros.iterator();
@@ -318,7 +330,6 @@ public abstract class PlayerTemplate implements Entidade {
         }
     }
 
-    protected abstract int definirTamanho();
 
     // Movimento
     protected void moveEntityControl(float delta) {
@@ -352,7 +363,9 @@ public abstract class PlayerTemplate implements Entidade {
         // Controles de combate
         ataqueBasico(delta);
         if (podeAtacar) {
-            if (tirosModelos == null || tirosModelos.isEmpty()){return;}
+            if (tirosModelos == null || tirosModelos.isEmpty()) {
+                return;
+            }
             atirar.atira(tirosModelos, this, delta);
         }
 
@@ -412,6 +425,7 @@ public abstract class PlayerTemplate implements Entidade {
     private void levelUp() {
         level += 1;
         pontosDisponiveis += 1;
+        audioEngine.efeito(audioLevelUp);
     }
 
     public void moedaUp(int moedasGanha) {
@@ -424,8 +438,14 @@ public abstract class PlayerTemplate implements Entidade {
 
 
     public void adicionarColisaoPorLevel(List<Rectangle> colisores, int levelNecessario) {
+        if (colisores == null || colisores.isEmpty()) return;
+
         if (level < levelNecessario) {
-            listColisores.addAll(colisores);
+            if (!listColisores.contains(colisores.get(0))) {
+                listColisores.addAll(colisores);
+            }
+        } else {
+            listColisores.removeAll(colisores);
         }
     }
 
@@ -436,9 +456,11 @@ public abstract class PlayerTemplate implements Entidade {
     public void adicionarTiro(TirosTemplate tiro) {
         tiros.add(tiro);
     }
+
     public void removerTiro(TirosTemplate tiro) {
         tiros.remove(tiro);
     }
+
     // Animação — usa cache, reconstrói apenas quando direção muda
     protected TextureRegion animaAtual() {
         if (animationsDirty) {
@@ -474,7 +496,7 @@ public abstract class PlayerTemplate implements Entidade {
         renderizar.hitboxDraw(shapeRenderer, hitBox);
     }
 
-    public void desenharTiros(WorldTemplate world){
+    public void desenharTiros(WorldTemplate world) {
         if (tiros.isEmpty()) return;
 
         // Cópia defensiva — evita ConcurrentModificationException
@@ -510,11 +532,13 @@ public abstract class PlayerTemplate implements Entidade {
             if (vida <= 0) {
                 morto = true;
                 stateTime = 0f;
+                audioEngine.efeito(audioMorte);
             } else {
                 hurt = true;
                 hurtTime = 0f;
+                audioEngine.efeito(audioDano);
             }
-            Gdx.app.log(getName(),"Tomou " + forca + " de dano!");
+            Gdx.app.log(getName(), "Tomou " + forca + " de dano!");
         }
     }
 
@@ -528,6 +552,7 @@ public abstract class PlayerTemplate implements Entidade {
         if (walkSheet != null) walkSheet.dispose();
         if (deadSheet != null) deadSheet.dispose();
         if (hurtSheet != null) hurtSheet.dispose();
+        clearList();
     }
 
     public void clearList() {

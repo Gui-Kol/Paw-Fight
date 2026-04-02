@@ -28,7 +28,7 @@ public class Base extends WorldTemplate {
     private List<Rectangle> portaoNeveMensagem;
 
     public Base(PawFight game, OrthographicCamera camera, Viewport viewport) {
-        super(game, "menu/menu.png", "audio/music/time_for_adventure.wav", camera, viewport);
+        super(game, "menu/menu.png", "audio/music/menu.wav", camera, viewport);
         Gdx.app.log("Base", "Iniciando Base...");
         TransicaoTela = new TransicaoTela(game);
         escolherPersonagem = new EscolherPersonagem(game);

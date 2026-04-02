@@ -15,11 +15,11 @@ public class HudStage {
 
     public HudStage() {
         OrthographicCamera camera = new OrthographicCamera();
-        camera.setToOrtho(false, GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE());
+        camera.setToOrtho(false, GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
 
         FitViewport viewport = new FitViewport(
-            GET_LARGURA_TELA_BASE(),
-            GET_ALTURA_TELA_BASE(),
+            GET_LARGURA_TELA_BASE,
+            GET_ALTURA_TELA_BASE,
             camera
         );
         stage = new Stage(viewport);

@@ -36,8 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.VariavelComum.*;
 
 public abstract class WorldTemplate implements Screen {
 
@@ -99,7 +98,7 @@ public abstract class WorldTemplate implements Screen {
         desenharMiniMapa = new DesenharMiniMapa();
         TransicaoTela = new TransicaoTela(game);
         carregarPortas = new CarregarPortas();
-        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE(), GET_ALTURA_TELA_BASE()), batch);
+        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE), batch);
     }
 
 
@@ -114,7 +113,7 @@ public abstract class WorldTemplate implements Screen {
             map = new TmxMapLoader().load(getMapPath());
             RenderizadorCamada = new RenderizadorCamada(map);
             backMusic.setLooping(true);
-            backMusic.setVolume(0);
+            backMusic.setVolume(VOLUME_MUSICA);
             backMusic.play();
         } catch (Exception e) {
             Gdx.app.error(getWorldName(), "Erro no Show: " + e.getMessage(), e);
@@ -237,6 +236,7 @@ public abstract class WorldTemplate implements Screen {
         if (map != null) map.dispose();
         if (RenderizadorCamada != null) RenderizadorCamada.dispose();
         if (player != null) player.dispose();
+        stage.dispose();
         Gdx.app.log(getWorldName(), "foi disposed");
     }
 
