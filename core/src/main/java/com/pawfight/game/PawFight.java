@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.engine.save.SalvarJogo;
@@ -34,8 +35,9 @@ public class PawFight extends Game {
 
     @Override
     public void create() {
+        Assets.loadAll();
         batch = new SpriteBatch();
-        image = new Texture("menu/BackGroundPawFight.png");
+        image = Assets.get("menu/BackGroundPawFight.png", Texture.class);
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE, camera);
@@ -52,10 +54,10 @@ public class PawFight extends Game {
             @Override
             public void run() {
                 transition.startFadeTransaction(new Home(game, camera, viewport), 1f, Color.BLACK, false);
-                image = new Texture("menu/dark_back_groud.png");
+                image = Assets.get("menu/dark_back_groud.png", Texture.class);
             }
         }, 2.5f);
-        audio = Gdx.audio.newMusic(Gdx.files.internal("audio/sounds/MenuInicial/inicio.wav"));
+        audio = Assets.get("audio/sounds/MenuInicial/inicio.wav", Music.class);
         audio.setVolume(VOLUME_MUSICA);
         audio.play();
 
@@ -125,11 +127,11 @@ public class PawFight extends Game {
     @Override
     public void dispose() {
         batch.dispose();
-        image.dispose();
-        audio.dispose();
+        // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
         if (transition != null) {
             transition.dispose();
         }
+        Assets.dispose(); // libera TODOS os assets de uma vez
         Gdx.app.log("PawFight","foi disposed");
     }
 

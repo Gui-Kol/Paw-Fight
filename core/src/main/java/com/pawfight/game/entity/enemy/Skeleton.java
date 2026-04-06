@@ -3,6 +3,7 @@ package com.pawfight.game.entity.enemy;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -24,35 +25,33 @@ public class Skeleton extends EnemyTemplate {
             20,
             0,
             -10,
-            new Texture("entitys/enemy/Skeleton/Idle.png"),
-            new Texture("entitys/enemy/Skeleton/Walk.png"),
-            new Texture("entitys/enemy/Skeleton/Death.png"),
+            Assets.get("entitys/enemy/Skeleton/Idle.png", Texture.class),
+            Assets.get("entitys/enemy/Skeleton/Walk.png", Texture.class),
+            Assets.get("entitys/enemy/Skeleton/Death.png", Texture.class),
             null,
             null,
             null,
             1.8f,
             null,
-            audioEngine.criarAudio("entitys/enemy/Skeleton/audioMorte.wav")
+            audio.getAudioEngine().criarAudio("entitys/enemy/Skeleton/audioMorte.wav")
         );
     }
 
     @Override
     public void updateSpriteDefinitions() {
-        idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
-        walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
-        deadDefinition = new DefinirSprite(deadSheet, 8, 0.1f, false, olhandoEsquerda);
-        hurtDefinition = walkDefinition;
-        atackDefinition = walkDefinition;
-        specialAtackDefinition = walkDefinition;
+        DefinirSprite idle = new DefinirSprite(animacao.getIdleSheet(), 4, 0.1f, false, olhandoEsquerda);
+        DefinirSprite walk = new DefinirSprite(animacao.getWalkSheet(), 6, 0.1f, false, olhandoEsquerda);
+        DefinirSprite dead = new DefinirSprite(animacao.getDeadSheet(), 8, 0.1f, false, olhandoEsquerda);
+        animacao.setDefinitions(idle, walk, dead, walk, walk, walk);
     }
 
     @Override
     protected void aplicarStatsForte() {
         float multiplicador = forte ? 1.8f : 1;
-        vidaBase = (int) (50 * multiplicador);
-        vida = vidaBase;
-        forca = (int) (1 * multiplicador);
-        velocidade = (int) (300 * multiplicador);
+        stats.setVidaBase((int) (50 * multiplicador));
+        stats.setVida(stats.getVidaBase());
+        stats.setForca((int) (1 * multiplicador));
+        stats.setVelocidade((int) (300 * multiplicador));
     }
 
     @Override
@@ -70,7 +69,6 @@ public class Skeleton extends EnemyTemplate {
         return forte ? 128 : 64;
     }
 
-
     @Override
     protected int moedasMorte() {
         return 1;
@@ -79,7 +77,7 @@ public class Skeleton extends EnemyTemplate {
     @Override
     public void ataqueBasico() {
         if (hitBox.overlaps(player.getHitBox())) {
-            player.dano(forca);
+            player.dano(stats.getForca());
             atacando = true;
         }
     }

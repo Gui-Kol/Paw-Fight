@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
 import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
@@ -87,8 +88,8 @@ public abstract class WorldTemplate implements Screen {
         listaObjetosHitbox = new ArrayList<>();
         listaInimigos = new ArrayList<>();
         shapeRenderer = new ShapeRenderer();
-        background = new Texture(backgroundPath);
-        backMusic = Gdx.audio.newMusic(Gdx.files.internal(musicPath));
+        background = Assets.get(backgroundPath, Texture.class);
+        backMusic = Assets.get(musicPath, Music.class);
         tilemapHitboxFactory = new TilemapHitboxFactory();
         danoTiro = new DanoTiro();
         salasVisitadas = new HashSet<>();
@@ -234,8 +235,7 @@ public abstract class WorldTemplate implements Screen {
     @Override
     public void dispose() {
         shapeRenderer.dispose();
-        background.dispose();
-        backMusic.dispose();
+        // background e backMusic são gerenciados pelo AssetManager — NÃO dar dispose aqui
         if (map != null) map.dispose();
         if (RenderizadorCamada != null) RenderizadorCamada.dispose();
         if (player != null) player.dispose();

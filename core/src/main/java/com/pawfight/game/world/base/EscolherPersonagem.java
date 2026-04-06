@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.entity.player.BlackBird;
 import com.pawfight.game.entity.player.BlackCat;
 import com.pawfight.game.entity.player.OrangeCat;
@@ -46,20 +47,20 @@ public class EscolherPersonagem {
         viewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
 
         personagens = new Texture[]{
-            new Texture("entitys/player/selecao/black_cat.png"),
-            new Texture("entitys/player/selecao/orange_cat.png"),
-            new Texture("entitys/player/selecao/black_bird.png"),
-            new Texture("entitys/player/selecao/blue_bird.png")
+            Assets.get("entitys/player/selecao/black_cat.png", Texture.class),
+            Assets.get("entitys/player/selecao/orange_cat.png", Texture.class),
+            Assets.get("entitys/player/selecao/black_bird.png", Texture.class),
+            Assets.get("entitys/player/selecao/blue_bird.png", Texture.class)
         };
 
-        backGroud = new Texture("world/base/nuvens/back.png");
-        nuvem = new Texture("world/base/nuvens/4.png");
+        backGroud = Assets.get("world/base/nuvens/back.png", Texture.class);
+        nuvem = Assets.get("world/base/nuvens/4.png", Texture.class);
 
         personagemAtual = 0;
 
         random = new Random();
 
-        backGroud = new Texture("world/base/nuvens/back.png");
+        // backGroud já foi carregado acima, linha duplicada removida
 
         // Inicializa duas cópias do background
         bgX1 = 0;
@@ -210,12 +211,7 @@ public class EscolherPersonagem {
 
 
     public void dispose() {
-        for (Texture t : personagens) {
-            t.dispose();
-        }
-        exibirDadosPersonagem.dispose();
-        backGroud.dispose();
-        nuvem.dispose();
+        // Texturas são gerenciadas pelo AssetManager — NÃO dar dispose aqui
         exibirDadosPersonagem.dispose();
     }
 }

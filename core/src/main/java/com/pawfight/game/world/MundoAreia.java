@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.Validar;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
@@ -67,7 +68,7 @@ public class MundoAreia extends WorldTemplate {
     @Override
     public List<InfoGeraObjeto> getInfoObjetos() {
         if (cactoTexture == null) {
-            cactoTexture = new Texture("world/mundo_areia/Tilesets/obj/cacto.png");
+            cactoTexture = Assets.get("world/mundo_areia/Tilesets/obj/cacto.png", Texture.class);
         }
         List<InfoGeraObjeto> infoGeraObjetoList = new ArrayList<>();
 
@@ -230,18 +231,11 @@ public class MundoAreia extends WorldTemplate {
     @Override
     public void dispose() {
         super.dispose();
-        if (cactoTexture != null) {
-            cactoTexture.dispose();
-        }
         if (desenharMiniMapa != null) {
             desenharMiniMapa.dispose();
         }
         if (TransicaoTela != null) {
             TransicaoTela.dispose();
-        }
-        // Dispor inimigos restantes
-        for (EnemyTemplate enemy : listaInimigos) {
-            enemy.dispose();
         }
         listaInimigos.clear();
     }

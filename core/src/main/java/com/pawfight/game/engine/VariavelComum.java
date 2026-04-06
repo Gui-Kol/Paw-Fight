@@ -21,7 +21,7 @@ public class VariavelComum {
         return Math.min(screenW / GET_LARGURA_TELA_BASE, screenH / GET_ALTURA_TELA_BASE);
     }
     public static void SET_VOLUME_PASSOS(int volume) {
-        VOLUME_MUSICA = volume / 100f;
+        VOLUME_PASSOS = volume / 100f;
     }
     public static void SET_VOLUME_MUSICA(int volume) {
         VOLUME_MUSICA = volume / 100f;

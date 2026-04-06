@@ -1,6 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
@@ -23,11 +24,11 @@ public class OrangeCat extends PlayerTemplate {
             25,     // hitboxSize
             0,      // hitboxOffsetY
             -5,     // hitboxOffsetX
-            new Texture("entitys/player/orange_cat/Idle.png"),
-            new Texture("entitys/player/orange_cat/Walk.png"),
-            new Texture("entitys/player/orange_cat/Death.png"),
-            new Texture("entitys/player/orange_cat/Hurt.png"),
-            audioEngine.criarAudio("entitys/player/audios/passos.wav")
+            Assets.get("entitys/player/orange_cat/Idle.png", Texture.class),
+            Assets.get("entitys/player/orange_cat/Walk.png", Texture.class),
+            Assets.get("entitys/player/orange_cat/Death.png", Texture.class),
+            Assets.get("entitys/player/orange_cat/Hurt.png", Texture.class),
+            audio.getAudioEngine().criarAudio("entitys/player/audios/passos.wav")
         );
     }
 
@@ -37,15 +38,17 @@ public class OrangeCat extends PlayerTemplate {
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new Coco(tamanhoTiro, this);
+        return new Coco(stats.getTamanhoTiro(), this);
     }
 
     @Override
     public void updateSpriteDefinitions() {
-        idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
-        walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
-        deadDefinition = new DefinirSprite(deadSheet, 4, 0.1f, false, olhandoEsquerda);
-        hurtDefinition = new DefinirSprite(hurtSheet, 2, 0.1f, false, olhandoEsquerda);
+        animacao.setDefinitions(
+            new DefinirSprite(animacao.getIdleSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getWalkSheet(), 6, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getDeadSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getHurtSheet(), 2, 0.1f, false, olhandoEsquerda)
+        );
     }
 
     @Override

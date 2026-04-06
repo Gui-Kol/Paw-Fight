@@ -1,6 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;
@@ -24,11 +25,11 @@ public class Dove extends PlayerTemplate {
             15,     // hitboxSize
             0,      // hitboxOffsetY
             -5,     // hitboxOffsetX
-            new Texture("entitys/player/dove/Idle.png"),
-            new Texture("entitys/player/dove/Walk.png"),
-            new Texture("entitys/player/dove/Death.png"),
-            new Texture("entitys/player/dove/Hurt.png"),
-            audioEngine.criarAudio("entitys/player/audios/asas_passaro.wav")
+            Assets.get("entitys/player/dove/Idle.png", Texture.class),
+            Assets.get("entitys/player/dove/Walk.png", Texture.class),
+            Assets.get("entitys/player/dove/Death.png", Texture.class),
+            Assets.get("entitys/player/dove/Hurt.png", Texture.class),
+            audio.getAudioEngine().criarAudio("entitys/player/audios/asas_passaro.wav")
         );
     }
 
@@ -38,15 +39,17 @@ public class Dove extends PlayerTemplate {
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new Coco(tamanhoTiro, this);
+        return new Coco(stats.getTamanhoTiro(), this);
     }
 
     @Override
     public void updateSpriteDefinitions() {
-        idleDefinition = new DefinirSprite(idleSheet, 4, 0.1f, false, olhandoEsquerda);
-        walkDefinition = new DefinirSprite(walkSheet, 6, 0.1f, false, olhandoEsquerda);
-        deadDefinition = new DefinirSprite(deadSheet, 4, 0.1f, false, olhandoEsquerda);
-        hurtDefinition = new DefinirSprite(hurtSheet, 2, 0.1f, false, olhandoEsquerda);
+        animacao.setDefinitions(
+            new DefinirSprite(animacao.getIdleSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getWalkSheet(), 6, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getDeadSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getHurtSheet(), 2, 0.1f, false, olhandoEsquerda)
+        );
     }
 
     @Override

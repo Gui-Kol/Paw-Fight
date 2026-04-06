@@ -1,6 +1,5 @@
 package com.pawfight.game.engine;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
 import static com.pawfight.game.engine.VariavelComum.*;
@@ -8,7 +7,7 @@ import static com.pawfight.game.engine.VariavelComum.*;
 public class AudioEngine {
 
     public Music criarAudio(String caminho) {
-        return Gdx.audio.newMusic(Gdx.files.internal(caminho));
+        return Assets.get(caminho, Music.class);
     }
 
     public void efeito(Music audio) {

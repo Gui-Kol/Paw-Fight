@@ -24,8 +24,8 @@ public class MoverDirecaoPlayer {
         float distanciaTotal = (float) Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
         if (distanciaTotal > 0) {
-            float moveX = (deltaX / distanciaTotal) * enemy.velocidade * delta;
-            float moveY = (deltaY / distanciaTotal) * enemy.velocidade * delta;
+            float moveX = (deltaX / distanciaTotal) * enemy.getVelocidade() * delta;
+            float moveY = (deltaY / distanciaTotal) * enemy.getVelocidade() * delta;
 
             float newDx = enemy.dx + moveX;
             float newDy = enemy.dy + moveY;

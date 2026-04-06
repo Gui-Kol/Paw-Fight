@@ -1,122 +1,104 @@
 package com.pawfight.game.entity.enemy;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.AudioEngine;
-import com.pawfight.game.engine.design.animation.MotorAnimacao;
-import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.Entidade;
+import com.pawfight.game.entity.component.AnimacaoComponent;
+import com.pawfight.game.entity.component.AudioComponent;
+import com.pawfight.game.entity.component.StatsComponent;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
 
 public abstract class EnemyTemplate implements Entidade {
-    // Constantes
-    private static final float DANO_COOLDOWN_DURATION = 0.5f;
 
+    // ── Componentes ────────────────────────────────────────────
+    protected final AnimacaoComponent animacao = new AnimacaoComponent();
+    protected final AudioComponent audio = new AudioComponent();
+    protected StatsComponent stats;
+
+    // ── Referências ────────────────────────────────────────────
     protected PlayerTemplate player;
+    protected List<EnemyTemplate> enemiesList;
 
-    //animação
-    protected DefinirSprite idleDefinition;
-    protected DefinirSprite walkDefinition;
-    protected DefinirSprite deadDefinition;
-    protected DefinirSprite hurtDefinition;
-    protected DefinirSprite atackDefinition;
-    protected DefinirSprite specialAtackDefinition;
-    protected Texture idleSheet;
-    protected Texture walkSheet;
-    protected Texture deadSheet;
-    protected Texture hurtSheet;
-    protected Texture atackSheet;
-    protected Texture specialAtackSheet;
-    protected Animation<TextureRegion> hurtAnimation;
-    protected Animation<TextureRegion> idleAnimation;
-    protected Animation<TextureRegion> walkAnimation;
-    protected Animation<TextureRegion> deadAnimation;
-    protected Animation<TextureRegion> atackAnimation;
-    protected Animation<TextureRegion> specialAtackAnimation;
-    protected final MotorAnimacao MotorAnimacao = new MotorAnimacao();
-    protected boolean olhandoEsquerda = false;
-    private boolean lastOlhandoEsquerda = false;
-    private boolean animationsDirty = true;
-    protected boolean moving = false;
-    protected boolean atacando = false;
-    protected boolean atacandoEspecial = false;
-    protected boolean podeTomarDano = true;
-
-    protected String nome;
-    protected int vida;
-    protected int vidaBase;
-    protected int forca;
-    protected int velocidade;
+    // ── Estado espacial ────────────────────────────────────────
     protected int dx, dy;
-    protected boolean morto = false;
-    protected boolean hurt = false;
-    protected boolean forte;
-    protected float hurtTime = 0f;
-    protected final float HURT_DURATION = 0.3f;
-    protected float stateTime;
-    protected float ataqueTimer = 0f;
-    protected final float ATAQUE_COOLDOWN = 1.5f;
-    protected final float ATAQUE_DURATION = 0.5f;
-    protected final float DISTANCIA_ATAQUE = 60f;
-    private float danoCooldown = 0f;
-
     protected Rectangle hitBox;
-    protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int TAMANHO_PX = 64;
     protected int HITBOX_SIZE = 20;
     protected int HITBOX_OFFSET_X = -10;
     protected int HITBOX_OFFSET_Y = 0;
+    protected boolean olhandoEsquerda = false;
+    protected boolean moving = false;
 
-    protected AudioEngine audioEngine = new AudioEngine();
-    protected Music audioDano;
-    protected Music audioMorte;
+    // ── Estado de combate ──────────────────────────────────────
+    protected String nome;
+    protected boolean forte;
+    protected boolean atacando = false;
+    protected boolean atacandoEspecial = false;
+    protected float ataqueTimer = 0f;
+    protected final float ATAQUE_COOLDOWN = 1.5f;
+    protected final float ATAQUE_DURATION = 0.5f;
+    protected final float DISTANCIA_ATAQUE = 60f;
 
-    protected List<EnemyTemplate> enemiesList;
+    // ── Renderização ───────────────────────────────────────────
+    protected Renderizar renderizar = Renderizar.INSTANCE;
+
+    // ── Construtor ─────────────────────────────────────────────
 
     public EnemyTemplate(int dx, int dy, boolean forte, PlayerTemplate player) {
         DadosInimigo dadosInimigo = dadosInimigo();
         float multiplicador = forte ? dadosInimigo.multiplicador() : 1;
 
-        nome = dadosInimigo.nome();
-        vidaBase = dadosInimigo.VidaBase() * (int)multiplicador;
-        vida = vidaBase;
-        forca = dadosInimigo.Forca() * (int)multiplicador;
-        velocidade = dadosInimigo.Velocidade() * (int)multiplicador;
+        this.nome = dadosInimigo.nome();
         this.player = player;
         this.dx = dx;
         this.dy = dy;
-        this.stateTime = 0f;
         this.forte = forte;
 
-        idleSheet = dadosInimigo.idleSheet();
-        walkSheet = dadosInimigo.walkSheet();
-        deadSheet = dadosInimigo.deadSheet();
-        hurtSheet = dadosInimigo.hurtSheet();
-        atackSheet = dadosInimigo.atackSheet();
-        specialAtackSheet = dadosInimigo.specialAtackSheet();
+        // 1. Stats
+        stats = new StatsComponent(
+            dadosInimigo.VidaBase() * (int) multiplicador,
+            dadosInimigo.Forca() * (int) multiplicador,
+            dadosInimigo.Velocidade() * (int) multiplicador
+        );
 
-        audioDano = dadosInimigo.audioDano();
-        audioMorte = dadosInimigo.audioMorte();
+        // 2. Áudio
+        audio.initEnemy(dadosInimigo.audioDano(), dadosInimigo.audioMorte());
 
+        // 3. Animação
+        animacao.initTextures(
+            dadosInimigo.idleSheet(),
+            dadosInimigo.walkSheet(),
+            dadosInimigo.deadSheet(),
+            dadosInimigo.hurtSheet(),
+            dadosInimigo.atackSheet(),
+            dadosInimigo.specialAtackSheet()
+        );
+
+        // 4. Hitbox
         criarHitBox();
-        // Carrega texturas UMA VEZ e cria definições iniciais
         updateSpriteDefinitions();
-        rebuildAnimations();
+        animacao.rebuildAnimations();
     }
 
-    protected abstract DadosInimigo dadosInimigo();
+    // ── Métodos abstratos ──────────────────────────────────────
 
-    // Métodos abstratos
+    protected abstract DadosInimigo dadosInimigo();
     public abstract void ataqueBasico();
+    public abstract void ataqueEspecial();
+    public abstract void updateSpriteDefinitions();
+    public abstract EnemyTemplate cloneEnemy();
+    public abstract void andarIA(float delta);
+    public abstract int getTamanho();
+    protected abstract int moedasMorte();
+    public abstract void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer);
+
+    // ── Hitbox ─────────────────────────────────────────────────
 
     public void criarHitBox() {
         this.hitBox = new Rectangle(
@@ -125,23 +107,6 @@ public abstract class EnemyTemplate implements Entidade {
             HITBOX_SIZE,
             HITBOX_SIZE
         );
-    }
-
-    public abstract void ataqueEspecial();
-
-
-    public abstract void updateSpriteDefinitions();
-
-    public abstract EnemyTemplate cloneEnemy();
-
-    private void rebuildAnimations() {
-        idleAnimation = MotorAnimacao.animar(idleDefinition);
-        walkAnimation = MotorAnimacao.animar(walkDefinition);
-        hurtAnimation = MotorAnimacao.animar(hurtDefinition);
-        deadAnimation = MotorAnimacao.animar(deadDefinition);
-        atackAnimation = MotorAnimacao.animar(atackDefinition);
-        specialAtackAnimation = MotorAnimacao.animar(specialAtackDefinition);
-        animationsDirty = false;
     }
 
     public void setLocation(int x, int y) {
@@ -154,45 +119,34 @@ public abstract class EnemyTemplate implements Entidade {
         this.enemiesList = enemiesList;
     }
 
-    // Métodos comuns
+    // ══════════════════════════════════════════════════════════
+    //  UPDATE
+    // ══════════════════════════════════════════════════════════
+
     public void update(float delta) {
-        if (player != null && player.isPause()){
+        if (player != null && player.isPause()) {
             return;
         }
         TAMANHO_PX = getTamanho();
-        if (!morto) {
+
+        if (!stats.isMorto()) {
             executarIA(delta);
-            stateTime += delta;
             ataqueTimer += delta;
 
-            // Atualiza animações apenas quando direção muda
-            if (olhandoEsquerda != lastOlhandoEsquerda) {
-                lastOlhandoEsquerda = olhandoEsquerda;
+            // Animação — atualiza se direção mudou
+            if (animacao.checkDirectionChange(olhandoEsquerda)) {
                 updateSpriteDefinitions();
-                animationsDirty = true;
             }
 
-            // Atualizar cooldown de dano
-            if (!podeTomarDano) {
-                danoCooldown += delta;
-                if (danoCooldown >= DANO_COOLDOWN_DURATION) {
-                    podeTomarDano = true;
-                    danoCooldown = 0f;
-                }
-            }
-
-            if (hurt) {
-                hurtTime += delta;
-                if (hurtTime >= HURT_DURATION) {
-                    hurt = false;
-                    hurtTime = 0f;
-                }
-            }
-
-            if (atacando && stateTime >= ATAQUE_DURATION) {
+            // Duração do ataque
+            if (atacando && animacao.getStateTime() >= ATAQUE_DURATION) {
                 atacando = false;
             }
         }
+
+        // Timers (sempre rodam, mesmo morto — para animação de morte e cooldowns)
+        animacao.updateStateTime(delta);
+        stats.updateTimers(delta);
     }
 
     public void executarIA(float delta) {
@@ -203,61 +157,45 @@ public abstract class EnemyTemplate implements Entidade {
         if (distanciaAoPlayer <= DISTANCIA_ATAQUE && ataqueTimer >= ATAQUE_COOLDOWN) {
             ataqueBasico();
             ataqueTimer = 0f;
-            stateTime = 0f;
+            animacao.resetStateTime();
         }
 
         ataqueEspecial();
     }
 
-    public abstract void andarIA(float delta);
-    public abstract int getTamanho();
-
     protected float calcularDistanciaAoPlayer() {
         if (player == null) return Float.MAX_VALUE;
-        float dx = this.dx - player.getDx();
-        float dy = this.dy - player.getDy();
-        return (float) Math.sqrt(dx * dx + dy * dy);
+        float ddx = this.dx - player.getDx();
+        float ddy = this.dy - player.getDy();
+        return (float) Math.sqrt(ddx * ddx + ddy * ddy);
     }
+
+    // ══════════════════════════════════════════════════════════
+    //  AÇÕES
+    // ══════════════════════════════════════════════════════════
 
     public void dano(int forca) {
-        if (podeTomarDano) {
-            podeTomarDano = false;
-            this.vida -= forca;
-            if (vida <= 0) {
-                morto = true;
-                player.moedaUp(moedasMorte());
-                audioEngine.efeito(audioMorte);
-            } else {
-                hurt = true;
-                hurtTime = 0f;
-                audioEngine.efeito(audioDano);
-            }
-            Gdx.app.log(nome, "Tomou " + forca + " de dano!");
+        if (!stats.aplicarDano(forca)) return;
+        if (stats.isMorto()) {
+            animacao.resetStateTime();
+            player.moedaUp(moedasMorte());
+            audio.playMorte();
+        } else {
+            audio.playDano();
         }
+        Gdx.app.log(nome, "Tomou " + forca + " de dano!");
     }
 
-    protected TextureRegion animaAtual() {
-        if (animationsDirty) {
-            rebuildAnimations();
-        }
+    // ══════════════════════════════════════════════════════════
+    //  DRAW
+    // ══════════════════════════════════════════════════════════
 
-        if (morto) {
-            if (deadAnimation.isAnimationFinished(stateTime)) {
-                return deadAnimation.getKeyFrames()[deadAnimation.getKeyFrames().length - 1];
-            } else {
-                return deadAnimation.getKeyFrame(stateTime, false);
-            }
-        }
-        if (hurt) {
-            return hurtAnimation.getKeyFrame(hurtTime, false);
-        }
-        if (atacando){
-            return atackAnimation.getKeyFrame(stateTime, false);
-        }
-        if (atacandoEspecial){
-            return specialAtackAnimation.getKeyFrame(stateTime, false);
-        }
-        return moving ? walkAnimation.getKeyFrame(stateTime, true) : idleAnimation.getKeyFrame(stateTime, true);
+    protected TextureRegion animaAtual() {
+        return animacao.animaAtual(
+            stats.isMorto(), stats.isHurt(),
+            atacando, atacandoEspecial,
+            moving, stats.getHurtTime()
+        );
     }
 
     public void drawSprite(SpriteBatch batch) {
@@ -281,58 +219,9 @@ public abstract class EnemyTemplate implements Entidade {
         drawHitbox(batch, shapeRenderer);
     }
 
-    protected abstract int moedasMorte();
-
-    public abstract void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer);
-
-    public void dispose() {
-        if (idleSheet != null) idleSheet.dispose();
-        if (walkSheet != null) walkSheet.dispose();
-        if (deadSheet != null) deadSheet.dispose();
-        if (hurtSheet != null) hurtSheet.dispose();
-        if (atackSheet != null) atackSheet.dispose();
-        if (specialAtackSheet != null) specialAtackSheet.dispose();
-    }
-
-    public int getVelocidade() {
-        return velocidade;
-    }
-
-    public Rectangle getHitBox() {
-        return hitBox;
-    }
-
-    public boolean isMorto() {
-        return morto;
-    }
-
-    // ── Getters do contrato Entidade ──────────────────────────
-
-    public int getDx() {
-        return dx;
-    }
-
-    public int getDy() {
-        return dy;
-    }
-
-    public int getVida() {
-        return vida;
-    }
-
-    public int getVidaBase() {
-        return vidaBase;
-    }
-
-    public int getForca() {
-        return forca;
-    }
-
-    public boolean isOlhandoEsquerda() {
-        return olhandoEsquerda;
-    }
-
-    // ─────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════
+    //  FORTE (modificador)
+    // ══════════════════════════════════════════════════════════
 
     public void setForte(boolean forte) {
         if (this.forte != forte) {
@@ -344,4 +233,18 @@ public abstract class EnemyTemplate implements Entidade {
     protected void aplicarStatsForte() {
         // implementação padrão vazia — subclasses sobrescrevem
     }
+
+    // ══════════════════════════════════════════════════════════
+    //  GETTERS (contrato Entidade + API pública)
+    // ══════════════════════════════════════════════════════════
+
+    public int getDx()              { return dx; }
+    public int getDy()              { return dy; }
+    public Rectangle getHitBox()    { return hitBox; }
+    public int getVida()            { return stats.getVida(); }
+    public int getVidaBase()        { return stats.getVidaBase(); }
+    public int getForca()           { return stats.getForca(); }
+    public int getVelocidade()      { return stats.getVelocidade(); }
+    public boolean isMorto()        { return stats.isMorto(); }
+    public boolean isOlhandoEsquerda() { return olhandoEsquerda; }
 }

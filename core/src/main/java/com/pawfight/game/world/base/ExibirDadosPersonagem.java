@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.utils.Layout;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
@@ -29,11 +30,11 @@ public class ExibirDadosPersonagem {
         font = generator.generateFont(parameter);
         generator.dispose();
 
-        coracao = new Texture("Hud/coracao1.png");
-        raio = new Texture("Hud/raio.png");
-        musculo = new Texture("Hud/musculo.png");
-        requa = new Texture("Hud/requa.png");
-        nuvemChao = new Texture("Hud/nuvemChao.png");
+        coracao = Assets.get("Hud/coracao1.png", Texture.class);
+        raio = Assets.get("Hud/raio.png", Texture.class);
+        musculo = Assets.get("Hud/musculo.png", Texture.class);
+        requa = Assets.get("Hud/requa.png", Texture.class);
+        nuvemChao = Assets.get("Hud/nuvemChao.png", Texture.class);
         shapeRenderer = new ShapeRenderer();
     }
 
@@ -88,11 +89,7 @@ public class ExibirDadosPersonagem {
 
     public void dispose() {
         font.dispose();
-        coracao.dispose();
-        raio.dispose();
-        musculo.dispose();
-        requa.dispose();
-        nuvemChao.dispose();
+        // Texturas são gerenciadas pelo AssetManager — NÃO dar dispose aqui
         shapeRenderer.dispose();
     }
 }

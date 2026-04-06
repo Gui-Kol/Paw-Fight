@@ -2,6 +2,7 @@ package com.pawfight.game.entity.tiro.dove;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -11,9 +12,9 @@ public class Coco extends TirosTemplate {
     public Coco(int tamanho, PlayerTemplate player) {
         super(player.getDx() - tamanho / 2, player.getDy() - tamanho / 2, player.getForca(), tamanho, player);
         // Texturas devem ser carregadas ANTES de randomTex()
-        coco1 = new Texture("entitys/player/dove/coco/2.png");
-        coco2 = new Texture("entitys/player/dove/coco/3.png");
-        coco3 = new Texture("entitys/player/dove/coco/1.png");
+        coco1 = Assets.get("entitys/player/dove/coco/2.png", Texture.class);
+        coco2 = Assets.get("entitys/player/dove/coco/3.png", Texture.class);
+        coco3 = Assets.get("entitys/player/dove/coco/1.png", Texture.class);
         texture = randomTex();
     }
 

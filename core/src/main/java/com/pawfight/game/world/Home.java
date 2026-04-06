@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.Hud.CriarBotao;
 import com.pawfight.game.engine.Hud.HudStage;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
@@ -26,16 +27,15 @@ import static com.pawfight.game.engine.VariavelComum.*;
 public class Home implements Screen {
     private final TransicaoTela TransicaoTela;
     private final HudStage hudStage;
-    private final DesenharTextura desenharTextura;
 
     // Texturas para os estados do botão
-    private final Texture normalTexturePlay = new Texture("menu/button/play/play1.png");
-    private final Texture hoverTexturePlay = new Texture("menu/button/play/play2.png");
-    private final Texture pressedTexturePlay = new Texture("menu/button/play/play3.png");
+    private final Texture normalTexturePlay = Assets.get("menu/button/play/play1.png", Texture.class);
+    private final Texture hoverTexturePlay = Assets.get("menu/button/play/play2.png", Texture.class);
+    private final Texture pressedTexturePlay = Assets.get("menu/button/play/play3.png", Texture.class);
 
-    private final Texture normalTextureQuit = new Texture("menu/button/quit/quit1.png");
-    private final Texture hoverTextureQuit = new Texture("menu/button/quit/quit2.png");
-    private final Texture pressedTextureQuit = new Texture("menu/button/quit/quit3.png");
+    private final Texture normalTextureQuit = Assets.get("menu/button/quit/quit1.png", Texture.class);
+    private final Texture hoverTextureQuit = Assets.get("menu/button/quit/quit2.png", Texture.class);
+    private final Texture pressedTextureQuit = Assets.get("menu/button/quit/quit3.png", Texture.class);
 
     private ImageButton playButton;
     private ImageButton quitButton;
@@ -55,10 +55,9 @@ public class Home implements Screen {
         this.viewport = viewport;
         this.batch = game.getBatch();
         hudStage = new HudStage();
-        desenharTextura = new DesenharTextura();
 
         try {
-            background = new Texture("menu/menu.png");
+            background = Assets.get("menu/menu.png", Texture.class);
             backgroundImage = new Image(background);
             backgroundImage.setFillParent(true); // ocupa toda a tela
         } catch (Exception e) {
@@ -66,7 +65,7 @@ public class Home implements Screen {
         }
 
         try {
-            backMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/music/home.wav"));
+            backMusic = Assets.get("audio/music/home.wav", Music.class);
             backMusic.setLooping(true);
             backMusic.setVolume(VOLUME_MUSICA);
         } catch (Exception e) {
@@ -154,8 +153,7 @@ public class Home implements Screen {
 
     @Override
     public void dispose() {
-        if (background != null) background.dispose();
-        if (backMusic != null) backMusic.dispose();
+        // Texturas e música são gerenciadas pelo AssetManager — NÃO dar dispose aqui
         if (hudStage != null) hudStage.dispose();
         if (TransicaoTela != null) {
             TransicaoTela.dispose();

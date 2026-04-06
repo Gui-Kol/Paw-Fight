@@ -109,9 +109,7 @@ public abstract class TirosTemplate {
     }
 
     public void dispose() {
-        if (texture != null) {
-            texture.dispose();
-        }
+        // Texturas são gerenciadas pelo AssetManager — NÃO dar dispose aqui
     }
 }
 

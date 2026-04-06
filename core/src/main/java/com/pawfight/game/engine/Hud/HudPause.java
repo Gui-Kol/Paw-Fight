@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
@@ -29,28 +30,28 @@ public class HudPause {
     private ImageButton resumeButton;
     private ImageButton settingsButton;
 
-    private final Texture normalTextureQuit = new Texture("menu/button/quit/quit1.png");
-    private final Texture hoverTextureQuit = new Texture("menu/button/quit/quit2.png");
-    private final Texture pressedTextureQuit = new Texture("menu/button/quit/quit3.png");
+    private final Texture normalTextureQuit = Assets.get("menu/button/quit/quit1.png", Texture.class);
+    private final Texture hoverTextureQuit = Assets.get("menu/button/quit/quit2.png", Texture.class);
+    private final Texture pressedTextureQuit = Assets.get("menu/button/quit/quit3.png", Texture.class);
 
-    private final Texture normalTextureSave = new Texture("menu/button/save/save1.png");
-    private final Texture hoverTextureSave = new Texture("menu/button/save/save2.png");
-    private final Texture pressedTextureSave = new Texture("menu/button/save/save3.png");
+    private final Texture normalTextureSave = Assets.get("menu/button/save/save1.png", Texture.class);
+    private final Texture hoverTextureSave = Assets.get("menu/button/save/save2.png", Texture.class);
+    private final Texture pressedTextureSave = Assets.get("menu/button/save/save3.png", Texture.class);
 
-    private final Texture normalTextureResume = new Texture("menu/button/resume/resume1.png");
-    private final Texture hoverTextureResume = new Texture("menu/button/resume/resume2.png");
-    private final Texture pressedTextureResume = new Texture("menu/button/resume/resume3.png");
+    private final Texture normalTextureResume = Assets.get("menu/button/resume/resume1.png", Texture.class);
+    private final Texture hoverTextureResume = Assets.get("menu/button/resume/resume2.png", Texture.class);
+    private final Texture pressedTextureResume = Assets.get("menu/button/resume/resume3.png", Texture.class);
 
-    private final Texture normalTextureSettings = new Texture("menu/button/settings/settings1.png");
-    private final Texture hoverTextureSettings = new Texture("menu/button/settings/settings2.png");
-    private final Texture pressedTextureSettings = new Texture("menu/button/settings/settings3.png");
+    private final Texture normalTextureSettings = Assets.get("menu/button/settings/settings1.png", Texture.class);
+    private final Texture hoverTextureSettings = Assets.get("menu/button/settings/settings2.png", Texture.class);
+    private final Texture pressedTextureSettings = Assets.get("menu/button/settings/settings3.png", Texture.class);
 
     public HudPause(PlayerTemplate player) {
         criarBotao = new CriarBotao();
         desenharTextura = new DesenharTextura();
         MotorAnimacao = new MotorAnimacao();
         hudStage = new HudStage();
-        fundo = new Texture("menu/pause/pauseFundo-Sheet.png");
+        fundo = Assets.get("menu/pause/pauseFundo-Sheet.png", Texture.class);
         fundoAnimacao = new DefinirSprite(fundo, 6, 0.05f, false, false);
         botoes(player);
         Gdx.app.log("HudPause", "Sendo carregado para ser desenhado...");

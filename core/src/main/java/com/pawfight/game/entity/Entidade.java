@@ -22,6 +22,5 @@ public interface Entidade {
 
     // ── Ações ────────────────────────────────────────────────
     void dano(int forca);
-    void dispose();
 }
 
