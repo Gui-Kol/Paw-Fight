@@ -8,18 +8,17 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.Hud.Hud;
 import com.pawfight.game.engine.Hud.HudPause;
-import com.pawfight.game.engine.VariavelComum;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.component.*;
 import com.pawfight.game.entity.tiro.TirosTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.pawfight.game.engine.VariavelComum.DEBUG_MODE;
 
 public abstract class PlayerTemplate implements Entidade {
 
@@ -137,14 +136,14 @@ public abstract class PlayerTemplate implements Entidade {
             if (input.isDebugToggle()) {
                 drawHitBoxes = !drawHitBoxes;
                 Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + drawHitBoxes);
-                VariavelComum.setHitboxIsvisible(drawHitBoxes);
+                GameConfig.getInstance().setHitboxVisivel(drawHitBoxes);
             }
 
             // Zoom
             cameraComponent.updateZoom();
 
             // Cheats
-            if (DEBUG_MODE && input.isCheatToggle()) {
+            if (GameConfig.getInstance().isDebugMode() && input.isCheatToggle()) {
                 xpUp(999999999);
                 stats.setVida(999999999);
             }
@@ -197,8 +196,14 @@ public abstract class PlayerTemplate implements Entidade {
         batch.end();
 
         shapeRenderer.setProjectionMatrix(cam.combined);
-        colisao.drawDebugHitboxes(shapeRenderer, cam);
-        renderizar.hitboxDraw(shapeRenderer, hitBox);
+
+        // 1 único begin/end para TODAS as hitboxes (colisão + player)
+        if (GameConfig.getInstance().isHitboxVisivel()) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            colisao.drawDebugHitboxesNoBatch(shapeRenderer);
+            renderizar.hitboxDraw(shapeRenderer, hitBox);
+            shapeRenderer.end();
+        }
     }
 
     public void desenharTiros(WorldTemplate world) {
@@ -218,7 +223,7 @@ public abstract class PlayerTemplate implements Entidade {
         batch.end();
 
         // 1 único begin/end para TODAS as hitboxes de tiros
-        if (VariavelComum.HITBOX_ISVISIBLE) {
+        if (GameConfig.getInstance().isHitboxVisivel()) {
             shapeRenderer.setProjectionMatrix(cam.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             for (TirosTemplate tiro : tirosSnapshot) {

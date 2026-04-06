@@ -6,15 +6,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
-import com.pawfight.game.engine.Validar;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
-import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.enemy.Skeleton;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ public class MundoAreia extends WorldTemplate {
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/mundoAreia.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
-        GeradorSalas = new GeradorSalas();
         setPlayer(player);
 
         // Reseta estado do player
@@ -37,12 +35,12 @@ public class MundoAreia extends WorldTemplate {
 
         // Gera salas APENAS aqui, não carrega mapa
         try {
-            GeradorSalas.gerarRooms(this);
-            if (currentRoom == null) {
+            roomManager.getRoomGenerator().gerarRooms(this);
+            if (roomManager.getCurrentRoom() == null) {
                 throw new RuntimeException("Erro: currentRoom não foi inicializado.");
             }
             Gdx.app.log("MundoAreia", "Salas geradas com sucesso no construtor. Mapa será carregado em show().");
-            logRoomInfo(currentRoom);
+            logRoomInfo(roomManager.getCurrentRoom());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro ao gerar salas: " + e.getMessage(), e);
             errorFinal = true;
@@ -50,17 +48,18 @@ public class MundoAreia extends WorldTemplate {
     }
 
     @Override
-    public void logRoomInfo(Sala Sala) {
-        if (Sala == null) {
+    public void logRoomInfo(Sala sala) {
+        if (sala == null) {
             Gdx.app.error("MundoAreia", "Sala é null em logRoomInfo!");
             return;
         }
+        Sala currentRoom = roomManager.getCurrentRoom();
         if (!currentRoom.hasEast() && !currentRoom.hasWest() && !currentRoom.hasNorth() && !currentRoom.hasSouth()) {
             Gdx.app.error("MundoAreia", "Sala não tem portas.");
         } else {
-            Gdx.app.log("MundoAreia", "Sala [" + Sala.getX() + "," + Sala.getY() + "] Type: " + Sala.getType());
-            Gdx.app.log("MundoAreia", "hasNorth: " + Sala.hasNorth() + ", hasSouth: " + Sala.hasSouth() +
-                ", hasEast: " + Sala.hasEast() + ", hasWest: " + Sala.hasWest());
+            Gdx.app.log("MundoAreia", "Sala [" + sala.getX() + "," + sala.getY() + "] Type: " + sala.getType());
+            Gdx.app.log("MundoAreia", "hasNorth: " + sala.hasNorth() + ", hasSouth: " + sala.hasSouth() +
+                ", hasEast: " + sala.hasEast() + ", hasWest: " + sala.hasWest());
         }
     }
 
@@ -79,6 +78,7 @@ public class MundoAreia extends WorldTemplate {
     }
 
     private void cactoDano() {
+        List<ObjetoGerado> listaObjetos = worldRenderer.getListaObjetos();
         if (validarLista(listaObjetos)) {
             for (ObjetoGerado obj : listaObjetos) {
                 if (obj.getNomeObjeto().equals("cacto")) {
@@ -119,9 +119,10 @@ public class MundoAreia extends WorldTemplate {
                 return;
             }
 
-            if (currentRoom == null || map == null || RenderizadorCamada == null) {
+            Sala currentRoom = roomManager.getCurrentRoom();
+            if (currentRoom == null || map == null || renderizadorCamada == null) {
                 Gdx.app.error("MundoAreia", "render() - objeto null: currentRoom=" + (currentRoom == null) +
-                    ", map=" + (map == null) + ", RenderizadorCamada=" + (RenderizadorCamada == null));
+                    ", map=" + (map == null) + ", RenderizadorCamada=" + (renderizadorCamada == null));
                 return;
             }
 
@@ -129,7 +130,7 @@ public class MundoAreia extends WorldTemplate {
                 super.render(delta);
                 cactoDano();
 
-                podeEntrarPorta = !validarLista(listaInimigos);
+                roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
             }
         } catch (Exception e) {
             // Log original PRIMEIRO — para não perder o erro real
@@ -140,6 +141,7 @@ public class MundoAreia extends WorldTemplate {
                 if (batch != null && batch.isDrawing()) batch.end();
             } catch (Exception ignored) { }
             try {
+                var shapeRenderer = worldRenderer.getShapeRenderer();
                 if (shapeRenderer != null && shapeRenderer.isDrawing()) shapeRenderer.end();
             } catch (Exception ignored) { }
         }
@@ -147,6 +149,7 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     protected void renderLayers() {
+        Sala currentRoom = roomManager.getCurrentRoom();
         if (map == null || currentRoom == null) {
             Gdx.app.error("MundoAreia", "renderLayers - map ou currentRoom é null\nMap: " + map + "\nCurrentRoom: " + currentRoom);
             return;
@@ -159,6 +162,7 @@ public class MundoAreia extends WorldTemplate {
                     layers.add(layer);
                 }
             }
+            boolean podeEntrarPorta = roomManager.isPodeEntrarPorta();
             if (podeEntrarPorta) {
                 if (currentRoom.hasNorth() && map.getLayers().get("PortaCima") != null) {
                     layers.add("PortaCima");
@@ -170,7 +174,7 @@ public class MundoAreia extends WorldTemplate {
                     layers.add("PortaDireita");
                 }
             }
-            RenderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            renderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em renderLayers: " + e.getMessage(), e);
         }
@@ -178,6 +182,7 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     protected void renderLayersUp() {
+        Sala currentRoom = roomManager.getCurrentRoom();
         if (map == null || currentRoom == null) {
             Gdx.app.error("MundoAreia", "renderLayersUp - map ou currentRoom é null");
             return;
@@ -187,15 +192,19 @@ public class MundoAreia extends WorldTemplate {
             if (map.getLayers().get("Up") != null) {
                 layers.add("Up");
             }
+            boolean podeEntrarPorta = roomManager.isPodeEntrarPorta();
             if (podeEntrarPorta) {
                 if (currentRoom.getType() != TipoSala.SPAWN && currentRoom.hasSouth() && map.getLayers().get("PortaBaixo") != null) {
                     layers.add("PortaBaixo");
                 }
             }
-            RenderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            renderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
 
+            var shapeRenderer = worldRenderer.getShapeRenderer();
             if (shapeRenderer != null && !shapeRenderer.isDrawing()) {
-                if (desenharMiniMapa != null && GeradorSalas != null && player != null) {
+                var desenharMiniMapa = roomManager.getDesenharMiniMapa();
+                var geradorSalas = roomManager.getRoomGenerator();
+                if (desenharMiniMapa != null && geradorSalas != null && player != null) {
                     desenharMiniMapa.desenharMiniMapa(this);
                 }
             }
@@ -206,6 +215,7 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public String getMapPath() {
+        Sala currentRoom = roomManager.getCurrentRoom();
         if (currentRoom == null) {
             Gdx.app.error("MundoAreia", "getMapPath() - currentRoom é null!");
             return "world/mundo_areia/SPAWN.tmx";
@@ -223,17 +233,13 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     protected void checkPortals() {
-        carregarPortas.carregar(this);
-
+        roomManager.getCarregarPortas().carregar(this);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        if (desenharMiniMapa != null) {
-            desenharMiniMapa.dispose();
-        }
         // Transição é gerenciada pelo ScreenManager — NÃO dar dispose aqui
-        listaInimigos.clear();
+        enemyManager.clearInimigos();
     }
 }

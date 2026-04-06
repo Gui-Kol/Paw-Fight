@@ -25,7 +25,7 @@ public abstract class EnemyTemplate implements Entidade {
     protected List<EnemyTemplate> enemiesList;
 
     // ── Estado espacial ────────────────────────────────────────
-    protected int dx, dy;
+    protected float dx, dy;
     protected Rectangle hitBox;
     protected int TAMANHO_PX = 64;
     protected int HITBOX_SIZE = 20;
@@ -59,9 +59,9 @@ public abstract class EnemyTemplate implements Entidade {
 
         // 1. Stats
         stats = new StatsComponent(
-            dadosInimigo.VidaBase() * (int) multiplicador,
-            dadosInimigo.Forca() * (int) multiplicador,
-            dadosInimigo.Velocidade() * (int) multiplicador
+            dadosInimigo.vidaBase() * (int) multiplicador,
+            dadosInimigo.forca() * (int) multiplicador,
+            dadosInimigo.velocidade() * (int) multiplicador
         );
 
         // 2. Áudio
@@ -116,6 +116,9 @@ public abstract class EnemyTemplate implements Entidade {
         this.enemiesList = enemiesList;
     }
 
+    // ── Separação entre inimigos ──────────────────────────────
+    private static final float FORCA_SEPARACAO = 200f;
+
     // ══════════════════════════════════════════════════════════
     //  UPDATE
     // ══════════════════════════════════════════════════════════
@@ -127,6 +130,9 @@ public abstract class EnemyTemplate implements Entidade {
         TAMANHO_PX = getTamanho();
 
         if (!stats.isMorto()) {
+            // Separação de outros inimigos — roda para QUALQUER enemy, independente da IA
+            aplicarSeparacao(delta);
+
             executarIA(delta);
             ataqueTimer += delta;
 
@@ -142,6 +148,56 @@ public abstract class EnemyTemplate implements Entidade {
         // Timers (sempre rodam, mesmo morto — para animação de morte e cooldowns)
         animacao.updateStateTime(delta);
         stats.updateTimers(delta);
+    }
+
+    private void aplicarSeparacao(float delta) {
+        if (enemiesList == null) return;
+
+        float sepX = 0;
+        float sepY = 0;
+
+        for (EnemyTemplate other : enemiesList) {
+            if (other == this || other.isMorto()) continue;
+            if (!hitBox.overlaps(other.getHitBox())) continue;
+
+            // Centro de cada hitbox
+            float myCX    = hitBox.x + hitBox.width  / 2f;
+            float myCY    = hitBox.y + hitBox.height / 2f;
+            float otherCX = other.hitBox.x + other.hitBox.width  / 2f;
+            float otherCY = other.hitBox.y + other.hitBox.height / 2f;
+
+            float diffX = myCX - otherCX;
+            float diffY = myCY - otherCY;
+            float dist  = (float) Math.sqrt(diffX * diffX + diffY * diffY);
+
+            // Se estão exatamente no mesmo ponto, empurrar em direção determinística
+            if (dist < 0.001f) {
+                diffX = (this.hashCode() > other.hashCode()) ? 1f : -1f;
+                diffY = 0f;
+                dist  = 1f;
+            }
+
+            // Força proporcional à profundidade da sobreposição
+            float minDist = (hitBox.width + other.hitBox.width) / 2f;
+            float overlap = minDist - dist;
+            if (overlap > 0) {
+                float forca = FORCA_SEPARACAO * (overlap / minDist);
+                sepX += (diffX / dist) * forca;
+                sepY += (diffY / dist) * forca;
+            }
+        }
+
+        // Aplicar deslocamento de separação
+        if (Math.abs(sepX) > 0.001f || Math.abs(sepY) > 0.001f) {
+            dx += sepX * delta;
+            dy += sepY * delta;
+
+            // Atualizar hitbox imediatamente para que a IA use a posição correta
+            hitBox.setPosition(
+                dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
+                dy + HITBOX_OFFSET_Y
+            );
+        }
     }
 
     public void executarIA(float delta) {
@@ -217,8 +273,8 @@ public abstract class EnemyTemplate implements Entidade {
     //  GETTERS (contrato Entidade + API pública)
     // ══════════════════════════════════════════════════════════
 
-    public int getDx()              { return dx; }
-    public int getDy()              { return dy; }
+    public int getDx()              { return Math.round(dx); }
+    public int getDy()              { return Math.round(dy); }
     public Rectangle getHitBox()    { return hitBox; }
     public int getVida()            { return stats.getVida(); }
     public int getVidaBase()        { return stats.getVidaBase(); }

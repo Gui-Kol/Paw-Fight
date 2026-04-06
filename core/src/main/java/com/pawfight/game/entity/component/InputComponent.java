@@ -1,20 +1,22 @@
 package com.pawfight.game.entity.component;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.pawfight.game.engine.input.GameAction;
+import com.pawfight.game.engine.input.KeyBindings;
 
 public class InputComponent {
 
-    public boolean isMoveRight()  { return Gdx.input.isKeyPressed(Input.Keys.D); }
-    public boolean isMoveLeft()   { return Gdx.input.isKeyPressed(Input.Keys.A); }
-    public boolean isMoveUp()     { return Gdx.input.isKeyPressed(Input.Keys.W); }
-    public boolean isMoveDown()   { return Gdx.input.isKeyPressed(Input.Keys.S); }
+    private KeyBindings keys() { return KeyBindings.getInstance(); }
 
-    public boolean isAttackSpecial() { return Gdx.input.isKeyJustPressed(Input.Keys.SPACE); }
-    public boolean isAbility()       { return Gdx.input.isKeyJustPressed(Input.Keys.R); }
+    public boolean isMoveRight()     { return keys().isActive(GameAction.MOVE_RIGHT); }
+    public boolean isMoveLeft()      { return keys().isActive(GameAction.MOVE_LEFT); }
+    public boolean isMoveUp()        { return keys().isActive(GameAction.MOVE_UP); }
+    public boolean isMoveDown()      { return keys().isActive(GameAction.MOVE_DOWN); }
 
-    public boolean isPauseToggle()  { return Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE); }
-    public boolean isDebugToggle()  { return Gdx.input.isKeyJustPressed(Input.Keys.F3); }
-    public boolean isCheatToggle()  { return Gdx.input.isKeyJustPressed(Input.Keys.F6); }
+    public boolean isAttackSpecial() { return keys().isActive(GameAction.ATTACK_SPECIAL); }
+    public boolean isAbility()       { return keys().isActive(GameAction.ABILITY); }
+
+    public boolean isPauseToggle()   { return keys().isActive(GameAction.PAUSE_TOGGLE); }
+    public boolean isDebugToggle()   { return keys().isActive(GameAction.DEBUG_TOGGLE); }
+    public boolean isCheatToggle()   { return keys().isActive(GameAction.CHEAT_TOGGLE); }
 }
 

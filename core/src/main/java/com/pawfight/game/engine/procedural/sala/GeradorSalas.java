@@ -1,7 +1,7 @@
 package com.pawfight.game.engine.procedural.sala;
 
 import com.badlogic.gdx.Gdx;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.*;
 

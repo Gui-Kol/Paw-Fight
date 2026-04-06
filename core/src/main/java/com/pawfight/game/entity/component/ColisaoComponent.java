@@ -3,6 +3,7 @@ package com.pawfight.game.entity.component;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -10,10 +11,6 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Componente responsável pela colisão.
- * Gerencia lista de colisores, checagem de colisão e hitboxes do tilemap.
- */
 public class ColisaoComponent {
 
     private final List<Rectangle> listColisores = new ArrayList<>();
@@ -23,7 +20,11 @@ public class ColisaoComponent {
     // ── Checagem de colisão ────────────────────────────────────
 
     public void checarColisao(PlayerTemplate player) {
-        checarColisao.checarColisaoSeparadoEixo(listColisores, player);
+        // Em modo debug, aplica movimento sem verificar paredes (noclip)
+        List<Rectangle> colisores = GameConfig.getInstance().isDebugMode()
+            ? java.util.Collections.emptyList()
+            : listColisores;
+        checarColisao.checarColisaoSeparadoEixo(colisores, player);
     }
 
     // ── Gerenciamento de colisores ─────────────────────────────
@@ -51,6 +52,10 @@ public class ColisaoComponent {
 
     public void drawDebugHitboxes(ShapeRenderer shapeRenderer, OrthographicCamera camera) {
         tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
+    }
+
+    public void drawDebugHitboxesNoBatch(ShapeRenderer shapeRenderer) {
+        tilemapHitboxFactory.drawRects(shapeRenderer, listColisores);
     }
 
     // ── Getters ────────────────────────────────────────────────

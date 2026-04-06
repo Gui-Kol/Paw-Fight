@@ -10,9 +10,9 @@ public class SalvarJogo {
         Json json = new Json();
         String saveString = json.toJson(data);
 
-        FileHandle file = Gdx.files.local("save/" + data.getNomePersonagem() + "Save.json"); // salva no diretório local
+        FileHandle file = Gdx.files.local("save/" + data.nomePersonagem + "Save.json"); // salva no diretório local
         file.writeString(saveString, false);
-        Gdx.app.log("SalvarJogo", "Jogo salvo com sucesso para o personagem: " + data.getNomePersonagem());
+        Gdx.app.log("SalvarJogo", "Jogo salvo com sucesso para o personagem: " + data.nomePersonagem);
     }
 
     public DadosSalvosJogador loadGame(String nomePersonagem) {

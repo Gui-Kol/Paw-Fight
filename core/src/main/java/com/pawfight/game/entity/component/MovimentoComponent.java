@@ -2,10 +2,6 @@ package com.pawfight.game.entity.component;
 
 import com.badlogic.gdx.math.Rectangle;
 
-/**
- * Componente responsável pela movimentação.
- * Lê ações do InputComponent e calcula nextX/nextY.
- */
 public class MovimentoComponent {
 
     private float nextX;

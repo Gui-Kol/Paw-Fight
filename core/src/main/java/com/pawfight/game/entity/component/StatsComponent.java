@@ -3,10 +3,6 @@ package com.pawfight.game.entity.component;
 import com.badlogic.gdx.Gdx;
 import com.pawfight.game.entity.player.DadosPlayer;
 
-/**
- * Componente responsável pelos stats da entidade.
- * Gerencia vida, forca, velocidade, XP, level, moedas, dano e cooldowns.
- */
 public class StatsComponent {
 
     private static final float HURT_DURATION = 0.5f;

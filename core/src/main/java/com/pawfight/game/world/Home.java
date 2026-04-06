@@ -16,13 +16,16 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.ScreenManager;
+
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 import com.pawfight.game.engine.Hud.CriarBotao;
 import com.pawfight.game.engine.Hud.HudStage;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
 import com.pawfight.game.world.base.Base;
 
-import static com.pawfight.game.engine.VariavelComum.*;
 
 public class Home implements Screen {
     private final HudStage hudStage;
@@ -66,7 +69,7 @@ public class Home implements Screen {
         try {
             backMusic = Assets.get("audio/music/home.wav", Music.class);
             backMusic.setLooping(true);
-            backMusic.setVolume(VOLUME_MUSICA);
+            backMusic.setVolume(GameConfig.getInstance().getVolumeMusica());
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
@@ -94,14 +97,14 @@ public class Home implements Screen {
             try {
                 Stage stage = hudStage.getStage();
                 playButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2,
                     200, 105,
                     normalTexturePlay, hoverTexturePlay, pressedTexturePlay);
 
                 quitButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2 - 150,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2 - 150,
                     200, 105,
                     normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
 

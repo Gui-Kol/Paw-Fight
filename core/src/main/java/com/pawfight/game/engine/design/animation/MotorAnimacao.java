@@ -9,8 +9,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.pawfight.game.engine.design.DefinirSprite;
 
-import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 
 public class MotorAnimacao {
     private Animation<TextureRegion> animation;
@@ -86,8 +86,8 @@ public class MotorAnimacao {
 
     public boolean desenharFundo(Batch batch, boolean abrirMenu, DefinirSprite sprite, int tamanhoFundo, OrthographicCamera camera) {
         batch.setProjectionMatrix(camera.combined);
-        int x = (GET_LARGURA_TELA_BASE / 2) - (tamanhoFundo / 2);
-        int y = (GET_ALTURA_TELA_BASE / 2) - (tamanhoFundo / 2);
+        int x = (LARGURA_TELA_BASE / 2) - (tamanhoFundo / 2);
+        int y = (ALTURA_TELA_BASE / 2) - (tamanhoFundo / 2);
 
         // Inicializa animação de abertura
         if (abrirMenu && animation == null && !fundoAtivo) {

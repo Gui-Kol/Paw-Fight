@@ -12,15 +12,15 @@ import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
-import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 
 public class HudPause {
     private final HudStage hudStage;
     private final DesenharTextura desenharTextura;
-    private final MotorAnimacao MotorAnimacao;
+    private final MotorAnimacao motorAnimacao;
     private final CriarBotao criarBotao;
     private final Texture fundo;
     private final DefinirSprite fundoAnimacao;
@@ -49,7 +49,7 @@ public class HudPause {
     public HudPause(PlayerTemplate player) {
         criarBotao = new CriarBotao();
         desenharTextura = new DesenharTextura();
-        MotorAnimacao = new MotorAnimacao();
+        motorAnimacao = new MotorAnimacao();
         hudStage = new HudStage();
         fundo = Assets.get("menu/pause/pauseFundo-Sheet.png", Texture.class);
         fundoAnimacao = new DefinirSprite(fundo, 6, 0.05f, false, false);
@@ -61,7 +61,7 @@ public class HudPause {
         Batch batch = world.getBatch();
         boolean jogoPausado = world.getPlayer().isPause();
 
-        boolean renderizaBotao = MotorAnimacao.desenharFundo(
+        boolean renderizaBotao = motorAnimacao.desenharFundo(
             batch, jogoPausado, fundoAnimacao, 1024, hudStage.getStage().getCamera());
         if (jogoPausado) {
             hudStage.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -77,8 +77,8 @@ public class HudPause {
                 Stage stage = hudStage.getStage();
 
                 resumeButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2 + 300,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2 + 300,
                     200, 105,
                     normalTextureResume, hoverTextureResume, pressedTextureResume);
 
@@ -91,8 +91,8 @@ public class HudPause {
                 });
 
                 saveButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2 + 150,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2 + 150,
                     200, 105,
                     normalTextureSave, hoverTextureSave, pressedTextureSave);
 
@@ -105,8 +105,8 @@ public class HudPause {
                 });
 
                 settingsButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2,
                     200, 105,
                     normalTextureSettings, hoverTextureSettings, pressedTextureSettings);
 
@@ -119,8 +119,8 @@ public class HudPause {
                 });
 
                 quitButton = criarBotao.create(stage,
-                    GET_LARGURA_TELA_BASE / 2,
-                    GET_ALTURA_TELA_BASE / 2 - 150,
+                    LARGURA_TELA_BASE / 2,
+                    ALTURA_TELA_BASE / 2 - 150,
                     200, 102,
                     normalTextureQuit, hoverTextureQuit, pressedTextureQuit);
 

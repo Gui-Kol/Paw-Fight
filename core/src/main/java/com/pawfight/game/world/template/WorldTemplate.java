@@ -1,4 +1,4 @@
-package com.pawfight.game.world;
+package com.pawfight.game.world.template;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -15,9 +15,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
-import com.pawfight.game.engine.Hud.DesenharMiniMapa;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
-import com.pawfight.game.engine.procedural.CarregarPortas;
+
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 import com.pawfight.game.engine.procedural.GerarInimigos;
 import com.pawfight.game.engine.procedural.GerarObjetos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
@@ -25,54 +27,33 @@ import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.render.RenderizadorCamada;
-import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.DanoTiro;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.pawfight.game.engine.VariavelComum.*;
 
 public abstract class WorldTemplate implements Screen {
 
-    // Física
+    // ── Managers (composição) ──────────────────────────────────
+    protected final WorldRenderer worldRenderer;
+    protected final WorldPhysics worldPhysics;
+    protected final RoomManager roomManager;
+    protected final EnemyManager enemyManager;
+
+    // ── Core (permanece no WorldTemplate) ──────────────────────
     private final Stage stage;
-    protected TilemapHitboxFactory tilemapHitboxFactory;
-
-    // Base
-    protected RenderizadorCamada RenderizadorCamada;
+    protected RenderizadorCamada renderizadorCamada;
     protected TiledMap map;
-
-    // Entidades
     protected PlayerTemplate player;
-
-    // Mundo
-    protected final DesenharMiniMapa desenharMiniMapa;
-    protected final CarregarPortas carregarPortas;
-    protected final GerarObjetos gerarObjetos;
-    protected final Renderizar renderizar = Renderizar.INSTANCE;
     protected boolean errorFinal = false;
-    protected final List<ObjetoGerado> listaObjetos;
-    protected final List<Rectangle> listaObjetosHitbox;
-    protected List<Sala> rooms;
-    protected GeradorSalas GeradorSalas;
-    protected Sala currentRoom;
-    protected boolean podeEntrarPorta;
-    protected Set<String> salasVisitadas;
-    protected DanoTiro danoTiro;
-    protected ShapeRenderer shapeRenderer;
-    protected Texture background;
     protected PawFight game;
     protected SpriteBatch batch;
     protected Music backMusic;
     protected OrthographicCamera camera;
     protected Viewport viewport;
-    protected GerarInimigos gerarInimigos;
-    protected List<EnemyTemplate> listaInimigos;
 
 
     public WorldTemplate(PawFight game, String backgroundPath, String musicPath, OrthographicCamera camera, Viewport viewport) {
@@ -81,21 +62,14 @@ public abstract class WorldTemplate implements Screen {
         this.viewport = viewport;
         this.batch = game.getBatch();
 
-        gerarObjetos = new GerarObjetos();
-        listaObjetos = new ArrayList<>();
-        listaObjetosHitbox = new ArrayList<>();
-        listaInimigos = new ArrayList<>();
-        shapeRenderer = new ShapeRenderer();
-        background = Assets.get(backgroundPath, Texture.class);
+        // Inicializa managers
+        worldRenderer = new WorldRenderer(backgroundPath);
+        worldPhysics = new WorldPhysics();
+        roomManager = new RoomManager();
+        enemyManager = new EnemyManager();
+
         backMusic = Assets.get(musicPath, Music.class);
-        tilemapHitboxFactory = new TilemapHitboxFactory();
-        danoTiro = new DanoTiro();
-        salasVisitadas = new HashSet<>();
-        podeEntrarPorta = true;
-        gerarInimigos = new GerarInimigos();
-        desenharMiniMapa = new DesenharMiniMapa();
-        carregarPortas = new CarregarPortas();
-        stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE), batch);
+        stage = new Stage(new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE), batch);
     }
 
 
@@ -106,11 +80,11 @@ public abstract class WorldTemplate implements Screen {
     @Override
     public void show() {
         try {
-            tilemapHitboxFactory.clearCache();
+            worldPhysics.clearCache();
             map = new TmxMapLoader().load(getMapPath());
-            RenderizadorCamada = new RenderizadorCamada(map);
+            renderizadorCamada = new RenderizadorCamada(map);
             backMusic.setLooping(true);
-            backMusic.setVolume(VOLUME_MUSICA);
+            backMusic.setVolume(GameConfig.getInstance().getVolumeMusica());
             backMusic.play();
         } catch (Exception e) {
             Gdx.app.error(getWorldName(), "Erro no Show: " + e.getMessage(), e);
@@ -124,7 +98,7 @@ public abstract class WorldTemplate implements Screen {
                 Gdx.app.error(getWorldName(), "show() chamado mas errorFinal = true");
                 return;
             }
-            if (currentRoom == null) {
+            if (roomManager.getCurrentRoom() == null) {
                 Gdx.app.error(getWorldName(), "show() chamado mas currentRoom é null!");
                 errorFinal = true;
                 return;
@@ -140,7 +114,7 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void render(float delta) {
-        if (map == null || RenderizadorCamada == null) {
+        if (map == null || renderizadorCamada == null) {
             Gdx.app.error(getWorldName(), "Mapa não carregado!");
             return;
         }
@@ -151,22 +125,26 @@ public abstract class WorldTemplate implements Screen {
             if (player.isPause()) {
                 pause();
             }
-            if (listaInimigos != null && !listaInimigos.isEmpty()) {
-                renderizar.atualizarListaInimigos(Gdx.graphics.getDeltaTime(), listaInimigos);
-                renderizar.renderizarInimigos(this);
-            }
+            worldRenderer.renderizarInimigos(this);
         }
 
         renderLayersUp();
 
-        renderizar.renderizarObjects(this);
-        renderizar.hitBoxListObjeto(listaObjetos, shapeRenderer, player.getCamera().combined);
+        worldRenderer.renderizarObjects(this);
 
         if (player != null) {
-            player.drawHud(batch, shapeRenderer, this);
+            player.drawHud(batch, worldRenderer.getShapeRenderer(), this);
         }
         checkPortals();
-        danoTiro.darDanoListaInimigos(this);
+        worldPhysics.processarDanoTiro(this);
+
+        // Debug: desenha a quadtree quando F3 está ativo
+        if (player != null) {
+            worldPhysics.drawDebugQuadtree(
+                worldRenderer.getShapeRenderer(),
+                player.getCamera().combined
+            );
+        }
     }
 
     protected void updatePlayer(float delta) {
@@ -175,8 +153,7 @@ public abstract class WorldTemplate implements Screen {
     }
 
     public void carregarParede() {
-        List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");
-        player.adicionarColisao(paredes);
+        worldPhysics.carregarParede(map, player);
     }
 
     protected abstract void renderLayers();
@@ -187,15 +164,12 @@ public abstract class WorldTemplate implements Screen {
 
     protected abstract void checkPortals();
 
-    public abstract void logRoomInfo(Sala Sala);
+    public abstract void logRoomInfo(Sala sala);
 
     public abstract List<InfoGeraObjeto> getInfoObjetos();
 
     public void gerarObjetos() {
-        if (getInfoObjetos() == null || getInfoObjetos().isEmpty()) {
-            return;
-        }
-        gerarObjetos.gerar(this, getInfoObjetos());
+        worldRenderer.gerarObjetos(this, getInfoObjetos());
     }
 
     public abstract String getWorldName();
@@ -208,7 +182,7 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true); // Adicionado 'true' para centrar o viewport
+        viewport.update(width, height, true);
         camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);
         camera.update();
         if (player != null) {
@@ -231,36 +205,54 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void dispose() {
-        shapeRenderer.dispose();
+        worldRenderer.dispose();
+        roomManager.dispose();
         // background e backMusic são gerenciados pelo AssetManager — NÃO dar dispose aqui
         if (map != null) map.dispose();
-        if (RenderizadorCamada != null) RenderizadorCamada.dispose();
+        if (renderizadorCamada != null) renderizadorCamada.dispose();
         if (player != null) player.dispose();
         stage.dispose();
         Gdx.app.log(getWorldName(), "foi disposed");
     }
 
     public boolean currentRoomFoiVisitada() {
-        Sala currentRoom = getCurrentRoom();
-
-        String key = currentRoom.getX() + "," + currentRoom.getY();
-        return getSalasVisitadas().contains(key);
+        return roomManager.currentRoomFoiVisitada();
     }
+
+    // ── Acesso aos managers ────────────────────────────────────
+
+    public WorldRenderer getWorldRenderer() {
+        return worldRenderer;
+    }
+
+    public WorldPhysics getWorldPhysics() {
+        return worldPhysics;
+    }
+
+    public RoomManager getRoomManager() {
+        return roomManager;
+    }
+
+    public EnemyManager getEnemyManager() {
+        return enemyManager;
+    }
+
+    // ── Delegate getters (compatibilidade com código externo) ──
 
     public PlayerTemplate getPlayer() {
         return player;
     }
 
     public Set<String> getSalasVisitadas() {
-        return salasVisitadas;
+        return roomManager.getSalasVisitadas();
     }
 
     public TilemapHitboxFactory getTilemapHitboxFactory() {
-        return tilemapHitboxFactory;
+        return worldPhysics.getTilemapHitboxFactory();
     }
 
     public RenderizadorCamada getLayerRenderer() {
-        return RenderizadorCamada;
+        return renderizadorCamada;
     }
 
     public TiledMap getMap() {
@@ -268,63 +260,63 @@ public abstract class WorldTemplate implements Screen {
     }
 
     public boolean isPodeEntrarPorta() {
-        return podeEntrarPorta;
+        return roomManager.isPodeEntrarPorta();
     }
 
     public Sala getCurrentRoom() {
-        return currentRoom;
+        return roomManager.getCurrentRoom();
     }
 
     public GeradorSalas getRoomGenerator() {
-        return GeradorSalas;
+        return roomManager.getRoomGenerator();
     }
 
     public GerarInimigos getGerarInimigos() {
-        return gerarInimigos;
+        return enemyManager.getGerarInimigos();
     }
 
     public List<EnemyTemplate> getListaInimigos() {
-        return listaInimigos;
+        return enemyManager.getListaInimigos();
     }
 
-    public void setLayerRenderer(RenderizadorCamada RenderizadorCamada) {
-        this.RenderizadorCamada = RenderizadorCamada;
+    public void setLayerRenderer(RenderizadorCamada renderizadorCamada) {
+        this.renderizadorCamada = renderizadorCamada;
     }
 
     public void setCurrentRoom(Sala currentRoom) {
-        this.currentRoom = currentRoom;
+        roomManager.setCurrentRoom(currentRoom);
     }
 
     public List<Sala> getRooms() {
-        return rooms;
+        return roomManager.getRooms();
     }
 
     public void setRooms(List<Sala> rooms) {
-        this.rooms = rooms;
+        roomManager.setRooms(rooms);
     }
 
     public void addSalasVisitadas(String newRoom) {
-        salasVisitadas.add(newRoom);
+        roomManager.addSalasVisitadas(newRoom);
     }
 
     public List<ObjetoGerado> getListaObjetos() {
-        return listaObjetos;
+        return worldRenderer.getListaObjetos();
     }
 
     public List<Rectangle> getListaObjetosHitbox() {
-        return listaObjetosHitbox;
+        return worldRenderer.getListaObjetosHitbox();
     }
 
     public void addListaObjetos(List<ObjetoGerado> objetoGerados) {
-        listaObjetos.addAll(objetoGerados);
+        worldRenderer.addListaObjetos(objetoGerados);
     }
 
     public void addListaObjetosHitbox(List<Rectangle> hitBoxs) {
-        listaObjetosHitbox.addAll(hitBoxs);
+        worldRenderer.addListaObjetosHitbox(hitBoxs);
     }
 
     public GerarObjetos getGerarObjetos() {
-        return gerarObjetos;
+        return worldRenderer.getGerarObjetos();
     }
 
     public boolean isErrorFinal() {
@@ -332,15 +324,15 @@ public abstract class WorldTemplate implements Screen {
     }
 
     public DanoTiro getDanoTiro() {
-        return danoTiro;
+        return worldPhysics.getDanoTiro();
     }
 
     public ShapeRenderer getShapeRenderer() {
-        return shapeRenderer;
+        return worldRenderer.getShapeRenderer();
     }
 
     public Texture getBackground() {
-        return background;
+        return worldRenderer.getBackground();
     }
 
     public PawFight getGame() {

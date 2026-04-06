@@ -15,7 +15,9 @@ import com.pawfight.game.entity.player.Dove;
 
 import java.util.Random;
 
-import static com.pawfight.game.engine.VariavelComum.*;
+import com.pawfight.game.engine.GameConfig;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 
 public class EscolherPersonagem {
     private ExibirDadosPersonagem exibirDadosPersonagem;
@@ -44,7 +46,7 @@ public class EscolherPersonagem {
     public EscolherPersonagem(PawFight game) {
         this.game = game;
         batch = game.getBatch();
-        viewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
+        viewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE);
 
         personagens = new Texture[]{
             Assets.get("entitys/player/selecao/black_cat.png", Texture.class),
@@ -136,21 +138,21 @@ public class EscolherPersonagem {
     }
 
     public void draw() {
-        var scale = GET_SCALE();
+        var scale = GameConfig.getInstance().getScale();
 
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
         // Background
-        batch.draw(backGroud, bgX1, 0, GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
-        batch.draw(backGroud, bgX2, 0, GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
+        batch.draw(backGroud, bgX1, 0, LARGURA_TELA_BASE, ALTURA_TELA_BASE);
+        batch.draw(backGroud, bgX2, 0, LARGURA_TELA_BASE, ALTURA_TELA_BASE);
 
         // Personagem centralizado
         Texture personagem = personagens[personagemAtual];
         float largura = 200 * scale;
         float altura = 200 * scale;
-        float playerX = (GET_LARGURA_TELA_BASE - largura) / 2f;
-        float playerY = (GET_ALTURA_TELA_BASE - altura) / 2f;
+        float playerX = (LARGURA_TELA_BASE - largura) / 2f;
+        float playerY = (ALTURA_TELA_BASE - altura) / 2f;
         batch.draw(personagem, playerX, playerY, largura, altura);
 
         // Nuvem nos pés do player

@@ -7,19 +7,19 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import static com.pawfight.game.engine.VariavelComum.GET_ALTURA_TELA_BASE;
-import static com.pawfight.game.engine.VariavelComum.GET_LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 
 public class HudStage {
     private Stage stage;
 
     public HudStage() {
         OrthographicCamera camera = new OrthographicCamera();
-        camera.setToOrtho(false, GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE);
+        camera.setToOrtho(false, LARGURA_TELA_BASE, ALTURA_TELA_BASE);
 
         FitViewport viewport = new FitViewport(
-            GET_LARGURA_TELA_BASE,
-            GET_ALTURA_TELA_BASE,
+            LARGURA_TELA_BASE,
+            ALTURA_TELA_BASE,
             camera
         );
         stage = new Stage(viewport);

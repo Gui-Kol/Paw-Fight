@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
+import com.pawfight.game.engine.GameConfig;
 
 public class DesenharTexto {
     private final Viewport viewport;
@@ -28,7 +28,7 @@ public class DesenharTexto {
         if (batch.isDrawing()) {
             batch.end();
         }
-        font.getData().setScale(GET_SCALE());
+        font.getData().setScale(GameConfig.getInstance().getScale());
 
         layout.setText(font, texto);
 

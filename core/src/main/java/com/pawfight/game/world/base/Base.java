@@ -8,7 +8,7 @@ import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.List;
 
@@ -55,6 +55,7 @@ public class Base extends WorldTemplate {
             carregarParede();
 
             // Cachear hitboxes dos portais uma única vez
+            var tilemapHitboxFactory = worldPhysics.getTilemapHitboxFactory();
             entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
             entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
             portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
@@ -71,18 +72,19 @@ public class Base extends WorldTemplate {
 
     @Override
     protected void renderLayers() {
-        RenderizadorCamada.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
+        renderizadorCamada.renderLayers(new String[]{"Sub", "Solo", "Up", "DetalhesMapa"}, player.getCamera());
     }
 
     @Override
     protected void renderLayersUp() {
-        RenderizadorCamada.renderLayer("DetalhesMapaCima", player.getCamera());
+        renderizadorCamada.renderLayer("DetalhesMapaCima", player.getCamera());
     }
 
 
     @Override
     protected void checkPortals() {
         try {
+            var shapeRenderer = worldRenderer.getShapeRenderer();
             if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, shapeRenderer, game, camera, viewport)) {
                 entrouPortal = true;
             }
@@ -91,7 +93,7 @@ public class Base extends WorldTemplate {
             }
 
             if (player.getLevel() < 5) {
-                tilemapHitboxFactory.drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
+                worldPhysics.getTilemapHitboxFactory().drawObjects(map, "PortaoNeve", batch, player.getCamera(), true);
                 portoes.mensagemPortao(player, portaoNeveMensagem, batch, shapeRenderer, "Level 5 necessario!");
             }
             player.adicionarColisaoPorLevel(portaoNeve, 5);
@@ -101,7 +103,7 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    public void logRoomInfo(Sala Sala) {
+    public void logRoomInfo(Sala sala) {
 
     }
 

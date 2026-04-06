@@ -11,14 +11,17 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.ScreenManager;
+import com.pawfight.game.engine.input.KeyBindings;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.engine.save.SalvarJogo;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.Home;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
-import static com.pawfight.game.engine.VariavelComum.*;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 
 public class PawFight extends Game {
     private final PawFight game = this;
@@ -35,11 +38,12 @@ public class PawFight extends Game {
     @Override
     public void create() {
         Assets.loadAll();
+        KeyBindings.init();
         batch = new SpriteBatch();
         image = Assets.get("menu/BackGroundPawFight.png", Texture.class);
 
         camera = new OrthographicCamera();
-        viewport = new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE, camera);
+        viewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE, camera);
 
         // MUITO IMPORTANTE: posicionar a camera no centro do mundo
         camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);
@@ -57,7 +61,7 @@ public class PawFight extends Game {
             }
         }, 2.5f);
         audio = Assets.get("audio/sounds/MenuInicial/inicio.wav", Music.class);
-        audio.setVolume(VOLUME_MUSICA);
+        audio.setVolume(GameConfig.getInstance().getVolumeMusica());
         audio.play();
 
         Gdx.app.log("PawFight", "Iniciando jogo...");
@@ -133,13 +137,13 @@ public class PawFight extends Game {
     }
 
     public void savePlayer(PlayerTemplate player) {
-        SalvarJogo SalvarJogo = new SalvarJogo();
-        SalvarJogo.salvar(player.saveData());
+        SalvarJogo salvarJogo = new SalvarJogo();
+        salvarJogo.salvar(player.saveData());
     }
 
     public PlayerTemplate loadPlayer(PlayerTemplate player, String nomePersonagem) {
-        SalvarJogo SalvarJogo = new SalvarJogo();
-        DadosSalvosJogador data = SalvarJogo.loadGame(nomePersonagem);
+        SalvarJogo salvarJogo = new SalvarJogo();
+        DadosSalvosJogador data = salvarJogo.loadGame(nomePersonagem);
         if (data != null) {
             player.loadSaveData(data);
         }

@@ -7,11 +7,11 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.List;
 
-import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
+import com.pawfight.game.engine.GameConfig;
 
 public class Renderizar {
     public static final Renderizar INSTANCE = new Renderizar();
@@ -40,7 +40,7 @@ public class Renderizar {
         batch.end();
 
         // Hitboxes — 1 único begin/end para TODAS as hitboxes de inimigos
-        if (HITBOX_ISVISIBLE) {
+        if (GameConfig.getInstance().isHitboxVisivel()) {
             shapeRenderer.setProjectionMatrix(cameraCombined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             for (EnemyTemplate enemy : inimigos) {
@@ -83,14 +83,12 @@ public class Renderizar {
     }
 
     public void hitboxDraw(ShapeRenderer shapeRenderer, Rectangle hitbox) {
-        if (!HITBOX_ISVISIBLE) return;
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        if (!GameConfig.getInstance().isHitboxVisivel()) return;
         hitboxRect(shapeRenderer, hitbox, Color.RED);
-        shapeRenderer.end();
     }
 
     public void hitBoxDrawList(List<Rectangle> hitboxes, ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
-        if (!HITBOX_ISVISIBLE || hitboxes.isEmpty()) return;
+        if (!GameConfig.getInstance().isHitboxVisivel() || hitboxes.isEmpty()) return;
         shapeRenderer.setProjectionMatrix(cameraMatrix);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         for (Rectangle hitbox : hitboxes) {
@@ -100,7 +98,7 @@ public class Renderizar {
     }
 
     public void hitBoxListObjeto(List<ObjetoGerado> objetoGerados, ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
-        if (!HITBOX_ISVISIBLE || objetoGerados == null || objetoGerados.isEmpty()) return;
+        if (!GameConfig.getInstance().isHitboxVisivel() || objetoGerados == null || objetoGerados.isEmpty()) return;
         shapeRenderer.setProjectionMatrix(cameraMatrix);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         for (ObjetoGerado obj : objetoGerados) {

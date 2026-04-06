@@ -19,16 +19,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
+import com.pawfight.game.engine.GameConfig;
 
 public class TilemapHitboxFactory {
 
     // Cache: evita recriar listas de Rectangle a cada frame para o mesmo mapa/layer
     private final Map<String, List<Rectangle>> cache = new HashMap<>();
 
-    /**
-     * Limpa o cache de hitboxes. Deve ser chamado sempre que o mapa (TiledMap) mudar.
-     */
     public void clearCache() {
         cache.clear();
     }
@@ -152,15 +149,21 @@ public class TilemapHitboxFactory {
 
 
     public void draw(ShapeRenderer shapeRenderer, OrthographicCamera camera, List<Rectangle> hitBoxes) {
-        if (HITBOX_ISVISIBLE) {
+        if (GameConfig.getInstance().isHitboxVisivel()) {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            shapeRenderer.setColor(Color.GREEN);
-
-            for (Rectangle hitBox : hitBoxes) {
-                shapeRenderer.rect(hitBox.x, hitBox.y, hitBox.width, hitBox.height);
-            }
+            drawRects(shapeRenderer, hitBoxes);
             shapeRenderer.end();
+        }
+    }
+
+    /**
+     * Desenha hitboxes SEM begin/end — para uso dentro de um bloco já aberto.
+     */
+    public void drawRects(ShapeRenderer shapeRenderer, List<Rectangle> hitBoxes) {
+        shapeRenderer.setColor(Color.GREEN);
+        for (Rectangle hitBox : hitBoxes) {
+            shapeRenderer.rect(hitBox.x, hitBox.y, hitBox.width, hitBox.height);
         }
     }
 }

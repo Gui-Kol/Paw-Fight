@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;

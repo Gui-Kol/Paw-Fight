@@ -7,7 +7,7 @@ import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.bosses.BossesTemplate;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,13 @@ public class GerarInimigos {
 
         if (modelosDisponiveis == null || modelosDisponiveis.isEmpty() || regioesSpawn == null || regioesSpawn.isEmpty()) {
             return novosInimigos; // retorna vazio se não há modelos ou regiões
+        }
+
+        // Garante que qntMin <= qntMax para evitar bound negativo
+        if (qntMin > qntMax) {
+            int temp = qntMin;
+            qntMin = qntMax;
+            qntMax = temp;
         }
 
         int quantidade = qntMin + random.nextInt(qntMax - qntMin + 1);
@@ -80,7 +87,7 @@ public class GerarInimigos {
         List<EnemyTemplate> listarModeloEnemy = world.getInimigosModelo();
         switch (currentRoom.getType()) {
             case INIMIGOS -> {
-                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, false, 10, 5, regiaoSpawn));
+                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, false, 50, 10, regiaoSpawn));
             }
             case INIMIGOS_FORTES -> {
                 inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, true, 7, 3, regiaoSpawn));

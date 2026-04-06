@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
+import com.pawfight.game.engine.GameConfig;
 
 public class DesenharTextura {
 
@@ -15,7 +15,7 @@ public class DesenharTextura {
             Gdx.app.error("DesenharTextura", "Erro ao desenhar textura...");
             return;
         }
-        float scale = GET_SCALE();
+        float scale = GameConfig.getInstance().getScale();
         float tamanho  = tamanhoPx * scale;
 
         if (textureRegion != null) {

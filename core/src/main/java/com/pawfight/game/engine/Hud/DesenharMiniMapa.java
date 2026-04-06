@@ -8,18 +8,18 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.pawfight.game.engine.design.desenhar.DesenharTexto;
 import com.pawfight.game.engine.font.FontFactory;
 import com.pawfight.game.engine.procedural.sala.Sala;
-import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.pawfight.game.engine.VariavelComum.*;
+import com.pawfight.game.engine.GameConfig;
+
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
@@ -27,7 +27,7 @@ public class DesenharMiniMapa {
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
 
     private void desenharSalaAtual(WorldTemplate world) {
-        if (HITBOX_ISVISIBLE) {
+        if (GameConfig.getInstance().isHitboxVisivel()) {
             Sala currentRoom = world.getCurrentRoom();
             Batch batch = world.getBatch();
             int atual = world.getRooms().indexOf(currentRoom);
@@ -37,8 +37,8 @@ public class DesenharMiniMapa {
             String texto = "Sala Atual: " + atual + "\nTipo da sala: " + currentRoom.getType();
             GlyphLayout layout = new GlyphLayout(font, texto);
             Color corFundo = new Color();
-            var xW = (GET_LARGURA_TELA_BASE - layout.width) - 10;
-            var yH = (GET_ALTURA_TELA_BASE - layout.height) - 130;
+            var xW = (LARGURA_TELA_BASE - layout.width) - 10;
+            var yH = (ALTURA_TELA_BASE - layout.height) - 130;
             hud.getDesenharTexto().desenhar(batch, world.getShapeRenderer(), corFundo, texto, font, xW, yH, 0, false);
             batch.end();
         }

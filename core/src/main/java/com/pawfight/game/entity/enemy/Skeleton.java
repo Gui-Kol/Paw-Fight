@@ -56,7 +56,7 @@ public class Skeleton extends EnemyTemplate {
 
     @Override
     public EnemyTemplate cloneEnemy() {
-        return new Skeleton(dx, dy, this.forte, player);
+        return new Skeleton(Math.round(dx), Math.round(dy), this.forte, player);
     }
 
     @Override

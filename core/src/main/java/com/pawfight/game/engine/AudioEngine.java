@@ -2,9 +2,9 @@ package com.pawfight.game.engine;
 
 import com.badlogic.gdx.audio.Music;
 
-import static com.pawfight.game.engine.VariavelComum.*;
-
 public class AudioEngine {
+
+    private final GameConfig config = GameConfig.getInstance();
 
     public Music criarAudio(String caminho) {
         return Assets.get(caminho, Music.class);
@@ -12,13 +12,13 @@ public class AudioEngine {
 
     public void efeito(Music audio) {
         if (audio != null && !audio.isPlaying()) {
-            audio.setVolume(VOLUME_EFEITOS);
+            audio.setVolume(config.getVolumeEfeitos());
             audio.play();
         }
     }
     public void passos(Music audio) {
         if (audio != null && !audio.isPlaying()) {
-            audio.setVolume(VOLUME_PASSOS);
+            audio.setVolume(config.getVolumePassos());
             audio.play();
         }
     }
@@ -26,7 +26,7 @@ public class AudioEngine {
     public void musica(Music audio) {
         if (audio == null) return;
 
-        audio.setVolume(VOLUME_MUSICA);
+        audio.setVolume(config.getVolumeMusica());
 
         if (!audio.isPlaying()) {
             audio.setLooping(true);

@@ -39,7 +39,7 @@ public class MoverDirecaoPlayer {
             boolean canMove = true;
             if (enemy.enemiesList != null) {
                 for (EnemyTemplate other : enemy.enemiesList) {
-                    if (other != enemy && tempHitBox.overlaps(other.getHitBox())) {
+                    if (other != enemy && !other.isMorto() && tempHitBox.overlaps(other.getHitBox())) {
                         canMove = false;
                         break;
                     }
@@ -47,20 +47,20 @@ public class MoverDirecaoPlayer {
             }
 
             if (canMove) {
-                enemy.dx = (int) newDx;
-                enemy.dy = (int) newDy;
+                enemy.dx = newDx;
+                enemy.dy = newDy;
                 enemy.olhandoEsquerda = deltaX < 0;
                 enemy.moving = true;
             } else {
                 enemy.moving = false;
             }
-
-            enemy.hitBox.setPosition(
-                enemy.dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
-                enemy.dy + HITBOX_OFFSET_Y
-            );
         } else {
             enemy.moving = false;
         }
+
+        enemy.hitBox.setPosition(
+            enemy.dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
+            enemy.dy + HITBOX_OFFSET_Y
+        );
     }
 }

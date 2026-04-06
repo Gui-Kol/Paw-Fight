@@ -52,7 +52,10 @@ public abstract class TirosTemplate {
     }
 
     public void desenharHitbox(ShapeRenderer shapeRenderer) {
+        if (!com.pawfight.game.engine.GameConfig.getInstance().isHitboxVisivel()) return;
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         renderizar.hitboxDraw(shapeRenderer, hitBox);
+        shapeRenderer.end();
     }
 
     public void draw(Batch batch, ShapeRenderer shapeRenderer) {

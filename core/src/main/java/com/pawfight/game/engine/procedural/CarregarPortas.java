@@ -12,7 +12,7 @@ import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.world.WorldTemplate;
+import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.List;
 
@@ -41,11 +41,11 @@ public class CarregarPortas {
         PlayerTemplate player = world.getPlayer();
         Sala currentRoom = world.getCurrentRoom();
         TiledMap map = world.getMap();
-        GeradorSalas GeradorSalas = world.getRoomGenerator();
+        GeradorSalas geradorSalas = world.getRoomGenerator();
         TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
 
-        if (player == null || currentRoom == null || map == null || GeradorSalas == null || !world.isPodeEntrarPorta()) {
+        if (player == null || currentRoom == null || map == null || geradorSalas == null || !world.isPodeEntrarPorta()) {
             return;
         }
 
@@ -55,7 +55,7 @@ public class CarregarPortas {
             // SPAWN não tem porta para baixo
             if (dir == Direcao.BAIXO && currentRoom.getType() == TipoSala.SPAWN) continue;
 
-            Sala destino = GeradorSalas.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
+            Sala destino = geradorSalas.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
 
             // só continua se a sala atual realmente tiver conexão nessa direção
             boolean conexaoValida =
@@ -83,26 +83,26 @@ public class CarregarPortas {
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
         TiledMap map = world.getMap();
-        GeradorSalas GeradorSalas = world.getRoomGenerator();
-        RenderizadorCamada RenderizadorCamada = world.getLayerRenderer();
+        GeradorSalas geradorSalas = world.getRoomGenerator();
+        RenderizadorCamada renderizadorCamada = world.getLayerRenderer();
         String nomeClasseOrigem = world.getWorldName();
 
         player.clearList();
         world.carregarParede();
-        Sala Sala = GeradorSalas.getRoomMap().get(x + "," + y);
+        Sala sala = geradorSalas.getRoomMap().get(x + "," + y);
 
-        if (Sala == null) {
+        if (sala == null) {
             Gdx.app.error(nomeClasseOrigem, "Erro: Sala não encontrada em " + x + "," + y);
             return;
         }
 
         if (map != null) {
             map.dispose();
-            if (RenderizadorCamada != null) RenderizadorCamada.dispose();
+            if (renderizadorCamada != null) renderizadorCamada.dispose();
         }
 
         try {
-            world.setCurrentRoom(Sala);
+            world.setCurrentRoom(sala);
             world.getTilemapHitboxFactory().clearCache();
             map = new TmxMapLoader().load(world.getMapPath());
             world.setLayerRenderer(new RenderizadorCamada(map));
@@ -111,7 +111,7 @@ public class CarregarPortas {
 
             world.getSalasVisitadas().add(x + "," + y);
             Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
-            world.logRoomInfo(Sala);
+            world.logRoomInfo(sala);
 
             world.gerarObjetos(); // agora garante que os objetos sejam carregados
         } catch (Exception e) {

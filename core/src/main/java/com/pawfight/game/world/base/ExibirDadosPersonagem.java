@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Layout;
 import com.pawfight.game.engine.Assets;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-import static com.pawfight.game.engine.VariavelComum.GET_SCALE;
+import com.pawfight.game.engine.GameConfig;
 
 public class ExibirDadosPersonagem {
     private BitmapFont font;
@@ -40,7 +40,7 @@ public class ExibirDadosPersonagem {
 
     public void draw(SpriteBatch batch, PlayerTemplate player, float playerX, float playerY) {
         if (player == null) return;
-        var scale = GET_SCALE();
+        var scale = GameConfig.getInstance().getScale();
 
         float offsetX = playerX - 400 * scale; // desloca para a esquerda do player
         float centerY = playerY + 100 * scale; // altura alinhada ao player
