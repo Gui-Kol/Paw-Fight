@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.component.AnimacaoComponent;
 import com.pawfight.game.entity.component.AudioComponent;
@@ -45,8 +44,6 @@ public abstract class EnemyTemplate implements Entidade {
     protected final float ATAQUE_DURATION = 0.5f;
     protected final float DISTANCIA_ATAQUE = 60f;
 
-    // ── Renderização ───────────────────────────────────────────
-    protected Renderizar renderizar = Renderizar.INSTANCE;
 
     // ── Construtor ─────────────────────────────────────────────
 
@@ -133,10 +130,8 @@ public abstract class EnemyTemplate implements Entidade {
             executarIA(delta);
             ataqueTimer += delta;
 
-            // Animação — atualiza se direção mudou
-            if (animacao.checkDirectionChange(olhandoEsquerda)) {
-                updateSpriteDefinitions();
-            }
+            // Animação — troca direção do cache (sem rebuild)
+            animacao.checkDirectionChange(olhandoEsquerda);
 
             // Duração do ataque
             if (atacando && animacao.getStateTime() >= ATAQUE_DURATION) {
@@ -202,22 +197,6 @@ public abstract class EnemyTemplate implements Entidade {
         batch.draw(animaAtual(), dx, dy, TAMANHO_PX, TAMANHO_PX);
     }
 
-    public void drawHitbox(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        renderizar.hitboxDraw(shapeRenderer, hitBox);
-        extraDraw(batch, shapeRenderer);
-    }
-
-    public void draw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        var cameraCombined = player.getCamera().combined;
-
-        shapeRenderer.setProjectionMatrix(cameraCombined);
-        batch.setProjectionMatrix(cameraCombined);
-
-        batch.begin();
-        drawSprite(batch);
-        batch.end();
-        drawHitbox(batch, shapeRenderer);
-    }
 
     // ══════════════════════════════════════════════════════════
     //  FORTE (modificador)

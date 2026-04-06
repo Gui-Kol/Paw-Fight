@@ -115,8 +115,7 @@ public class MundoAreia extends WorldTemplate {
     public void render(float delta) {
         try {
             if (errorFinal) {
-                TransicaoTela.update(Gdx.graphics.getDeltaTime());
-                TransicaoTela.render(batch);
+                // Transição gerenciada pelo ScreenManager — renderizada em PawFight.render()
                 return;
             }
 
@@ -234,9 +233,7 @@ public class MundoAreia extends WorldTemplate {
         if (desenharMiniMapa != null) {
             desenharMiniMapa.dispose();
         }
-        if (TransicaoTela != null) {
-            TransicaoTela.dispose();
-        }
+        // Transição é gerenciada pelo ScreenManager — NÃO dar dispose aqui
         listaInimigos.clear();
     }
 }

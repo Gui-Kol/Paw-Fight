@@ -26,7 +26,24 @@ public class AnimacaoComponent {
     private DefinirSprite atackDefinition;
     private DefinirSprite specialAtackDefinition;
 
-    // Animações compiladas
+    // Cache de animações: [0] = direita, [1] = esquerda
+    private static final int DIR_RIGHT = 0;
+    private static final int DIR_LEFT = 1;
+
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] idleCache = new Animation[2];
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] walkCache = new Animation[2];
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] hurtCache = new Animation[2];
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] deadCache = new Animation[2];
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] atackCache = new Animation[2];
+    @SuppressWarnings("unchecked")
+    private final Animation<TextureRegion>[] specialAtackCache = new Animation[2];
+
+    // Animações ativas (apontam para cache da direção atual)
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> walkAnimation;
     private Animation<TextureRegion> hurtAnimation;
@@ -69,19 +86,48 @@ public class AnimacaoComponent {
         this.specialAtackDefinition = specialAtack;
     }
 
+    private DefinirSprite withDirection(DefinirSprite def, boolean esquerda) {
+        if (def == null) return null;
+        return new DefinirSprite(def.texture(), def.numFrame(), def.frameDuration(), def.reverse(), esquerda);
+    }
+
     public void rebuildAnimations() {
         if (idleDefinition == null) return;
-        idleAnimation = motorAnimacao.animar(idleDefinition);
-        walkAnimation = motorAnimacao.animar(walkDefinition);
-        hurtAnimation = motorAnimacao.animar(hurtDefinition);
-        deadAnimation = motorAnimacao.animar(deadDefinition);
+
+        // Constrói versões direita (olhandoEsquerda = false)
+        idleCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(idleDefinition, false));
+        walkCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(walkDefinition, false));
+        hurtCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(hurtDefinition, false));
+        deadCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(deadDefinition, false));
+
+        // Constrói versões esquerda (olhandoEsquerda = true)
+        idleCache[DIR_LEFT] = motorAnimacao.animar(withDirection(idleDefinition, true));
+        walkCache[DIR_LEFT] = motorAnimacao.animar(withDirection(walkDefinition, true));
+        hurtCache[DIR_LEFT] = motorAnimacao.animar(withDirection(hurtDefinition, true));
+        deadCache[DIR_LEFT] = motorAnimacao.animar(withDirection(deadDefinition, true));
+
         if (atackDefinition != null) {
-            atackAnimation = motorAnimacao.animar(atackDefinition);
+            atackCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(atackDefinition, false));
+            atackCache[DIR_LEFT] = motorAnimacao.animar(withDirection(atackDefinition, true));
         }
         if (specialAtackDefinition != null) {
-            specialAtackAnimation = motorAnimacao.animar(specialAtackDefinition);
+            specialAtackCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(specialAtackDefinition, false));
+            specialAtackCache[DIR_LEFT] = motorAnimacao.animar(withDirection(specialAtackDefinition, true));
         }
+
+        // Aponta animações ativas para a direção atual
+        applyDirection(lastOlhandoEsquerda);
         animationsDirty = false;
+    }
+
+    private void applyDirection(boolean esquerda) {
+        int dir = esquerda ? DIR_LEFT : DIR_RIGHT;
+        idleAnimation = idleCache[dir];
+        walkAnimation = walkCache[dir];
+        hurtAnimation = hurtCache[dir];
+        deadAnimation = deadCache[dir];
+        atackAnimation = atackCache[dir];
+        specialAtackAnimation = specialAtackCache[dir];
     }
 
     // ── Update ─────────────────────────────────────────────────
@@ -97,6 +143,14 @@ public class AnimacaoComponent {
     public boolean checkDirectionChange(boolean olhandoEsquerda) {
         if (olhandoEsquerda != lastOlhandoEsquerda) {
             lastOlhandoEsquerda = olhandoEsquerda;
+
+            // Se o cache já foi construído, apenas troca a direção — SEM rebuild
+            if (!animationsDirty && idleCache[DIR_RIGHT] != null) {
+                applyDirection(olhandoEsquerda);
+                return true;
+            }
+
+            // Se cache não existe ainda, marca dirty para rebuild completo
             animationsDirty = true;
             return true;
         }
@@ -159,4 +213,3 @@ public class AnimacaoComponent {
     public float getStateTime() { return stateTime; }
     public MotorAnimacao getMotorAnimacao() { return motorAnimacao; }
 }
-

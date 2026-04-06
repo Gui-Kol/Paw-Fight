@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
@@ -16,7 +15,6 @@ import java.util.List;
 public class Base extends WorldTemplate {
     private EntradaPortais entradaPortais;
     private final EscolherPersonagem escolherPersonagem;
-    private final TransicaoTela TransicaoTela;
     private boolean entrouPortal;
     private Portoes portoes;
     private int carregarPosPlayer = 0;
@@ -30,7 +28,6 @@ public class Base extends WorldTemplate {
     public Base(PawFight game, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/menu.wav", camera, viewport);
         Gdx.app.log("Base", "Iniciando Base...");
-        TransicaoTela = new TransicaoTela(game);
         escolherPersonagem = new EscolherPersonagem(game);
         entrouPortal = false;
     }
@@ -54,7 +51,7 @@ public class Base extends WorldTemplate {
         if (carregarPosPlayer == 0) {
             portoes = new Portoes(player.getHud());
             game.resize(viewport.getScreenWidth(), viewport.getScreenHeight());
-            entradaPortais = new EntradaPortais(TransicaoTela, player.getHud());
+            entradaPortais = new EntradaPortais(player.getHud());
             carregarParede();
 
             // Cachear hitboxes dos portais uma única vez
@@ -68,9 +65,8 @@ public class Base extends WorldTemplate {
 
         if (!entrouPortal) {
             super.render(delta);
-        } else {
-            entradaPortais.entrou(batch);
         }
+        // Quando entrouPortal == true, a transição é renderizada pelo ScreenManager
     }
 
     @Override
@@ -146,8 +142,6 @@ public class Base extends WorldTemplate {
     public void dispose() {
         super.dispose();
         escolherPersonagem.dispose();
-        if (TransicaoTela != null) {
-            TransicaoTela.dispose();
-        }
+        // Transição é gerenciada pelo ScreenManager — NÃO dar dispose aqui
     }
 }

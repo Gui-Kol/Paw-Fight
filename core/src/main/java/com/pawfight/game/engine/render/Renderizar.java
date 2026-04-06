@@ -9,7 +9,6 @@ import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.WorldTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.pawfight.game.engine.VariavelComum.HITBOX_ISVISIBLE;
@@ -19,14 +18,10 @@ public class Renderizar {
 
     //Inimigo
     public void atualizarListaInimigos(float delta, List<EnemyTemplate> listaInimigos) {
-        List<EnemyTemplate> inimigosMortos = new ArrayList<>();
         for (EnemyTemplate enemy : listaInimigos) {
             enemy.update(delta);
-            if (enemy.isMorto()) {
-                inimigosMortos.add(enemy);
-            }
         }
-        listaInimigos.removeAll(inimigosMortos);
+        listaInimigos.removeIf(EnemyTemplate::isMorto);
     }
     public void renderizarInimigos(WorldTemplate world) {
         List<EnemyTemplate> inimigos = world.getListaInimigos();
@@ -44,10 +39,19 @@ public class Renderizar {
         }
         batch.end();
 
-        // Hitboxes e extras — fora do batch
-        shapeRenderer.setProjectionMatrix(cameraCombined);
+        // Hitboxes — 1 único begin/end para TODAS as hitboxes de inimigos
+        if (HITBOX_ISVISIBLE) {
+            shapeRenderer.setProjectionMatrix(cameraCombined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            for (EnemyTemplate enemy : inimigos) {
+                hitboxRect(shapeRenderer, enemy.getHitBox(), Color.RED);
+            }
+            shapeRenderer.end();
+        }
+
+        // Extras (subclasses podem usar batch/shapeRenderer livremente)
         for (EnemyTemplate enemy : inimigos) {
-            enemy.drawHitbox(batch, shapeRenderer);
+            enemy.extraDraw(batch, shapeRenderer);
         }
     }
 
@@ -71,38 +75,39 @@ public class Renderizar {
         batch.end();
     }
 
-    //HitBox
+    // ── HitBox ──────────────────────────────────────────────────
+
+    public void hitboxRect(ShapeRenderer shapeRenderer, Rectangle hitbox, Color color) {
+        shapeRenderer.setColor(color);
+        shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+    }
+
     public void hitboxDraw(ShapeRenderer shapeRenderer, Rectangle hitbox) {
-        if (HITBOX_ISVISIBLE) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            shapeRenderer.setColor(Color.RED);
-            shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
-            shapeRenderer.end();
-        }
+        if (!HITBOX_ISVISIBLE) return;
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        hitboxRect(shapeRenderer, hitbox, Color.RED);
+        shapeRenderer.end();
     }
+
     public void hitBoxDrawList(List<Rectangle> hitboxes, ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
-        if (HITBOX_ISVISIBLE) {
-            shapeRenderer.setProjectionMatrix(cameraMatrix);
-            for (Rectangle hitbox : hitboxes) {
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.setColor(Color.RED);
-                shapeRenderer.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
-                shapeRenderer.end();
-            }
+        if (!HITBOX_ISVISIBLE || hitboxes.isEmpty()) return;
+        shapeRenderer.setProjectionMatrix(cameraMatrix);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for (Rectangle hitbox : hitboxes) {
+            hitboxRect(shapeRenderer, hitbox, Color.RED);
         }
+        shapeRenderer.end();
     }
+
     public void hitBoxListObjeto(List<ObjetoGerado> objetoGerados, ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
-        if (HITBOX_ISVISIBLE) {
-            shapeRenderer.setProjectionMatrix(cameraMatrix);
-            for (ObjetoGerado obj : objetoGerados) {
-                shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-                shapeRenderer.setColor(Color.GREEN);
-                shapeRenderer.rect(obj.getHitbox().x, obj.getHitbox().y, obj.getHitbox().width, obj.getHitbox().height);
-                shapeRenderer.setColor(Color.RED);
-                shapeRenderer.rect(obj.getAreaToque().x, obj.getAreaToque().y, obj.getAreaToque().width, obj.getAreaToque().height);
-                shapeRenderer.end();
-            }
+        if (!HITBOX_ISVISIBLE || objetoGerados == null || objetoGerados.isEmpty()) return;
+        shapeRenderer.setProjectionMatrix(cameraMatrix);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for (ObjetoGerado obj : objetoGerados) {
+            hitboxRect(shapeRenderer, obj.getHitbox(), Color.GREEN);
+            hitboxRect(shapeRenderer, obj.getAreaToque(), Color.RED);
         }
+        shapeRenderer.end();
     }
 
 

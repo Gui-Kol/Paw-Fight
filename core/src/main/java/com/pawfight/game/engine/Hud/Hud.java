@@ -25,6 +25,7 @@ public class Hud {
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
     private final MotorAnimacao MotorAnimacao;
     private final DefinirSprite coracaoDefinition;
+    private final Animation<TextureRegion> coracaoAnimation;
     private final Texture coin;
     private final DesenharTexto desenharTexto;
     private final DesenharTextura desenharTextura;
@@ -66,6 +67,7 @@ public class Hud {
         coin = Assets.get("Hud/coin.png", Texture.class);
         coracaoDefinition = new DefinirSprite(Assets.get("Hud/coracao.png", Texture.class), 5, 1f, false, false);
         MotorAnimacao = new MotorAnimacao();
+        coracaoAnimation = MotorAnimacao.animar(coracaoDefinition);
         Gdx.app.log("Hud", "Sendo carregado e desenhado...");
     }
 
@@ -105,7 +107,6 @@ public class Hud {
     }
 
     private void desenharCoracao(Batch batch, int vidaAtual, int vidaMaxima) {
-        Animation<TextureRegion> coracaoAnimation = MotorAnimacao.animar(coracaoDefinition);
         float porcentagemVida = (float) vidaAtual / vidaMaxima;
         int frameIndex = (int) ((1 - porcentagemVida) * (coracaoAnimation.getKeyFrames().length - 1));
         frameIndex = Math.max(0, Math.min(frameIndex, coracaoAnimation.getKeyFrames().length - 1));

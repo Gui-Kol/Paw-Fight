@@ -149,10 +149,8 @@ public abstract class PlayerTemplate implements Entidade {
                 stats.setVida(999999999);
             }
 
-            // Animação — atualiza se direção mudou
-            if (animacao.checkDirectionChange(olhandoEsquerda)) {
-                updateSpriteDefinitions();
-            }
+            // Animação — troca direção do cache (sem rebuild)
+            animacao.checkDirectionChange(olhandoEsquerda);
 
             // Posição da hitbox
             int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
@@ -219,9 +217,14 @@ public abstract class PlayerTemplate implements Entidade {
         }
         batch.end();
 
-        shapeRenderer.setProjectionMatrix(cam.combined);
-        for (TirosTemplate tiro : tirosSnapshot) {
-            tiro.desenharHitbox(shapeRenderer);
+        // 1 único begin/end para TODAS as hitboxes de tiros
+        if (VariavelComum.HITBOX_ISVISIBLE) {
+            shapeRenderer.setProjectionMatrix(cam.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            for (TirosTemplate tiro : tirosSnapshot) {
+                renderizar.hitboxRect(shapeRenderer, tiro.getHitBox(), com.badlogic.gdx.graphics.Color.RED);
+            }
+            shapeRenderer.end();
         }
     }
 

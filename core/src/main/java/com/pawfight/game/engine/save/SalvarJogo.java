@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.Json;
 
 public class SalvarJogo {
 
-    public void SalvarJogo(DadosSalvosJogador data) {
+    public void salvar(DadosSalvosJogador data) {
         Json json = new Json();
         String saveString = json.toJson(data);
 

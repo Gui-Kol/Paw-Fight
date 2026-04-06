@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Hud.Hud;
-import com.pawfight.game.engine.design.transition.TransicaoTela;
+import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.MundoAreia;
@@ -20,10 +20,8 @@ import java.util.List;
 public class EntradaPortais {
     private final Hud hud;
     private boolean entrouPortal = false;
-    private final TransicaoTela TransicaoTela;
 
-    public EntradaPortais(TransicaoTela TransicaoTela, Hud hud) {
-        this.TransicaoTela = TransicaoTela;
+    public EntradaPortais(Hud hud) {
         this.hud = hud;
     }
 
@@ -39,24 +37,24 @@ public class EntradaPortais {
         return entrouPortal;
     }
 
-    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, ShapeRenderer shapeRenderer,PawFight game, OrthographicCamera camera, Viewport viewport) {
+    public boolean entrarPortalAreia(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, ShapeRenderer shapeRenderer, PawFight game, OrthographicCamera camera, Viewport viewport) {
         try {
-            if (player == null || entradaPortal == null || batch == null || game == null || TransicaoTela == null) {
+            if (player == null || entradaPortal == null || batch == null || game == null) {
                 Gdx.app.error("EntradaPortais", "Objeto null em entrarPortalAreia.");
                 return false;
             }
 
             batch.setProjectionMatrix(hud.getHudCamera().combined);
 
-            if (entrarPortal(player, entradaPortal, batch,shapeRenderer)) {
+            if (entrarPortal(player, entradaPortal, batch, shapeRenderer)) {
                 // Reseta estado do player
                 player.clearList();
 
                 // Cria MundoAreia (gera salas)
                 MundoAreia mundoAreia = new MundoAreia(game, player, camera, viewport);
 
-                // TransicaoTela, com efeito de Fade
-                TransicaoTela.startFadeTransaction(mundoAreia, 2f, Color.BLACK, false);
+                // Transição via ScreenManager centralizado
+                ScreenManager.getInstance().fadeToScreen(mundoAreia, 2f, Color.BLACK, false);
                 return true;
             } else {
                 return false;
@@ -69,12 +67,5 @@ public class EntradaPortais {
 
     public boolean entrarPortalNeve(PlayerTemplate player, List<Rectangle> entradaPortal, SpriteBatch batch, PawFight game) {
         return false; // Implementação futura para o portal de neve
-    }
-
-    public void entrou(SpriteBatch batch) {
-        if (entrouPortal) {
-            TransicaoTela.update(Gdx.graphics.getDeltaTime());
-            TransicaoTela.render(batch);
-        }
     }
 }

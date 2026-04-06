@@ -16,16 +16,15 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.Hud.CriarBotao;
 import com.pawfight.game.engine.Hud.HudStage;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
-import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.world.base.Base;
 
 import static com.pawfight.game.engine.VariavelComum.*;
 
 public class Home implements Screen {
-    private final TransicaoTela TransicaoTela;
     private final HudStage hudStage;
 
     // Texturas para os estados do botão
@@ -73,7 +72,6 @@ public class Home implements Screen {
         }
         criarBotao = new CriarBotao();
 
-        TransicaoTela = new TransicaoTela(game);
         Gdx.app.log("Home", "Iniciando Home...");
     }
 
@@ -85,9 +83,6 @@ public class Home implements Screen {
         batch.draw(background, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.end();
         hudStage.render();
-
-        TransicaoTela.update(delta);
-        TransicaoTela.render(batch);
     }
 
     @Override
@@ -113,7 +108,7 @@ public class Home implements Screen {
                 playButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        TransicaoTela.startFadeTransaction(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
+                        ScreenManager.getInstance().fadeToScreen(new Base(game, camera, viewport), 1.5f, Color.BLACK, false);
                         criarBotao.playClickSound();
                         backMusic.stop();
                     }
@@ -154,10 +149,8 @@ public class Home implements Screen {
     @Override
     public void dispose() {
         // Texturas e música são gerenciadas pelo AssetManager — NÃO dar dispose aqui
+        // Transição é gerenciada pelo ScreenManager — NÃO dar dispose aqui
         if (hudStage != null) hudStage.dispose();
-        if (TransicaoTela != null) {
-            TransicaoTela.dispose();
-        }
         Gdx.app.log("Home","foi disposed");
     }
 }

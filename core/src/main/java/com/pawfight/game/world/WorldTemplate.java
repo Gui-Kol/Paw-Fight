@@ -16,7 +16,6 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.Hud.DesenharMiniMapa;
-import com.pawfight.game.engine.design.transition.TransicaoTela;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.GerarInimigos;
@@ -53,7 +52,6 @@ public abstract class WorldTemplate implements Screen {
 
     // Mundo
     protected final DesenharMiniMapa desenharMiniMapa;
-    protected final TransicaoTela TransicaoTela;
     protected final CarregarPortas carregarPortas;
     protected final GerarObjetos gerarObjetos;
     protected final Renderizar renderizar = Renderizar.INSTANCE;
@@ -96,7 +94,6 @@ public abstract class WorldTemplate implements Screen {
         podeEntrarPorta = true;
         gerarInimigos = new GerarInimigos();
         desenharMiniMapa = new DesenharMiniMapa();
-        TransicaoTela = new TransicaoTela(game);
         carregarPortas = new CarregarPortas();
         stage = new Stage(new FitViewport(GET_LARGURA_TELA_BASE, GET_ALTURA_TELA_BASE), batch);
     }

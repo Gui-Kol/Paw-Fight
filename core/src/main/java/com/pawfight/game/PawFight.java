@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.Assets;
-import com.pawfight.game.engine.design.transition.TransicaoTela;
+import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.engine.save.SalvarJogo;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -24,7 +24,6 @@ public class PawFight extends Game {
     private final PawFight game = this;
     private SpriteBatch batch;
     private Texture image;
-    private TransicaoTela transition;
     private boolean telaCheia = true;
     private boolean podeAlterarTelaCheia = true;
     private Music audio;
@@ -48,12 +47,12 @@ public class PawFight extends Game {
         toggleFullscreen();
         toggleFullscreen();
 
-        transition = new TransicaoTela(this);
+        ScreenManager.init(this);
 
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                transition.startFadeTransaction(new Home(game, camera, viewport), 1f, Color.BLACK, false);
+                ScreenManager.getInstance().fadeToScreen(new Home(game, camera, viewport), 1f, Color.BLACK, false);
                 image = Assets.get("menu/dark_back_groud.png", Texture.class);
             }
         }, 2.5f);
@@ -83,8 +82,8 @@ public class PawFight extends Game {
 
         super.render();
 
-        transition.update(delta);
-        transition.render(batch);
+        ScreenManager.getInstance().update(delta);
+        ScreenManager.getInstance().render(batch);
     }
 
     @Override
@@ -128,16 +127,14 @@ public class PawFight extends Game {
     public void dispose() {
         batch.dispose();
         // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
-        if (transition != null) {
-            transition.dispose();
-        }
+        ScreenManager.getInstance().dispose();
         Assets.dispose(); // libera TODOS os assets de uma vez
         Gdx.app.log("PawFight","foi disposed");
     }
 
     public void savePlayer(PlayerTemplate player) {
         SalvarJogo SalvarJogo = new SalvarJogo();
-        SalvarJogo.SalvarJogo(player.saveData());
+        SalvarJogo.salvar(player.saveData());
     }
 
     public PlayerTemplate loadPlayer(PlayerTemplate player, String nomePersonagem) {
