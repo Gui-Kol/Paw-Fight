@@ -39,13 +39,13 @@ public class CarregarPortas {
 
     public void carregar(WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
-        Sala currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getRoomManager().getCurrentRoom();
         TiledMap map = world.getMap();
-        GeradorSalas geradorSalas = world.getRoomGenerator();
-        TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
+        GeradorSalas geradorSalas = world.getRoomManager().getRoomGenerator();
+        TilemapHitboxFactory tilemapHitboxFactory = world.getWorldPhysics().getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
 
-        if (player == null || currentRoom == null || map == null || geradorSalas == null || !world.isPodeEntrarPorta()) {
+        if (player == null || currentRoom == null || map == null || geradorSalas == null || !world.getRoomManager().isPodeEntrarPorta()) {
             return;
         }
 
@@ -83,7 +83,7 @@ public class CarregarPortas {
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
         TiledMap map = world.getMap();
-        GeradorSalas geradorSalas = world.getRoomGenerator();
+        GeradorSalas geradorSalas = world.getRoomManager().getRoomGenerator();
         RenderizadorCamada renderizadorCamada = world.getLayerRenderer();
         String nomeClasseOrigem = world.getWorldName();
 
@@ -102,14 +102,14 @@ public class CarregarPortas {
         }
 
         try {
-            world.setCurrentRoom(sala);
-            world.getTilemapHitboxFactory().clearCache();
+            world.getRoomManager().setCurrentRoom(sala);
+            world.getWorldPhysics().getTilemapHitboxFactory().clearCache();
             map = new TmxMapLoader().load(world.getMapPath());
             world.setLayerRenderer(new RenderizadorCamada(map));
 
             moverSalaInimigos(world);
 
-            world.getSalasVisitadas().add(x + "," + y);
+            world.getRoomManager().getSalasVisitadas().add(x + "," + y);
             Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
             world.logRoomInfo(sala);
 
@@ -120,13 +120,13 @@ public class CarregarPortas {
     }
 
     private void moverSalaInimigos(WorldTemplate world) {
-        Sala currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getRoomManager().getCurrentRoom();
         String nomeClasseOrigem = world.getWorldName();
-        List<EnemyTemplate> listaInimigos = world.getListaInimigos();
-        GerarInimigos gerarInimigos = world.getGerarInimigos();
+        List<EnemyTemplate> listaInimigos = world.getEnemyManager().getListaInimigos();
+        GerarInimigos gerarInimigos = world.getEnemyManager().getGerarInimigos();
 
         listaInimigos.clear();
-        if (!world.currentRoomFoiVisitada()) {
+        if (!world.getRoomManager().currentRoomFoiVisitada()) {
             List<EnemyTemplate> novos = gerarInimigos.gerarInimigos(world);
             if (novos != null) {
                 listaInimigos.addAll(novos);

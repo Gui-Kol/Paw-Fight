@@ -24,11 +24,11 @@ public class Renderizar {
         listaInimigos.removeIf(EnemyTemplate::isMorto);
     }
     public void renderizarInimigos(WorldTemplate world) {
-        List<EnemyTemplate> inimigos = world.getListaInimigos();
+        List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         if (inimigos.isEmpty()) return;
 
         SpriteBatch batch = world.getBatch();
-        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+        ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
         var cameraCombined = world.getPlayer().getCamera().combined;
 
         // 1 único begin/end para TODOS os sprites
@@ -57,7 +57,7 @@ public class Renderizar {
 
     //Objeto
     public void renderizarObjects(WorldTemplate world) {
-        if (world.getListaObjetos() == null || world.getListaObjetos().isEmpty()) {
+        if (world.getWorldRenderer().getListaObjetos() == null || world.getWorldRenderer().getListaObjetos().isEmpty()) {
             return;
         }
         SpriteBatch batch = world.getBatch();
@@ -66,7 +66,7 @@ public class Renderizar {
         }
         batch.setProjectionMatrix(world.getPlayer().getCamera().combined);
         batch.begin();
-        for (ObjetoGerado objeto : world.getListaObjetos()) {
+        for (ObjetoGerado objeto : world.getWorldRenderer().getListaObjetos()) {
             if (objeto.getTextura() != null) {
                 batch.draw(objeto.getTextura(), objeto.getX(), objeto.getY(),
                     objeto.getTamanhoPx(), objeto.getTamanhoPx());

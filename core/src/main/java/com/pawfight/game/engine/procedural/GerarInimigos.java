@@ -66,11 +66,11 @@ public class GerarInimigos {
     }
 
     public List<EnemyTemplate> gerarInimigos(WorldTemplate world) {
-        Sala currentRoom = world.getCurrentRoom();
+        Sala currentRoom = world.getRoomManager().getCurrentRoom();
         TiledMap map = world.getMap();
-        TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
+        TilemapHitboxFactory tilemapHitboxFactory = world.getWorldPhysics().getTilemapHitboxFactory();
         String nomeClasseOrigem = world.getWorldName();
-        GerarInimigos gerarInimigos = world.getGerarInimigos();
+        GerarInimigos gerarInimigos = world.getEnemyManager().getGerarInimigos();
 
         if (currentRoom == null) {
             Gdx.app.error(nomeClasseOrigem, "gerarInimigos() chamado mas currentRoom é null!");

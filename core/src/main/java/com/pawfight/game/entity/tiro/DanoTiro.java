@@ -26,7 +26,7 @@ public class DanoTiro {
     private final List<TirosTemplate> tirosSnapshot = new ArrayList<>();
 
     public void darDanoListaInimigos(WorldTemplate world) {
-        List<EnemyTemplate> inimigos = world.getListaInimigos();
+        List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         List<TirosTemplate> tiros = world.getPlayer().getTiros();
 
         if (inimigos == null || inimigos.isEmpty() || tiros == null || tiros.isEmpty()) {

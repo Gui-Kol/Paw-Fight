@@ -35,7 +35,7 @@ public class WorldRenderer {
     }
 
     public void renderizarInimigos(WorldTemplate world) {
-        List<EnemyTemplate> inimigos = world.getListaInimigos();
+        List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         if (inimigos != null && !inimigos.isEmpty()) {
             renderizar.atualizarListaInimigos(Gdx.graphics.getDeltaTime(), inimigos);
             renderizar.renderizarInimigos(world);

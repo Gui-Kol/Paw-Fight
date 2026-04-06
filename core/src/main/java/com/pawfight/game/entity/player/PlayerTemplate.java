@@ -184,7 +184,7 @@ public abstract class PlayerTemplate implements Entidade {
         desenharTiros(world);
 
         Batch batch = world.getBatch();
-        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+        ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
         OrthographicCamera cam = cameraComponent.getCamera();
 
         batch.setProjectionMatrix(cam.combined);
@@ -212,7 +212,7 @@ public abstract class PlayerTemplate implements Entidade {
         List<TirosTemplate> tirosSnapshot = new ArrayList<>(combate.getTiros());
 
         Batch batch = world.getBatch();
-        ShapeRenderer shapeRenderer = world.getShapeRenderer();
+        ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
         OrthographicCamera cam = cameraComponent.getCamera();
 
         batch.setProjectionMatrix(cam.combined);

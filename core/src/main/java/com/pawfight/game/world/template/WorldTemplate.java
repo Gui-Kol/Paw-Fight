@@ -4,35 +4,25 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
 import com.pawfight.game.engine.GameConfig;
-import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 
 import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
-import com.pawfight.game.engine.procedural.GerarInimigos;
-import com.pawfight.game.engine.procedural.GerarObjetos;
-import com.pawfight.game.engine.procedural.ObjetoGerado;
-import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.render.RenderizadorCamada;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.entity.tiro.DanoTiro;
 
 import java.util.List;
-import java.util.Set;
 
 
 public abstract class WorldTemplate implements Screen {
@@ -215,10 +205,6 @@ public abstract class WorldTemplate implements Screen {
         Gdx.app.log(getWorldName(), "foi disposed");
     }
 
-    public boolean currentRoomFoiVisitada() {
-        return roomManager.currentRoomFoiVisitada();
-    }
-
     // ── Acesso aos managers ────────────────────────────────────
 
     public WorldRenderer getWorldRenderer() {
@@ -237,103 +223,28 @@ public abstract class WorldTemplate implements Screen {
         return enemyManager;
     }
 
-    // ── Delegate getters (compatibilidade com código externo) ──
+    // ── Getters de campos próprios ─────────────────────────────
 
     public PlayerTemplate getPlayer() {
         return player;
-    }
-
-    public Set<String> getSalasVisitadas() {
-        return roomManager.getSalasVisitadas();
-    }
-
-    public TilemapHitboxFactory getTilemapHitboxFactory() {
-        return worldPhysics.getTilemapHitboxFactory();
     }
 
     public RenderizadorCamada getLayerRenderer() {
         return renderizadorCamada;
     }
 
-    public TiledMap getMap() {
-        return map;
-    }
-
-    public boolean isPodeEntrarPorta() {
-        return roomManager.isPodeEntrarPorta();
-    }
-
-    public Sala getCurrentRoom() {
-        return roomManager.getCurrentRoom();
-    }
-
-    public GeradorSalas getRoomGenerator() {
-        return roomManager.getRoomGenerator();
-    }
-
-    public GerarInimigos getGerarInimigos() {
-        return enemyManager.getGerarInimigos();
-    }
-
-    public List<EnemyTemplate> getListaInimigos() {
-        return enemyManager.getListaInimigos();
-    }
-
     public void setLayerRenderer(RenderizadorCamada renderizadorCamada) {
         this.renderizadorCamada = renderizadorCamada;
     }
 
-    public void setCurrentRoom(Sala currentRoom) {
-        roomManager.setCurrentRoom(currentRoom);
-    }
-
-    public List<Sala> getRooms() {
-        return roomManager.getRooms();
-    }
-
-    public void setRooms(List<Sala> rooms) {
-        roomManager.setRooms(rooms);
-    }
-
-    public void addSalasVisitadas(String newRoom) {
-        roomManager.addSalasVisitadas(newRoom);
-    }
-
-    public List<ObjetoGerado> getListaObjetos() {
-        return worldRenderer.getListaObjetos();
-    }
-
-    public List<Rectangle> getListaObjetosHitbox() {
-        return worldRenderer.getListaObjetosHitbox();
-    }
-
-    public void addListaObjetos(List<ObjetoGerado> objetoGerados) {
-        worldRenderer.addListaObjetos(objetoGerados);
-    }
-
-    public void addListaObjetosHitbox(List<Rectangle> hitBoxs) {
-        worldRenderer.addListaObjetosHitbox(hitBoxs);
-    }
-
-    public GerarObjetos getGerarObjetos() {
-        return worldRenderer.getGerarObjetos();
+    public TiledMap getMap() {
+        return map;
     }
 
     public boolean isErrorFinal() {
         return errorFinal;
     }
 
-    public DanoTiro getDanoTiro() {
-        return worldPhysics.getDanoTiro();
-    }
-
-    public ShapeRenderer getShapeRenderer() {
-        return worldRenderer.getShapeRenderer();
-    }
-
-    public Texture getBackground() {
-        return worldRenderer.getBackground();
-    }
 
     public PawFight getGame() {
         return game;

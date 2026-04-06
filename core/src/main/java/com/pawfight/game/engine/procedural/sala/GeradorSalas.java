@@ -12,17 +12,17 @@ public class GeradorSalas {
 
     public void gerarRooms(WorldTemplate world) {
         try {
-            world.setRooms(generate(10, 5, 100));
+            world.getRoomManager().setRooms(generate(10, 5, 100));
 
-            if (world.getRooms() == null || world.getRooms().isEmpty()) {
+            if (world.getRoomManager().getRooms() == null || world.getRoomManager().getRooms().isEmpty()) {
                 throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
             }
-            world.setCurrentRoom(world.getRooms().get(0));
-            world.addSalasVisitadas(world.getCurrentRoom().getX() + "," + world.getCurrentRoom().getY());
-            Gdx.app.log(world.getWorldName(), "Salas geradas com sucesso: " + world.getRooms().size());
+            world.getRoomManager().setCurrentRoom(world.getRoomManager().getRooms().get(0));
+            world.getRoomManager().addSalasVisitadas(world.getRoomManager().getCurrentRoom().getX() + "," + world.getRoomManager().getCurrentRoom().getY());
+            Gdx.app.log(world.getWorldName(), "Salas geradas com sucesso: " + world.getRoomManager().getRooms().size());
         } catch (Exception e) {
             Gdx.app.error(world.getWorldName(), "Erro ao gerar salas: " + e.getMessage(), e);
-            world.setCurrentRoom(null);
+            world.getRoomManager().setCurrentRoom(null);
             throw new RuntimeException(e);
         }
     }
@@ -75,9 +75,9 @@ public class GeradorSalas {
         return true;
     }
 
-    private boolean typeInimigo(Sala Sala, int numRooms) {
+    private boolean typeInimigo(Sala sala, int numRooms) {
         for (Direction dir : Direction.values()) {
-            Sala vizinho = Sala.getRoom(dir);
+            Sala vizinho = sala.getRoom(dir);
             if (vizinho != null && vizinho.getType() == TipoSala.INIMIGOS) {
                 if (verifyTypeInimigo(vizinho.getX(), numRooms)) return true;
             }

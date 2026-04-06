@@ -15,9 +15,9 @@ public class GerarObjetos {
 
     public void gerar(WorldTemplate world, List<InfoGeraObjeto> infoObjs) {
         try {
-            world.getListaObjetos().clear();
-            world.getListaObjetosHitbox().clear();
-            TilemapHitboxFactory tilemapHitboxFactory = world.getTilemapHitboxFactory();
+            world.getWorldRenderer().getListaObjetos().clear();
+            world.getWorldRenderer().getListaObjetosHitbox().clear();
+            TilemapHitboxFactory tilemapHitboxFactory = world.getWorldPhysics().getTilemapHitboxFactory();
             List<ObjetoGerado> objetosGerados = new ArrayList<>();
             List<Rectangle> hitBoxes = new ArrayList<>();
 
@@ -29,7 +29,7 @@ public class GerarObjetos {
                 }
 
                 // Gera objetos apenas se o tipo da sala combina com o tipo do objeto
-                if (world.getCurrentRoom().getType() == infoObj.typeRoom()) {
+                if (world.getRoomManager().getCurrentRoom().getType() == infoObj.typeRoom()) {
                     objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
                 }
             }
@@ -37,9 +37,9 @@ public class GerarObjetos {
                 hitBoxes.add(obj.getHitbox());
             }
 
-            world.addListaObjetosHitbox(hitBoxes);
-            world.addListaObjetos(objetosGerados);
-            world.getPlayer().adicionarColisao(world.getListaObjetosHitbox());
+            world.getWorldRenderer().addListaObjetosHitbox(hitBoxes);
+            world.getWorldRenderer().addListaObjetos(objetosGerados);
+            world.getPlayer().adicionarColisao(world.getWorldRenderer().getListaObjetosHitbox());
 
         } catch (Exception e) {
             Gdx.app.error(world.getWorldName(), "Erro ao gerar objetos: " + e.getMessage(), e);
