@@ -589,7 +589,7 @@ private final PlayerTemplate[] previews = new PlayerTemplate[4];
 ### N6. 🟡 Pacote `Hud` com H Maiúsculo
 **Severidade: BAIXA | Esforço: BAIXO | Item mantido desde v2**
 
-O pacote é `com.pawfight.game.engine.Hud` (PascalCase) em vez de `com.pawfight.game.engine.hud`. Viola convenção Java onde pacotes devem ser lowercase.
+O pacote é `com.pawfight.game.engine.hud` (PascalCase) em vez de `com.pawfight.game.engine.hud`. Viola convenção Java onde pacotes devem ser lowercase.
 
 **Impacto:** 5 arquivos nesse pacote + imports em:
 - `RoomManager.java` → `import ...engine.Hud.DesenharMiniMapa`

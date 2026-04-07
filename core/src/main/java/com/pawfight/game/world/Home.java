@@ -21,9 +21,8 @@ import com.pawfight.game.engine.ScreenManager;
 
 import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
-import com.pawfight.game.engine.Hud.CriarBotao;
-import com.pawfight.game.engine.Hud.HudStage;
-import com.pawfight.game.engine.design.desenhar.DesenharTextura;
+import com.pawfight.game.engine.hud.CriarBotao;
+import com.pawfight.game.engine.hud.HudStage;
 import com.pawfight.game.world.base.Base;
 
 

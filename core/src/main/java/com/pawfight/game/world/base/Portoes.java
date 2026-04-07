@@ -3,7 +3,7 @@ package com.pawfight.game.world.base;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.hud.Hud;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;
 

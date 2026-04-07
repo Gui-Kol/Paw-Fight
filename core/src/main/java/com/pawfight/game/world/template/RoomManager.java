@@ -1,6 +1,6 @@
 package com.pawfight.game.world.template;
 
-import com.pawfight.game.engine.Hud.DesenharMiniMapa;
+import com.pawfight.game.engine.hud.DesenharMiniMapa;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.Sala;

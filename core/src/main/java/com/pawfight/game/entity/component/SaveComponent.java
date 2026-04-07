@@ -2,12 +2,16 @@ package com.pawfight.game.entity.component;
 
 import com.badlogic.gdx.Gdx;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
+import com.pawfight.game.engine.save.SalvarJogo;
+import com.pawfight.game.entity.player.PlayerTemplate;
 
 public class SaveComponent {
+    private final SalvarJogo save = new SalvarJogo();
 
-    public DadosSalvosJogador saveData(String nome, StatsComponent stats) {
+    public void saveData(PlayerTemplate player) {
         DadosSalvosJogador data = new DadosSalvosJogador();
-        data.nomePersonagem    = nome;
+        StatsComponent stats = player.getStats();
+        data.nomePersonagem    = player.getName();
         data.vidaBase          = stats.getVidaBase();
         data.velocidade        = stats.getVelocidade();
         data.forca             = stats.getForca();
@@ -16,10 +20,17 @@ public class SaveComponent {
         data.xpNecessario      = stats.getXpNecessario();
         data.moedas            = stats.getMoedas();
         data.pontosDisponiveis = stats.getPontosDisponiveis();
-        return data;
+        save.salvar(data);
     }
 
-    public void loadSaveData(DadosSalvosJogador data, StatsComponent stats) {
+    public PlayerTemplate loadSaveData(PlayerTemplate player) {
+        DadosSalvosJogador data = save.loadGame(player.getName());
+        if (data == null) {
+            Gdx.app.log("SaveComponent", "Nenhum save encontrado para " + player.getName() + " criando personagem default...");
+            return player;
+        }
+
+        StatsComponent stats = player.getStats();
         stats.setVidaBase(data.vidaBase);
         stats.setVida(data.vidaBase);
         stats.setVelocidade(data.velocidade);
@@ -30,6 +41,7 @@ public class SaveComponent {
         stats.setMoedas(data.moedas);
         stats.setPontosDisponiveis(data.pontosDisponiveis);
         Gdx.app.log("SaveComponent", "Save carregado para " + data.nomePersonagem);
+        return player;
     }
 }
 

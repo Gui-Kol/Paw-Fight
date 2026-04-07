@@ -136,20 +136,6 @@ public class PawFight extends Game {
         Gdx.app.log("PawFight","foi disposed");
     }
 
-    public void savePlayer(PlayerTemplate player) {
-        SalvarJogo salvarJogo = new SalvarJogo();
-        salvarJogo.salvar(player.saveData());
-    }
-
-    public PlayerTemplate loadPlayer(PlayerTemplate player, String nomePersonagem) {
-        SalvarJogo salvarJogo = new SalvarJogo();
-        DadosSalvosJogador data = salvarJogo.loadGame(nomePersonagem);
-        if (data != null) {
-            player.loadSaveData(data);
-        }
-        return player;
-    }
-
     public void setPodeAlterarTelaCheia(boolean podeAlterarTelaCheia) {
         this.podeAlterarTelaCheia = podeAlterarTelaCheia;
     }

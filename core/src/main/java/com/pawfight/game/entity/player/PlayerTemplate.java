@@ -6,8 +6,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.Hud.Hud;
-import com.pawfight.game.engine.Hud.HudPause;
+import com.pawfight.game.engine.hud.Hud;
+import com.pawfight.game.engine.hud.HudPause;
 import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
@@ -28,6 +28,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final AnimacaoComponent animacao = new AnimacaoComponent();
     protected final AudioComponent audio = new AudioComponent();
     protected final CombateComponent combate = new CombateComponent();
+    private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
     protected final SaveComponent save = new SaveComponent();
     protected StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
@@ -209,7 +210,8 @@ public abstract class PlayerTemplate implements Entidade {
     public void desenharTiros(WorldTemplate world) {
         if (combate.getTiros().isEmpty()) return;
 
-        List<TirosTemplate> tirosSnapshot = new ArrayList<>(combate.getTiros());
+        drawSnapshot.clear();
+        drawSnapshot.addAll(combate.getTiros());
 
         Batch batch = world.getBatch();
         ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
@@ -217,7 +219,7 @@ public abstract class PlayerTemplate implements Entidade {
 
         batch.setProjectionMatrix(cam.combined);
         batch.begin();
-        for (TirosTemplate tiro : tirosSnapshot) {
+        for (TirosTemplate tiro : drawSnapshot) {
             tiro.desenhar(batch);
         }
         batch.end();
@@ -226,7 +228,7 @@ public abstract class PlayerTemplate implements Entidade {
         if (GameConfig.getInstance().isHitboxVisivel()) {
             shapeRenderer.setProjectionMatrix(cam.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            for (TirosTemplate tiro : tirosSnapshot) {
+            for (TirosTemplate tiro : drawSnapshot) {
                 renderizar.hitboxRect(shapeRenderer, tiro.getHitBox(), com.badlogic.gdx.graphics.Color.RED);
             }
             shapeRenderer.end();
@@ -268,12 +270,12 @@ public abstract class PlayerTemplate implements Entidade {
     //  SAVE / LOAD
     // ══════════════════════════════════════════════════════════
 
-    public DadosSalvosJogador saveData() {
-        return save.saveData(getName(), stats);
+    public void saveData() {
+        save.saveData(this);
     }
 
-    public void loadSaveData(DadosSalvosJogador data) {
-        save.loadSaveData(data, stats);
+    public void loadSaveData() {
+        save.loadSaveData(this);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -384,5 +386,9 @@ public abstract class PlayerTemplate implements Entidade {
     public void setPause(boolean pause) {
         this.pause = pause;
         this.menuAberto = pause;
+    }
+
+    public StatsComponent getStats() {
+        return stats;
     }
 }

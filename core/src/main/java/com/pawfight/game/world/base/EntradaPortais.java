@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.Hud.Hud;
+import com.pawfight.game.engine.hud.Hud;
 import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.entity.player.PlayerTemplate;

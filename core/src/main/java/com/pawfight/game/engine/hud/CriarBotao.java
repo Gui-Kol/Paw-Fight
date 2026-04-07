@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.Hud;
+package com.pawfight.game.engine.hud;
 
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;

@@ -1,12 +1,14 @@
 package com.pawfight.game.world.base;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.input.GameAction;
+import com.pawfight.game.engine.input.KeyBindings;
+import com.pawfight.game.entity.component.SaveComponent;
 import com.pawfight.game.entity.player.BlackBird;
 import com.pawfight.game.entity.player.BlackCat;
 import com.pawfight.game.entity.player.OrangeCat;
@@ -20,13 +22,13 @@ import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 
 public class EscolherPersonagem {
-    private ExibirDadosPersonagem exibirDadosPersonagem;
+    private final ExibirDadosPersonagem exibirDadosPersonagem;
     private PlayerTemplate personagemPreview;
-    private Texture[] personagens;   // lista de texturas dos personagens
+    private final Texture[] personagens;   // lista de texturas dos personagens
     private int personagemAtual;     // índice do personagem atual
-    private SpriteBatch batch;
-    private Texture backGroud;
-    private Texture nuvem;
+    private final SpriteBatch batch;
+    private final Texture backGroud;
+    private final Texture nuvem;
 
     // Variáveis para controle do background
     private float bgX1, bgX2;
@@ -41,6 +43,9 @@ public class EscolherPersonagem {
     //Game
     private PawFight game;
     private final FitViewport viewport;
+
+    // Players pré-criados — evita recriar PlayerTemplate a cada mudança de seta
+    private final PlayerTemplate[] previews;
 
 
     public EscolherPersonagem(PawFight game) {
@@ -62,14 +67,21 @@ public class EscolherPersonagem {
 
         random = new Random();
 
-        // backGroud já foi carregado acima, linha duplicada removida
+        // Cria os 4 players uma única vez e carrega os seus saves
+        SaveComponent saveComponent = new SaveComponent();
+        previews = new PlayerTemplate[] {
+            saveComponent.loadSaveData(new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
+            saveComponent.loadSaveData(new OrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
+            saveComponent.loadSaveData(new BlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
+            saveComponent.loadSaveData(new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
+        };
 
         // Inicializa duas cópias do background
         bgX1 = 0;
         bgX2 = Gdx.graphics.getWidth() - 1; // começa logo após a primeira
 
         exibirDadosPersonagem = new ExibirDadosPersonagem();
-        personagemPreview = getPlayerEscolhido();
+        personagemPreview = previews[personagemAtual];
 
         // Inicializa nuvem fora da tela à direita
         resetNuvem();
@@ -106,26 +118,27 @@ public class EscolherPersonagem {
     public PlayerTemplate update() {
         updateNuvem();
 
-        // Navegar com setas
-        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+        // Navegar com setas (usa KeyBindings para respeitar remapeamento)
+        KeyBindings keys = KeyBindings.getInstance();
+
+        if (keys.isActive(GameAction.MENU_RIGHT)) {
             personagemAtual++;
             if (personagemAtual >= personagens.length) {
                 personagemAtual = 0;
             }
-            personagemPreview = getPlayerEscolhido(); // atualiza preview
+            personagemPreview = previews[personagemAtual];
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
+        if (keys.isActive(GameAction.MENU_LEFT)) {
             personagemAtual--;
             if (personagemAtual < 0) {
                 personagemAtual = personagens.length - 1;
             }
-            personagemPreview = getPlayerEscolhido(); // atualiza preview
+            personagemPreview = previews[personagemAtual];
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            PlayerTemplate escolhido = getPlayerEscolhido();
-            return escolhido; // esse é o objeto que vai ser usado no jogo
+        if (keys.isActive(GameAction.MENU_CONFIRM)) {
+            return previews[personagemAtual]; // retorna o player pré-criado
         }
 
         return null;
@@ -168,31 +181,6 @@ public class EscolherPersonagem {
         exibirDadosPersonagem.draw(batch, personagemPreview, playerX, playerY);
     }
 
-    public PlayerTemplate getPlayerEscolhido() {
-        PlayerTemplate playerEscolhido;
-        switch (personagemAtual) {
-            case 0:
-                playerEscolhido = new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-                break;
-            case 1:
-                playerEscolhido = new OrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-                break;
-            case 2:
-                playerEscolhido = new BlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-                break;
-            case 3:
-                playerEscolhido = new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-                break;
-            default:
-                playerEscolhido = new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f);
-                break;
-        }
-
-        // Carrega os dados salvos para esse personagem
-        playerEscolhido = game.loadPlayer(playerEscolhido, playerEscolhido.getName());
-
-        return playerEscolhido;
-    }
 
     // Corrige o resize para manter proporção
     public void resize(int width, int height) {

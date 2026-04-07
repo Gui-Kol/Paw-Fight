@@ -13,6 +13,7 @@ import com.pawfight.game.engine.design.transition.TransitionEffect;
 public class ScreenManager {
 
     private static ScreenManager instance;
+    private final Matrix4 tempMatrix = new Matrix4();
 
     private final PawFight game;
 
@@ -69,10 +70,6 @@ public class ScreenManager {
     }
 
     // ────────────────────────── Update / Render ───────────────────────────
-
-    /**
-     * Atualiza o estado da transição. Chamado uma vez por frame em {@link PawFight#render()}.
-     */
     public void update(float delta) {
         if (!transitioning || currentEffect == null) return;
 
@@ -102,13 +99,13 @@ public class ScreenManager {
         if (!transitioning || currentEffect == null) return;
 
         // Salva a projeção atual e troca para coordenadas de tela
-        Matrix4 oldMatrix = new Matrix4(batch.getProjectionMatrix());
+        tempMatrix.set(batch.getProjectionMatrix());
         batch.getProjectionMatrix().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         currentEffect.render(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
         // Restaura a projeção original
-        batch.setProjectionMatrix(oldMatrix);
+        batch.setProjectionMatrix(tempMatrix);
     }
 
     // ──────────────────────────── Consultas ────────────────────────────────

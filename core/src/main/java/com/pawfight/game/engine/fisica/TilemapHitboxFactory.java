@@ -26,8 +26,12 @@ public class TilemapHitboxFactory {
     // Cache: evita recriar listas de Rectangle a cada frame para o mesmo mapa/layer
     private final Map<String, List<Rectangle>> cache = new HashMap<>();
 
+    // Cache: evita recriar e reordenar lista de MapObject a cada frame em drawObjects
+    private final Map<String, List<MapObject>> sortedObjectsCache = new HashMap<>();
+
     public void clearCache() {
         cache.clear();
+        sortedObjectsCache.clear();
     }
 
     // Cria os retângulos de colisão (cacheado por layerName)
@@ -76,25 +80,28 @@ public class TilemapHitboxFactory {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // Copia os objetos para uma lista
-        List<MapObject> objects = new ArrayList<>();
-        for (MapObject obj : layer.getObjects()) {
-            objects.add(obj);
-        }
-
-        // Ordena conforme o parâmetro isInvertido
-        objects.sort((o1, o2) -> {
-            float y1 = (o1 instanceof TextureMapObject) ? ((TextureMapObject) o1).getY() : 0;
-            float y2 = (o2 instanceof TextureMapObject) ? ((TextureMapObject) o2).getY() : 0;
-
-            if (isInvertido) {
-                // maior Y primeiro → menor Y por último
-                return Float.compare(y2, y1);
-            } else {
-                // menor Y primeiro → maior Y por último
-                return Float.compare(y1, y2);
+        // Usa cache para evitar recriar e reordenar a lista a cada frame
+        String cacheKey = "draw:" + layerName + ":" + isInvertido;
+        List<MapObject> objects = sortedObjectsCache.get(cacheKey);
+        if (objects == null) {
+            objects = new ArrayList<>();
+            for (MapObject obj : layer.getObjects()) {
+                objects.add(obj);
             }
-        });
+
+            objects.sort((o1, o2) -> {
+                float y1 = (o1 instanceof TextureMapObject) ? ((TextureMapObject) o1).getY() : 0;
+                float y2 = (o2 instanceof TextureMapObject) ? ((TextureMapObject) o2).getY() : 0;
+
+                if (isInvertido) {
+                    return Float.compare(y2, y1);
+                } else {
+                    return Float.compare(y1, y2);
+                }
+            });
+
+            sortedObjectsCache.put(cacheKey, objects);
+        }
 
         // Desenha na ordem escolhida
         for (MapObject object : objects) {
@@ -148,7 +155,7 @@ public class TilemapHitboxFactory {
     }
 
 
-    public void draw(ShapeRenderer shapeRenderer, OrthographicCamera camera, List<Rectangle> hitBoxes) {
+    public static void draw(ShapeRenderer shapeRenderer, OrthographicCamera camera, List<Rectangle> hitBoxes) {
         if (GameConfig.getInstance().isHitboxVisivel()) {
             shapeRenderer.setProjectionMatrix(camera.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -157,10 +164,7 @@ public class TilemapHitboxFactory {
         }
     }
 
-    /**
-     * Desenha hitboxes SEM begin/end — para uso dentro de um bloco já aberto.
-     */
-    public void drawRects(ShapeRenderer shapeRenderer, List<Rectangle> hitBoxes) {
+    public static void drawRects(ShapeRenderer shapeRenderer, List<Rectangle> hitBoxes) {
         shapeRenderer.setColor(Color.GREEN);
         for (Rectangle hitBox : hitBoxes) {
             shapeRenderer.rect(hitBox.x, hitBox.y, hitBox.width, hitBox.height);

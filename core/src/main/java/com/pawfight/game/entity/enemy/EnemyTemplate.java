@@ -101,8 +101,6 @@ public abstract class EnemyTemplate implements Entidade {
     public abstract void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer);
 
     // ── Hitbox ─────────────────────────────────────────────────
-
-    /** Calcula o offsetX espelhado conforme a direção que o inimigo está olhando. */
     protected int getHitboxOffsetXDirecional() {
         return olhandoEsquerda ? -HITBOX_OFFSET_X : HITBOX_OFFSET_X;
     }
@@ -207,7 +205,6 @@ public abstract class EnemyTemplate implements Entidade {
         } else {
             audio.playDano();
         }
-        Gdx.app.log(nome, "Tomou " + forca + " de dano!");
     }
 
     public void sincronizarPosicaoComHitbox() {

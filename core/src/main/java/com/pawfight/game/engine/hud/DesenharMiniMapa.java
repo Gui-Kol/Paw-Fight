@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.Hud;
+package com.pawfight.game.engine.hud;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -24,7 +24,10 @@ import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 public class DesenharMiniMapa {
     private static final int SEPARACAO = 30; // distância entre quadrados no minimapa
     private static final int AJUSTE = 15; // ajuste altura da linha
+    private static final Color BG_COLOR = new Color(0, 0, 0, 0.3f);
     private final BitmapFont font = FontFactory.createCustomFont("fonts/PixelOperator8-Bold.ttf", 20);
+    private final GlyphLayout layout = new GlyphLayout();
+    private final Color corFundo = new Color();
 
     private void desenharSalaAtual(WorldTemplate world) {
         if (GameConfig.getInstance().isHitboxVisivel()) {
@@ -35,8 +38,7 @@ public class DesenharMiniMapa {
             batch.begin();
             Hud hud = world.getPlayer().getHud();
             String texto = "Sala Atual: " + atual + "\nTipo da sala: " + currentRoom.getType();
-            GlyphLayout layout = new GlyphLayout(font, texto);
-            Color corFundo = new Color();
+            layout.setText(font, texto);
             var xW = (LARGURA_TELA_BASE - layout.width) - 10;
             var yH = (ALTURA_TELA_BASE - layout.height) - 130;
             hud.getDesenharTexto().desenhar(batch, world.getWorldRenderer().getShapeRenderer(), corFundo, texto, font, xW, yH, 0, false);
@@ -90,7 +92,7 @@ public class DesenharMiniMapa {
 
         // desenha fundo primeiro
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(new Color(0, 0, 0, 0.3f)); // preto com 30% de opacidade
+        shapeRenderer.setColor(BG_COLOR); // preto com 30% de opacidade
         shapeRenderer.rect(rectX, rectY, largura, altura);
         shapeRenderer.end();
 

@@ -15,7 +15,6 @@ public class ColisaoComponent {
 
     private final List<Rectangle> listColisores = new ArrayList<>();
     private final ChecarColisao checarColisao = new ChecarColisao();
-    private final TilemapHitboxFactory tilemapHitboxFactory = new TilemapHitboxFactory();
 
     // ── Checagem de colisão ────────────────────────────────────
 
@@ -51,16 +50,15 @@ public class ColisaoComponent {
     // ── Desenho de debug ───────────────────────────────────────
 
     public void drawDebugHitboxes(ShapeRenderer shapeRenderer, OrthographicCamera camera) {
-        tilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
+        TilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
     }
 
     public void drawDebugHitboxesNoBatch(ShapeRenderer shapeRenderer) {
-        tilemapHitboxFactory.drawRects(shapeRenderer, listColisores);
+        TilemapHitboxFactory.drawRects(shapeRenderer, listColisores);
     }
 
     // ── Getters ────────────────────────────────────────────────
 
     public List<Rectangle> getListColisores() { return listColisores; }
-    public TilemapHitboxFactory getTilemapHitboxFactory() { return tilemapHitboxFactory; }
 }
 

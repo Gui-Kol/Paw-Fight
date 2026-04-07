@@ -1,4 +1,4 @@
-package com.pawfight.game.engine.Hud;
+package com.pawfight.game.engine.hud;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
