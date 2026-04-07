@@ -9,6 +9,8 @@ import com.pawfight.game.world.template.WorldTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.badlogic.gdx.math.MathUtils.random;
+
 public class GerarObjetos {
     public GerarObjetos() {
     }
@@ -49,14 +51,14 @@ public class GerarObjetos {
     private List<ObjetoGerado> gerarObj(InfoGeraObjeto info, List<Rectangle> regioesSpawn) {
         List<ObjetoGerado> novosObjetos = new ArrayList<>();
 
-        int quantidade = info.qntMin() + (int) (Math.random() * (info.qntMax() - info.qntMin() + 1));
+        int quantidade = info.qntMin() + random.nextInt(info.qntMax() - info.qntMin() + 1);
 
         while (novosObjetos.size() < quantidade) {
             // Escolhe uma região aleatória da lista
-            Rectangle regiao = regioesSpawn.get((int) (Math.random() * regioesSpawn.size()));
+            Rectangle regiao = regioesSpawn.get((random.nextInt(regioesSpawn.size())));
 
-            int x = (int) (regiao.x + Math.random() * regiao.width);
-            int y = (int) (regiao.y + Math.random() * regiao.height);
+            int x = random((int) regiao.x, (int) (regiao.x + regiao.width));
+            int y = random((int) regiao.y, (int) (regiao.y + regiao.height));
 
             // Cria uma hitbox baseada na posição
             Rectangle novaHitbox = new Rectangle(x + info.ajusteXHitBox(), y + info.ajusteYHitBox(), info.texture().getWidth() + info.ajusteLarguraHitBox(), info.texture().getHeight() + info.ajusteAlturaHitBox());

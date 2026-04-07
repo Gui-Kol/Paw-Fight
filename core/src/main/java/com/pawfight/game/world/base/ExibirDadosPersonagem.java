@@ -14,6 +14,8 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.engine.GameConfig;
 
 public class ExibirDadosPersonagem {
+    private static final Color BG_COLOR = new Color(0.1f, 0.1f, 0.1f, 0.8f);
+
     private BitmapFont font;
     private Texture coracao;
     private Texture raio;
@@ -21,6 +23,10 @@ public class ExibirDadosPersonagem {
     private Texture requa;
     private Texture nuvemChao;
     private ShapeRenderer shapeRenderer;
+    private final GlyphLayout layoutStatus = new GlyphLayout();
+    private final GlyphLayout layoutLife = new GlyphLayout();
+    private final GlyphLayout layoutSpeed = new GlyphLayout();
+    private final GlyphLayout layoutMuscle = new GlyphLayout();
 
     public ExibirDadosPersonagem() {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelOperator8-Bold.ttf"));
@@ -50,7 +56,7 @@ public class ExibirDadosPersonagem {
         // Caixa de fundo
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
+        shapeRenderer.setColor(BG_COLOR);
         shapeRenderer.rect(offsetX - 10 * scale, centerY - 125 * scale,widthFundo, heightFundo);
         shapeRenderer.end();
 
@@ -60,23 +66,23 @@ public class ExibirDadosPersonagem {
         font.setColor(Color.WHITE);
 
         // Status alinhados à esquerda do player
-        GlyphLayout layoutStatus = new GlyphLayout(font, "Status");
+        layoutStatus.setText(font, "Status");
         float statusX = offsetX + (widthFundo - layoutStatus.width) / 2 - 10 * scale;
         font.draw(batch, "Status", statusX, centerY + 110 * scale);
         font.draw(batch, player.getName(), offsetX, centerY + 80 * scale);
 
         String textoLife = "Life: " + player.getVidaBase();
-        GlyphLayout layoutLife = new GlyphLayout(font, textoLife);
+        layoutLife.setText(font, textoLife);
         font.draw(batch, textoLife, offsetX, centerY + 20 * scale);
         batch.draw(coracao, offsetX + layoutLife.width + 10 * scale, centerY, 24 * scale, 24 * scale);
 
         String textoSpeed = "Speed: " + player.getVelocidade() / 100;
-        GlyphLayout layoutSpeed = new GlyphLayout(font, textoSpeed);
+        layoutSpeed.setText(font, textoSpeed);
         font.draw(batch, textoSpeed, offsetX, centerY - 10 * scale);
         batch.draw(raio, offsetX + layoutSpeed.width, centerY - 45 * scale, 56 * scale, 56 * scale);
 
         String textoMuscle = "Strength: " + player.getForca();
-        GlyphLayout layoutMuscle = new GlyphLayout(font, textoMuscle);
+        layoutMuscle.setText(font, textoMuscle);
         font.draw(batch, textoMuscle, offsetX, centerY - 40 * scale);
         batch.draw(musculo, offsetX + layoutMuscle.width, centerY - 85 * scale, 56 * scale, 56 * scale);
 

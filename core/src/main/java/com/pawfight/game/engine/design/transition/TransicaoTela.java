@@ -14,6 +14,7 @@ public class TransicaoTela {
     private float transitionDuration;
     private TransitionEffect currentEffect;
     private static final float DEFAULT_DURATION = 1.2f;
+    private final Matrix4 tempMatrix = new Matrix4();
 
     public TransicaoTela(PawFight game) {
         this(game, DEFAULT_DURATION);
@@ -75,8 +76,8 @@ public class TransicaoTela {
 
     public void render(SpriteBatch batch) {
         if (transitioning) {
-            // Salva a matriz de projeção atual
-            Matrix4 oldMatrix = new Matrix4(batch.getProjectionMatrix());
+            // Salva a matriz de projeção atual (reutiliza tempMatrix)
+            tempMatrix.set(batch.getProjectionMatrix());
 
             // Define para coordenadas de tela
             batch.getProjectionMatrix().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -84,7 +85,7 @@ public class TransicaoTela {
             currentEffect.render(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
             // Restaura a matriz original
-            batch.setProjectionMatrix(oldMatrix);
+            batch.setProjectionMatrix(tempMatrix);
         }
     }
 

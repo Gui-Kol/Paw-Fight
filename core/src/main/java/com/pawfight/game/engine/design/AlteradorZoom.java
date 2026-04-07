@@ -2,12 +2,15 @@ package com.pawfight.game.engine.design;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.pawfight.game.engine.input.GameAction;
+import com.pawfight.game.engine.input.KeyBindings;
 
 public class AlteradorZoom {
     private float zoom = 0.5f;
 
     public float changeZoom() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.MINUS)) {
+        KeyBindings key = KeyBindings.getInstance();
+        if (key.isActive(GameAction.ZOOM_MENOS)) {
             if (zoom < 0.7f) {
                 zoom += 0.1f;
                 Gdx.app.log("PawFight", "Zoom aumentado: " + zoom);
@@ -15,7 +18,7 @@ public class AlteradorZoom {
                 Gdx.app.log("PawFight", "Zoom máximo atingido: " + zoom);
             }
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.EQUALS)) {
+        if (key.isActive(GameAction.ZOOM_MAIS)) {
             if (zoom > 0.3f) {
                 zoom -= 0.1f;
                 Gdx.app.log("PawFight", "Zoom diminuído: " + zoom);

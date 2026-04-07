@@ -12,6 +12,8 @@ import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.hud.Hud;
 import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.fisica.ChecarColisao;
+import com.pawfight.game.engine.input.GameAction;
+import com.pawfight.game.engine.input.KeyBindings;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.MundoAreia;
 
@@ -27,10 +29,11 @@ public class EntradaPortais {
 
     public boolean entrarPortal(PlayerTemplate player, List<Rectangle> entradaPortalAreia, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (ChecarColisao.houveColisao(player.getHitBox(), entradaPortalAreia)) {
+            KeyBindings keys = KeyBindings.getInstance();
             String mensagem = "Aperte ENTER para entrar";
             hud.mostrarMensagemEmBaixo(batch,shapeRenderer ,mensagem);
 
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            if (keys.isActive(GameAction.MENU_CONFIRM)) {
                 entrouPortal = true;
             }
         }
