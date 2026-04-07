@@ -130,7 +130,11 @@ public class CarregarPortas {
             List<EnemyTemplate> novos = gerarInimigos.gerarInimigos(world);
             if (novos != null) {
                 listaInimigos.addAll(novos);
-                listaInimigos.forEach(enemy -> enemy.setEnemiesList(listaInimigos));
+                java.util.List<Rectangle> paredes = world.getWorldPhysics().getParedes();
+                listaInimigos.forEach(enemy -> {
+                    enemy.setEnemiesList(listaInimigos);
+                    enemy.setParedesColisores(paredes);
+                });
             }
         }
 

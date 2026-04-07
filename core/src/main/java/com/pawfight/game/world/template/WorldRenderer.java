@@ -14,9 +14,6 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Gerencia renderização de objetos, inimigos e hitboxes do mundo.
- */
 public class WorldRenderer {
 
     private final Renderizar renderizar = Renderizar.INSTANCE;
@@ -38,6 +35,10 @@ public class WorldRenderer {
         List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         if (inimigos != null && !inimigos.isEmpty()) {
             renderizar.atualizarListaInimigos(Gdx.graphics.getDeltaTime(), inimigos);
+
+            // Resolve colisões entre inimigos e entre inimigos e paredes (MTV)
+            world.getWorldPhysics().resolverColisoes(inimigos);
+
             renderizar.renderizarInimigos(world);
         }
     }

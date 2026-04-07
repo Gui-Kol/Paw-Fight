@@ -19,7 +19,7 @@ public final class GameConfig {
     public static final int ALTURA_TELA_BASE = 1080;
 
     // ── Estado de debug ─────────────────────────────────────────
-    private boolean debugMode = true;
+    private boolean debugMode = false;
     private boolean hitboxVisivel = false;
 
     // ── Volumes (0.0 – 1.0) ─────────────────────────────────────
@@ -33,10 +33,6 @@ public final class GameConfig {
 
     public boolean isDebugMode() {
         return debugMode;
-    }
-
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
     }
 
     public boolean isHitboxVisivel() {

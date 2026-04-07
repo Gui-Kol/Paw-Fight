@@ -1,17 +1,14 @@
 package com.pawfight.game.engine.fisica;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.GameConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Quadtree<T> {
 
-    private static final String TAG = "Quadtree";
     private static final int MAX_OBJETOS = 8;
     private static final int MAX_NIVEIS  = 5;
 
@@ -64,9 +61,6 @@ public class Quadtree<T> {
 
     public void inserir(T item, Rectangle hitbox) {
         if (!limites.overlaps(hitbox)) {
-            if (GameConfig.getInstance().isDebugMode()) {
-                Gdx.app.log(TAG, "Item ignorado — hitbox fora dos limites do nó (nível " + nivel + ")");
-            }
             return;
         }
 
@@ -79,10 +73,6 @@ public class Quadtree<T> {
         hitboxes.add(hitbox);
 
         if (items.size() > MAX_OBJETOS && nivel < MAX_NIVEIS) {
-            if (GameConfig.getInstance().isDebugMode()) {
-                Gdx.app.log(TAG, "Subdividindo nó nível " + nivel
-                    + " (" + items.size() + " itens excederam MAX_OBJETOS=" + MAX_OBJETOS + ")");
-            }
             subdividir();
 
             // Redistribui os objetos existentes para os filhos
@@ -97,7 +87,6 @@ public class Quadtree<T> {
     public void consultar(Rectangle regiao, List<T> resultado) {
         if (!limites.overlaps(regiao)) return;
 
-        int antes = resultado.size();
         for (int i = 0, n = hitboxes.size(); i < n; i++) {
             if (regiao.overlaps(hitboxes.get(i))) {
                 resultado.add(items.get(i));
@@ -108,11 +97,6 @@ public class Quadtree<T> {
             for (int i = 0; i < 4; i++) {
                 nos[i].consultar(regiao, resultado);
             }
-        }
-
-        if (GameConfig.getInstance().isDebugMode() && nivel == 0) {
-            int encontrados = resultado.size() - antes;
-            Gdx.app.log(TAG, "Consulta retornou " + encontrados + " candidato(s)");
         }
     }
 

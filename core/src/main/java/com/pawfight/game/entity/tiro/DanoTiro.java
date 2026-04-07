@@ -15,6 +15,7 @@ import java.util.List;
 public class DanoTiro {
 
     private static final String TAG = "DanoTiro";
+    private static final float LOG_INTERVALO = 5f; // segundos entre logs
 
     // Quadtree reutilizável — tamanho generoso para qualquer mapa
     private static final float WORLD_SIZE = 4096f;
@@ -25,6 +26,11 @@ public class DanoTiro {
     private final List<EnemyTemplate> candidatos = new ArrayList<>();
     private final List<TirosTemplate> tirosSnapshot = new ArrayList<>();
 
+    // Acumuladores para log throttled
+    private float logTimer = 0f;
+    private int acumColisoes = 0;
+    private int acumFramesProcessados = 0;
+
     public void darDanoListaInimigos(WorldTemplate world) {
         List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         List<TirosTemplate> tiros = world.getPlayer().getTiros();
@@ -33,16 +39,9 @@ public class DanoTiro {
             return;
         }
 
-        boolean debug = GameConfig.getInstance().isDebugMode();
-
         // 1. Cópia defensiva reutilizável
         tirosSnapshot.clear();
         tirosSnapshot.addAll(tiros);
-
-        if (debug) {
-            Gdx.app.log(TAG, "Processando colisões: " + inimigos.size()
-                + " inimigos × " + tirosSnapshot.size() + " tiros");
-        }
 
         // 2. Preenche a quadtree com os inimigos e suas hitboxes
         quadtree.clear();
@@ -64,18 +63,26 @@ public class DanoTiro {
                 if (inimigo.getHitBox().overlaps(tiro.getHitBox())) {
                     inimigo.dano(tiro.getDano());
                     totalColisoes++;
-
-                    if (debug) {
-                        Gdx.app.log(TAG, "Tiro acertou inimigo! Dano: " + tiro.getDano()
-                            + " | Candidatos testados: " + candidatos.size()
-                            + " (de " + inimigos.size() + " total)");
-                    }
                 }
             }
         }
 
-        if (debug && totalColisoes > 0) {
-            Gdx.app.log(TAG, "Frame finalizado: " + totalColisoes + " colisão(ões) detectada(s)");
+        // 4. Acumula estatísticas para log throttled
+        if (GameConfig.getInstance().isDebugMode()) {
+            acumColisoes += totalColisoes;
+            acumFramesProcessados++;
+            logTimer += Gdx.graphics.getDeltaTime();
+
+            if (logTimer >= LOG_INTERVALO) {
+                Gdx.app.log(TAG, "Resumo (" + LOG_INTERVALO + "s): "
+                    + acumColisoes + " colisões em "
+                    + acumFramesProcessados + " frames | "
+                    + inimigos.size() + " inimigos, "
+                    + tirosSnapshot.size() + " tiros ativos");
+                logTimer = 0f;
+                acumColisoes = 0;
+                acumFramesProcessados = 0;
+            }
         }
     }
 

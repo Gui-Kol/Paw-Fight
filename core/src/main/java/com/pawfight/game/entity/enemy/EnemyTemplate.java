@@ -23,6 +23,7 @@ public abstract class EnemyTemplate implements Entidade {
     // ── Referências ────────────────────────────────────────────
     protected PlayerTemplate player;
     protected List<EnemyTemplate> enemiesList;
+    protected List<Rectangle> paredesColisores;
 
     // ── Estado espacial ────────────────────────────────────────
     protected float dx, dy;
@@ -77,7 +78,11 @@ public abstract class EnemyTemplate implements Entidade {
             dadosInimigo.specialAtackSheet()
         );
 
-        // 4. Hitbox
+        // 4. Hitbox (usa valores do record)
+        TAMANHO_PX = dadosInimigo.tamanho();
+        HITBOX_SIZE = dadosInimigo.hitboxSize();
+        HITBOX_OFFSET_X = dadosInimigo.hitboxOffsetX();
+        HITBOX_OFFSET_Y = dadosInimigo.hitboxOffsetY();
         criarHitBox();
         updateSpriteDefinitions();
         animacao.rebuildAnimations();
@@ -97,9 +102,15 @@ public abstract class EnemyTemplate implements Entidade {
 
     // ── Hitbox ─────────────────────────────────────────────────
 
+    /** Calcula o offsetX espelhado conforme a direção que o inimigo está olhando. */
+    protected int getHitboxOffsetXDirecional() {
+        return olhandoEsquerda ? -HITBOX_OFFSET_X : HITBOX_OFFSET_X;
+    }
+
     public void criarHitBox() {
+        int offsetX = getHitboxOffsetXDirecional();
         this.hitBox = new Rectangle(
-            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
+            dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
             dy + HITBOX_OFFSET_Y,
             HITBOX_SIZE,
             HITBOX_SIZE
@@ -109,15 +120,21 @@ public abstract class EnemyTemplate implements Entidade {
     public void setLocation(int x, int y) {
         dx = x;
         dy = y;
-        hitBox.setPosition(dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X, dy + HITBOX_OFFSET_Y);
+        int offsetX = getHitboxOffsetXDirecional();
+        hitBox.setPosition(dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX, dy + HITBOX_OFFSET_Y);
     }
 
     public void setEnemiesList(List<EnemyTemplate> enemiesList) {
         this.enemiesList = enemiesList;
     }
 
-    // ── Separação entre inimigos ──────────────────────────────
-    private static final float FORCA_SEPARACAO = 200f;
+    public void setParedesColisores(List<Rectangle> paredes) {
+        this.paredesColisores = paredes;
+    }
+
+    public List<Rectangle> getParedesColisores() {
+        return paredesColisores;
+    }
 
     // ══════════════════════════════════════════════════════════
     //  UPDATE
@@ -130,14 +147,19 @@ public abstract class EnemyTemplate implements Entidade {
         TAMANHO_PX = getTamanho();
 
         if (!stats.isMorto()) {
-            // Separação de outros inimigos — roda para QUALQUER enemy, independente da IA
-            aplicarSeparacao(delta);
 
             executarIA(delta);
             ataqueTimer += delta;
 
             // Animação — troca direção do cache (sem rebuild)
             animacao.checkDirectionChange(olhandoEsquerda);
+
+            // Posição da hitbox (acompanha direção esquerda/direita)
+            int offsetX = getHitboxOffsetXDirecional();
+            hitBox.setPosition(
+                dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
+                dy + HITBOX_OFFSET_Y
+            );
 
             // Duração do ataque
             if (atacando && animacao.getStateTime() >= ATAQUE_DURATION) {
@@ -150,55 +172,6 @@ public abstract class EnemyTemplate implements Entidade {
         stats.updateTimers(delta);
     }
 
-    private void aplicarSeparacao(float delta) {
-        if (enemiesList == null) return;
-
-        float sepX = 0;
-        float sepY = 0;
-
-        for (EnemyTemplate other : enemiesList) {
-            if (other == this || other.isMorto()) continue;
-            if (!hitBox.overlaps(other.getHitBox())) continue;
-
-            // Centro de cada hitbox
-            float myCX    = hitBox.x + hitBox.width  / 2f;
-            float myCY    = hitBox.y + hitBox.height / 2f;
-            float otherCX = other.hitBox.x + other.hitBox.width  / 2f;
-            float otherCY = other.hitBox.y + other.hitBox.height / 2f;
-
-            float diffX = myCX - otherCX;
-            float diffY = myCY - otherCY;
-            float dist  = (float) Math.sqrt(diffX * diffX + diffY * diffY);
-
-            // Se estão exatamente no mesmo ponto, empurrar em direção determinística
-            if (dist < 0.001f) {
-                diffX = (this.hashCode() > other.hashCode()) ? 1f : -1f;
-                diffY = 0f;
-                dist  = 1f;
-            }
-
-            // Força proporcional à profundidade da sobreposição
-            float minDist = (hitBox.width + other.hitBox.width) / 2f;
-            float overlap = minDist - dist;
-            if (overlap > 0) {
-                float forca = FORCA_SEPARACAO * (overlap / minDist);
-                sepX += (diffX / dist) * forca;
-                sepY += (diffY / dist) * forca;
-            }
-        }
-
-        // Aplicar deslocamento de separação
-        if (Math.abs(sepX) > 0.001f || Math.abs(sepY) > 0.001f) {
-            dx += sepX * delta;
-            dy += sepY * delta;
-
-            // Atualizar hitbox imediatamente para que a IA use a posição correta
-            hitBox.setPosition(
-                dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + HITBOX_OFFSET_X,
-                dy + HITBOX_OFFSET_Y
-            );
-        }
-    }
 
     public void executarIA(float delta) {
         andarIA(delta);
@@ -235,6 +208,12 @@ public abstract class EnemyTemplate implements Entidade {
             audio.playDano();
         }
         Gdx.app.log(nome, "Tomou " + forca + " de dano!");
+    }
+
+    public void sincronizarPosicaoComHitbox() {
+        int offsetX = getHitboxOffsetXDirecional();
+        this.dx = hitBox.x - (TAMANHO_PX - HITBOX_SIZE) / 2f - offsetX;
+        this.dy = hitBox.y - HITBOX_OFFSET_Y;
     }
 
     // ══════════════════════════════════════════════════════════
