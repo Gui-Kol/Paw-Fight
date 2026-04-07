@@ -16,6 +16,9 @@ public class LoadingScreen implements Screen {
     private final OrthographicCamera camera;
     private final Viewport viewport;
     private final SpriteBatch batch;
+    private float minLoadingTime = 2f; // tempo mínimo em segundos
+    private boolean minTimePassed = false;
+    private final TextureRegion primeiroFrame;
 
     private GifDecoder.GifAnimation gifAnimation;
     private float stateTime = 0f;
@@ -28,6 +31,7 @@ public class LoadingScreen implements Screen {
         this.viewport = viewport;
         this.batch = game.getBatch();
 
+
         // Escolhe aleatoriamente qual GIF exibir
         String gifPath = MathUtils.randomBoolean()
             ? "menu/loading/loadingScreen.gif"
@@ -35,39 +39,52 @@ public class LoadingScreen implements Screen {
 
         Gdx.app.log("LoadingScreen", "Exibindo: " + gifPath);
         gifAnimation = GifDecoder.loadGifAnimation(Gdx.files.internal(gifPath));
+        primeiroFrame = gifAnimation.animation.getKeyFrame(0);
     }
 
     @Override
     public void render(float delta) {
         stateTime += delta;
 
-        // ── 1) Desenha o GIF PRIMEIRO — garante que a tela aparece antes de tudo ──
+        // ── 1) Desenha o GIF ──
         ScreenUtils.clear(0, 0, 0, 1);
-
         TextureRegion frame = gifAnimation.animation.getKeyFrame(stateTime);
+        if (frame == null){
+            frame = primeiroFrame;
+        }
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(frame, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.end();
 
-        // ── 2) Só enfileira os assets DEPOIS do primeiro frame já estar na tela ──
+        // ── 2) Enfileira assets depois do primeiro frame ──
         if (!assetsQueued) {
             assetsQueued = true;
             Assets.queueAll();
             Gdx.app.log("LoadingScreen", "Assets enfileirados para carregamento.");
-            return; // volta para renderizar o próximo frame antes de começar update()
         }
 
-        // ── 3) Atualiza o carregamento assíncrono dos assets ──
-        if (!loadingDone && Assets.manager.update()) {
+        // ── 3) Atualiza carregamento ──
+        boolean finishedLoading = Assets.manager.update();
+
+        // ── 4) Verifica se tempo mínimo já passou ──
+        if (!minTimePassed && stateTime >= minLoadingTime) {
+            minTimePassed = true;
+            Gdx.app.log("LoadingScreen", "Tempo mínimo de loading atingido.");
+        }
+
+        // ── 5) Só troca de tela quando assets + tempo mínimo ──
+        if (!loadingDone && finishedLoading && minTimePassed) {
             loadingDone = true;
-            Gdx.app.log("LoadingScreen", "Assets carregados! Progresso: 100%");
+            Gdx.app.log("LoadingScreen", "Assets carregados e tempo mínimo atingido!");
             game.onAssetsLoaded();
         }
     }
 
+
     @Override
     public void show() {
+        stateTime = 0f;
         Gdx.app.log("LoadingScreen", "Tela de carregamento iniciada.");
     }
 
@@ -78,13 +95,16 @@ public class LoadingScreen implements Screen {
     }
 
     @Override
-    public void pause() { }
+    public void pause() {
+    }
 
     @Override
-    public void resume() { }
+    public void resume() {
+    }
 
     @Override
-    public void hide() { }
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
