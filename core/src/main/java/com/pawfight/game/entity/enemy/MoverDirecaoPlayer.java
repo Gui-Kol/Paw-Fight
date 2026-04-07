@@ -76,6 +76,17 @@ public class MoverDirecaoPlayer {
     }
 
     private boolean colide(Rectangle testHitbox, EnemyTemplate self) {
+        // Verifica colisão com paredes
+        List<Rectangle> paredes = self.paredesColisores;
+        if (paredes != null) {
+            for (int i = 0, n = paredes.size(); i < n; i++) {
+                if (testHitbox.overlaps(paredes.get(i))) {
+                    return true;
+                }
+            }
+        }
+
+        // Verifica colisão com outros inimigos
         List<EnemyTemplate> others = self.enemiesList;
         if (others != null) {
             for (EnemyTemplate other : others) {

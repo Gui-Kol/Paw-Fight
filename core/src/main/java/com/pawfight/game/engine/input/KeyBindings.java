@@ -74,7 +74,6 @@ public class KeyBindings {
         Gdx.app.log("KeyBindings", action.getLabel() + " → " + Input.Keys.toString(newKeyCode));
     }
 
-    /** Restaura todas as teclas para os valores padrão. */
     public void resetToDefaults() {
         bindings.clear();
         for (GameAction action : GameAction.values()) {

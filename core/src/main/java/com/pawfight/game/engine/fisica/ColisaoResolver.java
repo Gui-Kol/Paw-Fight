@@ -64,8 +64,9 @@ public class ColisaoResolver {
         boolean corrigiu = false;
         for (EnemyTemplate enemy : enemies) {
             if (enemy.isMorto()) continue;
-            boolean pushed = empurrarForaParedes(enemy.getHitBox(), paredes);
-            if (pushed) {
+            boolean overlapping = ChecarColisao.houveColisao(enemy.getHitBox(), paredes);
+            if (overlapping) {
+                ChecarColisao.empurrarForaParedes(enemy.getHitBox(), paredes);
                 enemy.sincronizarPosicaoComHitbox();
                 corrigiu = true;
             }
@@ -73,36 +74,6 @@ public class ColisaoResolver {
         return corrigiu;
     }
 
-    private boolean empurrarForaParedes(Rectangle hitbox, List<Rectangle> paredes) {
-        boolean pushed = false;
-        for (Rectangle parede : paredes) {
-            if (!hitbox.overlaps(parede)) continue;
-
-            float overlapX = Math.min(hitbox.x + hitbox.width, parede.x + parede.width)
-                           - Math.max(hitbox.x, parede.x);
-            float overlapY = Math.min(hitbox.y + hitbox.height, parede.y + parede.height)
-                           - Math.max(hitbox.y, parede.y);
-
-            if (overlapX <= 0 || overlapY <= 0) continue;
-
-            // Empurra pelo eixo de menor sobreposição (MTV)
-            if (overlapX < overlapY) {
-                float centroHitbox = hitbox.x + hitbox.width / 2f;
-                float centroParede = parede.x + parede.width / 2f;
-                hitbox.x += (centroHitbox < centroParede)
-                    ? -(overlapX + MARGEM)
-                    : (overlapX + MARGEM);
-            } else {
-                float centroHitbox = hitbox.y + hitbox.height / 2f;
-                float centroParede = parede.y + parede.height / 2f;
-                hitbox.y += (centroHitbox < centroParede)
-                    ? -(overlapY + MARGEM)
-                    : (overlapY + MARGEM);
-            }
-            pushed = true;
-        }
-        return pushed;
-    }
 
     // ══════════════════════════════════════════════════════════
     //  MTV — SEPARAR DUAS HITBOXES

@@ -13,6 +13,8 @@ public class RenderizadorCamada {
 
     private final OrthogonalTiledMapRenderer renderer;
     private final TiledMap map;
+    private final List<Integer> indicesBuffer = new ArrayList<>();
+    private int[] idxArray = new int[8]; // pre-allocated, resized if needed
 
     public RenderizadorCamada(TiledMap map) {
         this.map = map;
@@ -47,7 +49,7 @@ public class RenderizadorCamada {
     // Renderiza múltiplos layers pelo nome
     public void renderLayers(String[] layerNames, OrthographicCamera camera) {
         if (layerNames == null || layerNames.length == 0) return;
-        List<Integer> indices = new ArrayList<>();
+        indicesBuffer.clear();
         for (String name : layerNames) {
             MapLayer layer = map.getLayers().get(name);
             if (layer == null) {
@@ -55,16 +57,19 @@ public class RenderizadorCamada {
                 continue;
             }
             int idx = map.getLayers().getIndex(layer);
-            if (idx != -1) indices.add(idx);
+            if (idx != -1) indicesBuffer.add(idx);
         }
 
-        if (indices.isEmpty()) return;
+        int size = indicesBuffer.size();
+        if (size == 0) return;
 
-        int[] idxArray = new int[indices.size()];
-        for (int i = 0; i < indices.size(); i++) idxArray[i] = indices.get(i);
+        if (idxArray.length < size) {
+            idxArray = new int[size];
+        }
+        for (int i = 0; i < size; i++) idxArray[i] = indicesBuffer.get(i);
 
         renderer.setView(camera);
-        renderer.render(idxArray);
+        renderer.render(size == idxArray.length ? idxArray : java.util.Arrays.copyOf(idxArray, size));
     }
 
     public void dispose() {

@@ -4,10 +4,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Pool;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-public abstract class TirosTemplate {
+public abstract class TirosTemplate implements Pool.Poolable {
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
@@ -17,6 +18,9 @@ public abstract class TirosTemplate {
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
     protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int xHitBox, yHitBox;
+
+    @SuppressWarnings("rawtypes")
+    protected Pool ownerPool;
 
     public TirosTemplate(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         duracao = definirDuracao();
@@ -40,6 +44,46 @@ public abstract class TirosTemplate {
 
         texture = singleTex();
         hitBox = gerarHitBox();
+    }
+
+    protected TirosTemplate() {
+        duracao = definirDuracao();
+        cadencia = definirIntervalo();
+        tamanhoPadrao = definirTamanhoPadrao();
+        intervalo = 0;
+        hitBox = new Rectangle();
+    }
+
+    // ── Pool helpers ────────────────────────────────────────────
+
+    protected void reiniciarBase(int x, int y, int dano, int tamanho, PlayerTemplate player) {
+        this.tempoVida = 0f;
+        this.tamanho = tamanho + tamanhoPadrao;
+        this.tamanhoDraw = tamanho + tamanhoPadrao;
+        this.x = x;
+        this.y = y;
+        this.dano = dano;
+        this.xHitBox = x;
+        this.yHitBox = y;
+        if (player.isOlhandoEsquerda()) {
+            this.x += player.getTamanho();
+            xHitBox += player.getTamanho();
+        }
+    }
+
+    /** Devolve este projétil ao pool de onde veio (se houver). */
+    @SuppressWarnings("unchecked")
+    public void liberar() {
+        if (ownerPool != null) {
+            Pool p = ownerPool;
+            ownerPool = null;      // previne double-free
+            p.free(this);
+        }
+    }
+
+    @Override
+    public void reset() {
+        tempoVida = 0f;
     }
 
     protected abstract int definirTamanhoPadrao();
@@ -77,7 +121,8 @@ public abstract class TirosTemplate {
 
     protected abstract Rectangle gerarHitBox();
 
-    protected abstract TirosTemplate clonar(PlayerTemplate player);
+
+    protected abstract TirosTemplate obterDoPool(PlayerTemplate player);
 
     protected abstract Texture singleTex();
 

@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Componente responsável pelo combate.
- * Gerencia tiros (projéteis), modelos de tiro e cadência de disparo.
- */
 public class CombateComponent {
 
     private final List<TirosTemplate> tiros = new ArrayList<>();
@@ -36,14 +32,12 @@ public class CombateComponent {
             tiro.update(delta);
             if (tiro.isExpirado()) {
                 it.remove();
-                tiro.dispose();
+                tiro.liberar();
             }
         }
     }
 
-    /**
-     * Dispara tiros automáticos se podeAtacar e houver modelos.
-     */
+
     public void processarTirosAutomaticos(PlayerTemplate player, float delta) {
         if (!podeAtacar || tirosModelos == null || tirosModelos.isEmpty()) return;
         atirar.atira(tirosModelos, player, delta);
@@ -60,6 +54,9 @@ public class CombateComponent {
     }
 
     public void clearTiros() {
+        for (TirosTemplate tiro : tiros) {
+            tiro.liberar();
+        }
         tiros.clear();
     }
 

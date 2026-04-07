@@ -82,13 +82,12 @@ public class CarregarPortas {
 
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
-        TiledMap map = world.getMap();
+        TiledMap oldMap = world.getMap();
         GeradorSalas geradorSalas = world.getRoomManager().getRoomGenerator();
         RenderizadorCamada renderizadorCamada = world.getLayerRenderer();
         String nomeClasseOrigem = world.getWorldName();
 
         player.clearList();
-        world.carregarParede();
         Sala sala = geradorSalas.getRoomMap().get(x + "," + y);
 
         if (sala == null) {
@@ -96,16 +95,21 @@ public class CarregarPortas {
             return;
         }
 
-        if (map != null) {
-            map.dispose();
+        if (oldMap != null) {
+            oldMap.dispose();
             if (renderizadorCamada != null) renderizadorCamada.dispose();
         }
 
         try {
             world.getRoomManager().setCurrentRoom(sala);
             world.getWorldPhysics().getTilemapHitboxFactory().clearCache();
-            map = new TmxMapLoader().load(world.getMapPath());
-            world.setLayerRenderer(new RenderizadorCamada(map));
+
+            TiledMap newMap = new TmxMapLoader().load(world.getMapPath());
+            world.setMap(newMap);
+            world.setLayerRenderer(new RenderizadorCamada(newMap));
+
+            // Recarrega paredes a partir do NOVO mapa
+            world.carregarParede();
 
             moverSalaInimigos(world);
 

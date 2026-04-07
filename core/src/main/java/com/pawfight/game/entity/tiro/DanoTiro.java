@@ -18,7 +18,7 @@ public class DanoTiro {
     private static final float LOG_INTERVALO = 5f; // segundos entre logs
 
     // Quadtree reutilizável — tamanho generoso para qualquer mapa
-    private static final float WORLD_SIZE = 4096f;
+    private static final float WORLD_SIZE = 3000f;
     private final Quadtree<EnemyTemplate> quadtree =
         new Quadtree<>(new Rectangle(0, 0, WORLD_SIZE, WORLD_SIZE));
 

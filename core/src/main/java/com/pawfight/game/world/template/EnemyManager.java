@@ -6,9 +6,6 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Gerencia a lista de inimigos do mundo e a geração procedural de inimigos.
- */
 public class EnemyManager {
 
     private final GerarInimigos gerarInimigos;

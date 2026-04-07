@@ -23,6 +23,9 @@ import static com.pawfight.game.engine.Validar.validarLista;
 public class MundoAreia extends WorldTemplate {
 
     private Texture cactoTexture;
+    private final List<String> layerBuffer = new ArrayList<>();
+    private final List<String> layerUpBuffer = new ArrayList<>();
+    private String[] layerArray = new String[8]; // pre-allocated, resized if needed
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/mundoAreia.wav", camera, viewport);
@@ -155,26 +158,26 @@ public class MundoAreia extends WorldTemplate {
             return;
         }
         try {
-            List<String> layers = new ArrayList<>();
+            layerBuffer.clear();
             String[] baseLayers = {"Sub", "Solo", "ParedeLayer"};
             for (String layer : baseLayers) {
                 if (map.getLayers().get(layer) != null) {
-                    layers.add(layer);
+                    layerBuffer.add(layer);
                 }
             }
             boolean podeEntrarPorta = roomManager.isPodeEntrarPorta();
             if (podeEntrarPorta) {
                 if (currentRoom.hasNorth() && map.getLayers().get("PortaCima") != null) {
-                    layers.add("PortaCima");
+                    layerBuffer.add("PortaCima");
                 }
                 if (currentRoom.hasWest() && map.getLayers().get("PortaEsquerda") != null) {
-                    layers.add("PortaEsquerda");
+                    layerBuffer.add("PortaEsquerda");
                 }
                 if (currentRoom.hasEast() && map.getLayers().get("PortaDireita") != null) {
-                    layers.add("PortaDireita");
+                    layerBuffer.add("PortaDireita");
                 }
             }
-            renderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            renderizadorCamada.renderLayers(toArray(layerBuffer), player.getCamera());
         } catch (Exception e) {
             Gdx.app.error("MundoAreia", "Erro em renderLayers: " + e.getMessage(), e);
         }
@@ -188,17 +191,17 @@ public class MundoAreia extends WorldTemplate {
             return;
         }
         try {
-            List<String> layers = new ArrayList<>();
+            layerUpBuffer.clear();
             if (map.getLayers().get("Up") != null) {
-                layers.add("Up");
+                layerUpBuffer.add("Up");
             }
             boolean podeEntrarPorta = roomManager.isPodeEntrarPorta();
             if (podeEntrarPorta) {
                 if (currentRoom.getType() != TipoSala.SPAWN && currentRoom.hasSouth() && map.getLayers().get("PortaBaixo") != null) {
-                    layers.add("PortaBaixo");
+                    layerUpBuffer.add("PortaBaixo");
                 }
             }
-            renderizadorCamada.renderLayers(layers.toArray(new String[0]), player.getCamera());
+            renderizadorCamada.renderLayers(toArray(layerUpBuffer), player.getCamera());
 
             var shapeRenderer = worldRenderer.getShapeRenderer();
             if (shapeRenderer != null && !shapeRenderer.isDrawing()) {
@@ -234,6 +237,18 @@ public class MundoAreia extends WorldTemplate {
     @Override
     protected void checkPortals() {
         roomManager.getCarregarPortas().carregar(this);
+    }
+
+    /** Reutiliza o layerArray para evitar alocação de String[] a cada frame. */
+    private String[] toArray(List<String> list) {
+        int size = list.size();
+        if (layerArray.length < size) {
+            layerArray = new String[size];
+        }
+        for (int i = 0; i < size; i++) {
+            layerArray[i] = list.get(i);
+        }
+        return size == layerArray.length ? layerArray : java.util.Arrays.copyOf(layerArray, size);
     }
 
     @Override

@@ -241,6 +241,10 @@ public abstract class WorldTemplate implements Screen {
         return map;
     }
 
+    public void setMap(TiledMap map) {
+        this.map = map;
+    }
+
     public boolean isErrorFinal() {
         return errorFinal;
     }

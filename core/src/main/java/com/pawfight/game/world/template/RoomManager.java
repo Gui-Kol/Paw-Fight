@@ -9,9 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Gerencia salas, portais, minimapa e navegação entre rooms.
- */
 public class RoomManager {
 
     private final GeradorSalas geradorSalas;

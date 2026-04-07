@@ -21,7 +21,7 @@ public class Atirar {
             if (intervalo >= cadencia) {
                 intervalo = 0f; // reseta o acumulador
 
-                TirosTemplate tiroNovo = tiroModelo.clonar(player);
+                TirosTemplate tiroNovo = tiroModelo.obterDoPool(player);
                 tiroNovo.setDuracao(duracao);
                 player.adicionarTiro(tiroNovo);
                 // Remoção agora é feita pelo game loop em PlayerTemplate.updateTiros()
