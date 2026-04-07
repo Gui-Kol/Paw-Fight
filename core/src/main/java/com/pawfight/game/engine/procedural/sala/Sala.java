@@ -26,21 +26,21 @@ public class Sala {
     public boolean hasWest() { return west; }
 
     // Métodos de conexão que também guardam referência
-    public void connectNorth(Sala Sala) {
+    public void connectNorth(Sala sala) {
         this.north = true;
-        this.northRoom = Sala;
+        this.northRoom = sala;
     }
-    public void connectSouth(Sala Sala) {
+    public void connectSouth(Sala sala) {
         this.south = true;
-        this.southRoom = Sala;
+        this.southRoom = sala;
     }
-    public void connectEast(Sala Sala) {
+    public void connectEast(Sala sala) {
         this.east = true;
-        this.eastRoom = Sala;
+        this.eastRoom = sala;
     }
-    public void connectWest(Sala Sala) {
+    public void connectWest(Sala sala) {
         this.west = true;
-        this.westRoom = Sala;
+        this.westRoom = sala;
     }
 
     public Sala getRoom(Direction dir){
