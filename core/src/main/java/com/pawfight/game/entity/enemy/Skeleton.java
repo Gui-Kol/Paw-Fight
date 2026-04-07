@@ -3,7 +3,7 @@ package com.pawfight.game.entity.enemy;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.player.PlayerTemplate;
 

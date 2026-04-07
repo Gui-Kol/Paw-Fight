@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.ScreenManager;
 
@@ -69,6 +69,7 @@ public class Home implements Screen {
             backMusic = Assets.get("audio/music/home.wav", Music.class);
             backMusic.setLooping(true);
             backMusic.setVolume(GameConfig.getInstance().getVolumeMusica());
+            backMusic.play();
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar música: " + e.getMessage(), e);
         }
@@ -89,9 +90,6 @@ public class Home implements Screen {
 
     @Override
     public void show() {
-        if (backMusic != null && !backMusic.isPlaying()) {
-            backMusic.play();
-        }
         if (playButton == null && quitButton == null) {
             try {
                 Stage stage = hudStage.getStage();

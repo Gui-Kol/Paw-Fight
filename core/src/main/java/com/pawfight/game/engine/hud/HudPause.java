@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;

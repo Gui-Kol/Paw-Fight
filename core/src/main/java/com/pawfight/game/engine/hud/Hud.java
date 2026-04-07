@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.desenhar.DesenharTexto;

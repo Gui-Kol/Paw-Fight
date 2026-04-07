@@ -3,7 +3,7 @@ package com.pawfight.game.entity.tiro.dove;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Pool;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 

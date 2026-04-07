@@ -7,21 +7,17 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.pawfight.game.engine.Assets;
-import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.input.KeyBindings;
-import com.pawfight.game.engine.save.DadosSalvosJogador;
-import com.pawfight.game.engine.save.SalvarJogo;
-import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.engine.loading.Assets;
+import com.pawfight.game.engine.loading.LoadingScreen;
 import com.pawfight.game.world.Home;
 import com.pawfight.game.world.template.WorldTemplate;
 
-import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
+import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 
 public class PawFight extends Game {
     private final PawFight game = this;
@@ -37,10 +33,8 @@ public class PawFight extends Game {
 
     @Override
     public void create() {
-        Assets.loadAll();
         KeyBindings.init();
         batch = new SpriteBatch();
-        image = Assets.get("menu/BackGroundPawFight.png", Texture.class);
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE, camera);
@@ -53,18 +47,23 @@ public class PawFight extends Game {
 
         ScreenManager.init(this);
 
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                ScreenManager.getInstance().fadeToScreen(new Home(game, camera, viewport), 1f, Color.BLACK, false);
-                image = Assets.get("menu/dark_back_groud.png", Texture.class);
-            }
-        }, 2.5f);
-        audio = Assets.get("audio/sounds/MenuInicial/inicio.wav", Music.class);
-        audio.setVolume(GameConfig.getInstance().getVolumeMusica());
-        audio.play();
+        setScreen(new LoadingScreen(this, camera, viewport));
 
         Gdx.app.log("PawFight", "Iniciando jogo...");
+    }
+
+    public void onAssetsLoaded() {
+        // Faz dispose da LoadingScreen (libera texturas do GIF)
+        Screen loadingScreen = getScreen();
+        if (loadingScreen != null) {
+            loadingScreen.dispose();
+        }
+
+        image = Assets.get("menu/dark_back_groud.png", Texture.class);
+
+        // Transição direta para Home
+        setScreen(null);
+        ScreenManager.getInstance().fadeToScreen(new Home(game, camera, viewport), 1f, Color.BLACK, false);
     }
 
     @Override
@@ -80,8 +79,10 @@ public class PawFight extends Game {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        // desenha o background ocupando todo o mundo do viewport
-        batch.draw(image, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        // desenha o background ocupando todo o mundo do viewport (null durante o loading)
+        if (image != null) {
+            batch.draw(image, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        }
         batch.end();
 
         super.render();
@@ -102,7 +103,7 @@ public class PawFight extends Game {
         }
 
         if (getScreen() instanceof Home home) {
-           home.resize(width, height);
+            home.resize(width, height);
         }
     }
 
@@ -133,7 +134,7 @@ public class PawFight extends Game {
         // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
         ScreenManager.getInstance().dispose();
         Assets.dispose(); // libera TODOS os assets de uma vez
-        Gdx.app.log("PawFight","foi disposed");
+        Gdx.app.log("PawFight", "foi disposed");
     }
 
     public void setPodeAlterarTelaCheia(boolean podeAlterarTelaCheia) {

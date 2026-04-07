@@ -1,6 +1,7 @@
 package com.pawfight.game.engine;
 
 import com.badlogic.gdx.audio.Music;
+import com.pawfight.game.engine.loading.Assets;
 
 public class AudioEngine {
 

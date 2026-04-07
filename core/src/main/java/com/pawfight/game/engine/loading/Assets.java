@@ -1,4 +1,4 @@
-package com.pawfight.game.engine;
+package com.pawfight.game.engine.loading;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
@@ -7,10 +7,9 @@ import com.badlogic.gdx.graphics.Texture;
 public class Assets {
     public static final AssetManager manager = new AssetManager();
 
-    public static void loadAll() {
+    public static void queueAll() {
         loadTextures();
         loadMusic();
-        manager.finishLoading();
     }
 
     private static void loadTextures() {
@@ -103,7 +102,6 @@ public class Assets {
     }
 
     private static void loadMusic() {
-        manager.load("audio/sounds/MenuInicial/inicio.wav", Music.class);
         manager.load("audio/music/home.wav", Music.class);
         manager.load("audio/music/mundoAreia.wav", Music.class);
         manager.load("audio/music/menu.wav", Music.class);

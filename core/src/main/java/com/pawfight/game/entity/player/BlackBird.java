@@ -1,7 +1,7 @@
 package com.pawfight.game.entity.player;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.Coco;

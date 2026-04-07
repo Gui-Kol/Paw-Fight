@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.input.GameAction;
 import com.pawfight.game.engine.input.KeyBindings;
 import com.pawfight.game.entity.component.SaveComponent;

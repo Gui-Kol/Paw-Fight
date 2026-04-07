@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.pawfight.game.engine.Assets;
+import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.procedural.GerarObjetos;
 import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
