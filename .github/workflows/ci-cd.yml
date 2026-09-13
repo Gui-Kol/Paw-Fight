@@ -19,6 +19,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Run Checkstyle
         run: ./gradlew checkstyleMain checkstyleTest
       - name: Run Spotless
@@ -35,6 +37,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport
       - name: Upload coverage to Codecov
@@ -47,6 +51,8 @@ jobs:
   build-artifacts:
     needs: test-coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -54,6 +60,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew build
       - name: Upload artifacts
@@ -102,6 +110,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew build
       - name: SonarCloud Scan
@@ -125,11 +135,14 @@ jobs:
           project: "Paw-Fight"
           scan: "."
 
-  # 7. Auto PR para master (apenas push em branches que não sejam master nem tag)
+  # 7. Auto PR para master
   auto-pr:
     needs: security-scan
     if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name != 'master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v3
       - name: Create Pull Request
@@ -141,11 +154,13 @@ jobs:
           title: "PR Criado automaticamente para adição da ${{ github.ref_name }}"
           body: "Este PR foi gerado automaticamente para adicionar a branch ${{ github.ref_name }} ao master."
 
-  # 8. Release Drafter (apenas push na master)
+  # 8. Release Drafter
   release-drafter:
     needs: security-scan
     if: github.event_name == 'push' && github.ref_name == 'master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: release-drafter/release-drafter@v6
         with:
@@ -153,7 +168,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # 9. Build multiplataforma (apenas tags v*)
+  # 9. Build multiplataforma
   build-multiplatform:
     needs: security-scan
     if: startsWith(github.ref, 'refs/tags/v')
@@ -168,12 +183,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew build
       - name: Package
         run: ./gradlew lwjgl3:package${{ matrix.os == 'windows-latest' && 'WinX64' || matrix.os == 'macos-latest' && 'MacX64' || 'LinuxX64' }}
 
-  # 10. Release Windows .exe (apenas tags v*, após o build multi)
+  # 10. Release Windows .exe
   release-windows:
     needs: build-multiplatform
     if: startsWith(github.ref, 'refs/tags/v')
@@ -189,6 +206,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew lwjgl3:build
       - name: List Gradle construo tasks
