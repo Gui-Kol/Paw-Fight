@@ -199,7 +199,7 @@ jobs:
       - name: Build native Windows distribution (construo)
         run: ./gradlew :lwjgl3:packageWinX64 --no-daemon --info
       - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             lwjgl3/build/construo/dist/PawFight-winX64.zip
