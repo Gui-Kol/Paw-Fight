@@ -57,7 +57,7 @@ jobs:
       - name: Build
         run: ./gradlew build
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: game-build
           path: |
