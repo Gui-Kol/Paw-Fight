@@ -21,10 +21,10 @@ jobs:
           distribution: 'temurin'
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      - name: Run Checkstyle
-        run: ./gradlew checkstyleMain checkstyleTest
-      - name: Run Spotless
-        run: ./gradlew spotlessCheck
+      - name: Compile sources
+        # O projeto não tem plugins de checkstyle/spotless configurados;
+        # esta etapa garante que todo o código compila antes de prosseguir.
+        run: ./gradlew compileJava compileTestJava
 
   # 2. Testes com cobertura
   test-coverage:
