@@ -57,15 +57,26 @@ jobs:
       contents: write
       pull-requests: write
       checks: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
     steps:
+      - name: Check if Qodana is configured
+        id: check
+        run: |
+          if [ -z "$QODANA_TOKEN" ]; then
+            echo "::warning::Secret QODANA_TOKEN não configurado. Pulando análise Qodana."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/checkout@v4
+        if: steps.check.outputs.enabled == 'true'
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Qodana Scan
+        if: steps.check.outputs.enabled == 'true'
         uses: JetBrains/qodana-action@v2025.2
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
         with:
           pr-mode: false
           use-caches: true
@@ -78,27 +89,41 @@ jobs:
   sonarcloud:
     needs: qodana
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Check if SonarCloud is configured
+        id: check
+        run: |
+          if [ -z "$SONAR_TOKEN" ]; then
+            echo "::warning::Secret SONAR_TOKEN não configurado. Pulando análise SonarCloud."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v3
+        if: steps.check.outputs.enabled == 'true'
         with:
           fetch-depth: 0
       - name: Set up JDK 17
+        if: steps.check.outputs.enabled == 'true'
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Grant execute permission for gradlew
+        if: steps.check.outputs.enabled == 'true'
         run: chmod +x ./gradlew
       - name: Build
+        if: steps.check.outputs.enabled == 'true'
         run: ./gradlew build
       - name: SonarCloud Scan
+        if: steps.check.outputs.enabled == 'true'
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
             -Dsonar.projectKey=Gui-Kol_Paw-Fight
             -Dsonar.organization=SEU_ORG
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # 5. Scan de segurança
   security-scan:
