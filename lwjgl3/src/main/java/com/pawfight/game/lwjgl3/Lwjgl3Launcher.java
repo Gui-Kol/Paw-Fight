@@ -14,7 +14,6 @@ public class Lwjgl3Launcher {
         createApplication();
     }
 
-
     private static Lwjgl3Application createApplication() {
         return new Lwjgl3Application(new PawFight(), getDefaultConfiguration());
     }
