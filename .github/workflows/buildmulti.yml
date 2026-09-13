@@ -1,0 +1,27 @@
+name: Build Multiplatform
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Package
+        run: ./gradlew lwjgl3:package${{ matrix.os == 'windows-latest' && 'WinX64' || matrix.os == 'macos-latest' && 'MacX64' || 'LinuxX64' }}
