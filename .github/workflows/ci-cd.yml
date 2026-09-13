@@ -76,7 +76,7 @@ jobs:
           fetch-depth: 0
       - name: Qodana Scan
         if: steps.check.outputs.enabled == 'true'
-        uses: JetBrains/qodana-action@v2025.2
+        uses: JetBrains/qodana-action@v2026.2
         with:
           pr-mode: false
           use-caches: true
