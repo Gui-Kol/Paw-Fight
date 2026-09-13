@@ -1,0 +1,22 @@
+name: Auto PR to master
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: master
+          branch: ${{ github.ref_name }}
+          title: "PR Criado automaticamente para adição da ${{ github.ref_name }}"
+          body: "Este PR foi gerado automaticamente para adicionar a branch ${{ github.ref_name }} ao master."
