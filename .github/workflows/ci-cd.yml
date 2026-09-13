@@ -119,7 +119,7 @@ jobs:
         run: ./gradlew build
       - name: SonarCloud Scan
         if: steps.check.outputs.enabled == 'true'
-        uses: SonarSource/sonarcloud-github-action@v2
+        uses: SonarSource/sonarcloud-github-action@v5
         with:
           args: >
             -Dsonar.projectKey=Gui-Kol_Paw-Fight
