@@ -128,10 +128,13 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      issues: write
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # garante que toda a branch base seja buscada
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
