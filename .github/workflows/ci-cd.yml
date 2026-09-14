@@ -120,29 +120,6 @@ jobs:
           name: dependency-check-report
           path: reports/
 
-  # 5. Auto PR para main
-  auto-pr:
-    needs: security-scan
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      issues: write
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # garante que toda a branch base seja buscada
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          base: main
-          branch: ${{ github.ref_name }}
-          title: "PR Criado automaticamente para adição da ${{ github.ref_name }}"
-          body: "Este PR foi gerado automaticamente para adicionar a branch ${{ github.ref_name }} ao main."
 
   # 6. Release Drafter
   release-drafter:
