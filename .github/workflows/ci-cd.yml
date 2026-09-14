@@ -2,7 +2,8 @@ name: CI/CD Pipeline (All-in-One)
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - '**'    # qualquer branch (necessário p/ job auto-pr em feature branches)
     tags:
       - 'v*'
   pull_request:
