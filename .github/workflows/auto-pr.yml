@@ -7,7 +7,6 @@ on:
       - '!main'  # Exclui a branch main
   workflow_dispatch:
 
-
 jobs:
   create-pr:
     runs-on: ubuntu-latest
