@@ -20,10 +20,12 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
 
+      - name: Authenticate with GitHub
+        run: |
+          echo "${{ secrets.PAT }}" | gh auth login --with-token
+
       - name: Check if PR already exists
         id: check-pr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
         run: |
           PR_COUNT=$(gh pr list \
             --base main \
@@ -42,8 +44,6 @@ jobs:
 
       - name: Create Pull Request
         if: steps.check-pr.outputs.exists == 'false'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
         run: |
           PR_BODY=$(cat <<'EOF'
           Informacoes do PR Automatico
@@ -69,8 +69,6 @@ jobs:
 
       - name: Update PR if exists
         if: steps.check-pr.outputs.exists == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
         run: |
           echo "PR ja existe para a branch ${{ github.ref_name }}"
           gh pr list --base main --head ${{ github.ref_name }}
