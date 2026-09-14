@@ -120,6 +120,73 @@ jobs:
           name: dependency-check-report
           path: reports/
 
+  # 5. Auto PR para Main
+  create-pr:
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/main')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+
+      - name: Authenticate with GitHub
+        run: |
+          echo "${{ secrets.PAT }}" | gh auth login --with-token
+
+      - name: Check if PR already exists
+        id: check-pr
+        run: |
+          PR_COUNT=$(gh pr list \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --state open \
+            --json number \
+            --jq 'length')
+
+          if [ "$PR_COUNT" -gt 0 ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "PR ja existe para esta branch"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Nenhum PR encontrado, criando novo"
+          fi
+
+      - name: Create Pull Request
+        if: steps.check-pr.outputs.exists == 'false'
+        run: |
+          PR_BODY=$(cat <<'EOF'
+          Informacoes do PR Automatico
+
+          Branch de Origem: ${{ github.ref_name }}
+          Branch de Destino: main
+
+          Este PR foi gerado automaticamente pelo workflow de auto-PR.
+
+          Checklist antes do merge:
+          - [ ] Revisar alteracoes
+          - [ ] Validar que os testes passaram
+          - [ ] Verificar se nao ha conflitos
+          - [ ] Confirmar que a branch esta atualizada
+          EOF
+          )
+
+          gh pr create \
+            --title "PR Automatico: Merge de ${{ github.ref_name }} para main" \
+            --body "$PR_BODY" \
+            --base main \
+            --head ${{ github.ref_name }}
+
+      - name: Update PR if exists
+        if: steps.check-pr.outputs.exists == 'true'
+        run: |
+          echo "PR ja existe para a branch ${{ github.ref_name }}"
+          gh pr list --base main --head ${{ github.ref_name }}
+
 
   # 6. Release Drafter
   release-drafter:
