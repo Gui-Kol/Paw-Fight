@@ -35,11 +35,19 @@ public class GeradorSalas {
         List<Sala> response = gerar(numRooms, extras);
         int tentativas = 0;
 
-        while ((!validarConexoes(response, numRooms) && tentativas < tentativasMax)) {
+        // Cadeia completa = numRooms principais + 1 tesouro pós-boss.
+        // Menos que isso significa que a cadeia ficou encurralada e deve ser regerada
+        // (antes, validarConexoes estourava com IndexOutOfBoundsException em subList).
+        while ((response.size() <= numRooms || !validarConexoes(response, numRooms)) && tentativas < tentativasMax) {
             roomMap.clear();
             response = gerar(numRooms, extras);
             tentativas++;
             Gdx.app.log("GeradorSalas", "Regenerando mundo porque extras não estão conectados corretamente... (tentativa " + tentativas + ")");
+        }
+
+        if (response.size() <= numRooms) {
+            throw new IllegalStateException(
+                "Falha ao gerar mapa válido após " + tentativasMax + " tentativas (cadeia principal incompleta).");
         }
 
         return response;
@@ -156,6 +164,13 @@ public class GeradorSalas {
                 } else {
                     tentativasLocal++;
                 }
+            }
+
+            // Se a cadeia ficou encurralada (sem célula livre), desiste: devolve a lista
+            // incompleta para que generate() regenere o mapa inteiro.
+            if (next == null) {
+                Gdx.app.log("GeradorSalas", "Cadeia principal encurralada em " + i + " salas; regenerando...");
+                return rooms;
             }
         }
 
