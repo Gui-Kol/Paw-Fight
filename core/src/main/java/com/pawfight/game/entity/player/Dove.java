@@ -20,11 +20,11 @@ public class Dove extends PlayerTemplate {
             1f,     // duracaoTiro
             6,      // vidaBase
             600,    // velocidade
-            32,     // tamanho
+            32,    // tamanho
             0,      // tamanhoTiro
-            15,     // hitboxSize
+            25,     // hitboxSize
             0,      // hitboxOffsetY
-            -5,     // hitboxOffsetX
+            0,      // hitboxOffsetX
             Assets.get("entitys/player/dove/Idle.png", Texture.class),
             Assets.get("entitys/player/dove/Walk.png", Texture.class),
             Assets.get("entitys/player/dove/Death.png", Texture.class),
@@ -46,9 +46,9 @@ public class Dove extends PlayerTemplate {
     public void updateSpriteDefinitions() {
         animacao.setDefinitions(
             new DefinirSprite(animacao.getIdleSheet(), 4, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getWalkSheet(), 6, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getDeadSheet(), 4, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getHurtSheet(), 2, 0.1f, false, olhandoEsquerda)
+            new DefinirSprite(animacao.getWalkSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getDeadSheet(), 8, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getHurtSheet(), 3, 0.1f, false, olhandoEsquerda)
         );
     }
 

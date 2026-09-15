@@ -57,7 +57,7 @@ public class EscolherPersonagem {
             Assets.get("entitys/player/selecao/black_cat.png", Texture.class),
             Assets.get("entitys/player/selecao/orange_cat.png", Texture.class),
             Assets.get("entitys/player/selecao/black_bird.png", Texture.class),
-            Assets.get("entitys/player/selecao/blue_bird.png", Texture.class)
+            Assets.get("entitys/player/selecao/dove.png", Texture.class)
         };
 
         backGroud = Assets.get("world/base/nuvens/back.png", Texture.class);

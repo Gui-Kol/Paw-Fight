@@ -59,7 +59,7 @@ public class Assets {
         manager.load("entitys/player/selecao/black_cat.png", Texture.class);
         manager.load("entitys/player/selecao/orange_cat.png", Texture.class);
         manager.load("entitys/player/selecao/black_bird.png", Texture.class);
-        manager.load("entitys/player/selecao/blue_bird.png", Texture.class);
+        manager.load("entitys/player/selecao/dove.png", Texture.class);
         manager.load("world/base/nuvens/back.png", Texture.class);
         manager.load("world/base/nuvens/4.png", Texture.class);
 
