@@ -5,8 +5,22 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
 
+  // Testes: JUnit 5 + Mockito + backend headless (Gdx.app para logs)
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+  testImplementation 'org.mockito:mockito-core:5.12.0'
+  // Gradle 9 exige o launcher explicitamente no classpath de teste
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+}
+
+tasks.named('test', Test) {
+  useJUnitPlatform()
+  testLogging {
+    events 'passed', 'failed', 'skipped'
+    exceptionFormat 'full'
   }
 }
 
