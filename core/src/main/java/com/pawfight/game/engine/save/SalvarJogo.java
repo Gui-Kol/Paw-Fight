@@ -17,7 +17,13 @@ public class SalvarJogo {
     }
 
     public DadosSalvosJogador loadGame(String nomePersonagem) {
-        FileHandle file = Gdx.files.local("save/" + nomePersonagem + "Save.json");
+        String path = "save/" + nomePersonagem + "Save.json";
+        // Primeiro procura no diretório local (workingDir = assets/), senão no classpath.
+        // Assim funciona tanto pelo gradlew:run quanto rodando pela IDE (workingDir do projeto).
+        FileHandle file = Gdx.files.local(path);
+        if (!file.exists()) {
+            file = Gdx.files.internal(path);
+        }
         if (!file.exists()) return null; // se não existir, retorna null
 
         Json json = new Json();

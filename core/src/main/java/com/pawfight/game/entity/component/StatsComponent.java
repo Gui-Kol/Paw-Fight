@@ -155,6 +155,12 @@ public class StatsComponent {
     public boolean isHurt() { return hurt; }
     public float getHurtTime() { return hurtTime; }
 
+    // ── Cura (respeita o teto de vidaBase) ─────────────────────
+    public void curar(int pontos) {
+        if (morto) return;
+        vida = Math.min(vida + pontos, vidaBase);
+    }
+
     // ── Setters (para save/load e cheats) ──────────────────────
     public void setVida(int vida) { this.vida = vida; }
     public void setVidaBase(int vidaBase) { this.vidaBase = vidaBase; }
