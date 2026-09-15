@@ -99,6 +99,11 @@ public class Assets {
 
         // ── Mundo Areia ──
         manager.load("world/mundo_areia/Tilesets/obj/cacto.png", Texture.class);
+
+        // ── Partículas do Player ──
+        manager.load("particles/dano.png", Texture.class);
+        manager.load("particles/cura.png", Texture.class);
+        manager.load("particles/levelup.png", Texture.class);
     }
 
     private static void loadMusic() {

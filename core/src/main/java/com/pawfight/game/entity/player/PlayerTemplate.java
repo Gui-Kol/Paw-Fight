@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.hud.Hud;
 import com.pawfight.game.engine.hud.HudPause;
 import com.pawfight.game.engine.GameConfig;
+import com.pawfight.game.engine.design.particle.GerenciadorParticulas;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.entity.Entidade;
@@ -31,6 +32,7 @@ public abstract class PlayerTemplate implements Entidade {
     private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
     protected final SaveComponent save = new SaveComponent();
+    protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
     protected StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
     protected CameraComponent cameraComponent; // inicializado no construtor (precisa de params do mapa)
 
@@ -164,6 +166,9 @@ public abstract class PlayerTemplate implements Entidade {
         animacao.updateStateTime(delta);
         stats.updateTimers(delta);
 
+        // Partículas
+        particulas.atualizar(delta);
+
         // Tiros
         combate.updateTiros(delta);
 
@@ -194,6 +199,7 @@ public abstract class PlayerTemplate implements Entidade {
             animacao.animaAtual(stats.isMorto(), stats.isHurt(), moving, stats.getHurtTime()),
             dx, dy, TAMANHO_PX, TAMANHO_PX
         );
+        particulas.desenhar(batch);
         batch.end();
 
         shapeRenderer.setProjectionMatrix(cam.combined);
@@ -251,14 +257,21 @@ public abstract class PlayerTemplate implements Entidade {
             audio.playMorte();
         } else {
             audio.playDano();
+            particulas.spawnDano(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
         }
         Gdx.app.log(getName(), "Tomou " + forca + " de dano!");
+    }
+
+    public void curar(int pontos) {
+        stats.curar(pontos);
+        particulas.spawnCura(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
     }
 
     public void xpUp(int xpGanho) {
         int levels = stats.xpUp(xpGanho);
         for (int i = 0; i < levels; i++) {
             audio.playLevelUp();
+            particulas.spawnLevelUp(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
         }
     }
 
