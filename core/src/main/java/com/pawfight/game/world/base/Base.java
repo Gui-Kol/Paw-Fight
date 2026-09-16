@@ -8,20 +8,22 @@ import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.world.MundoAreia;
+import com.pawfight.game.world.portal.Portal;
 import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.List;
 
 public class Base extends WorldTemplate {
-    private EntradaPortais entradaPortais;
     private final EscolherPersonagem escolherPersonagem;
     private boolean entrouPortal;
     private Portoes portoes;
     private int carregarPosPlayer = 0;
 
+    // Sistema de portal reutilizável
+    private Portal portalAreia;
+
     // Hitboxes cacheadas — criadas uma única vez em vez de cada frame
-    private List<Rectangle> entradaPortalAreia;
-    private List<Rectangle> entradaPortalNeve;
     private List<Rectangle> portaoNeve;
     private List<Rectangle> portaoNeveMensagem;
 
@@ -51,13 +53,20 @@ public class Base extends WorldTemplate {
         if (carregarPosPlayer == 0) {
             portoes = new Portoes(player.getHud());
             game.resize(viewport.getScreenWidth(), viewport.getScreenHeight());
-            entradaPortais = new EntradaPortais(player.getHud());
             carregarParede();
 
             // Cachear hitboxes dos portais uma única vez
             var tilemapHitboxFactory = worldPhysics.getTilemapHitboxFactory();
-            entradaPortalAreia = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalAreia");
-            entradaPortalNeve = tilemapHitboxFactory.createHitboxes(map, "EntradaPortalNeve");
+
+            // Portal reutilizável: define nome, layer, mensagem e mundo de destino
+            portalAreia = new Portal(
+                "PortalAreia",
+                "EntradaPortalAreia",
+                "Aperte ENTER para entrar",
+                MundoAreia::new
+            );
+            portalAreia.definirAreaAtivacao(map, tilemapHitboxFactory);
+
             portaoNeve = tilemapHitboxFactory.createHitboxes(map, "PortaoNeve");
             portaoNeveMensagem = tilemapHitboxFactory.createHitboxes(map, "portaoNeveMensagem");
 
@@ -85,10 +94,10 @@ public class Base extends WorldTemplate {
     protected void checkPortals() {
         try {
             var shapeRenderer = worldRenderer.getShapeRenderer();
-            if (entradaPortais.entrarPortalAreia(player, entradaPortalAreia, batch, shapeRenderer, game, camera, viewport)) {
-                entrouPortal = true;
-            }
-            if (entradaPortais.entrarPortalNeve(player, entradaPortalNeve, batch, game)) {
+
+            // Portal de areia: exibe mensagem e ativa a transição via sistema reutilizável
+            portalAreia.exibirMensagem(player, batch, shapeRenderer);
+            if (!entrouPortal && portalAreia.ativarTransicao(player, game, camera, viewport)) {
                 entrouPortal = true;
             }
 
