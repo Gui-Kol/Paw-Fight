@@ -173,6 +173,8 @@ public abstract class WorldTemplate implements Screen {
         if (!morteIniciada) {
             morteIniciada = true;
             morteTransicaoDisparada = false;
+            // Remove todos os inimigos — nenhum continua agindo ou aparecendo durante a morte
+            enemyManager.clearInimigos();
             player.getCameraComponent().iniciarZoomMorte(ZOOM_MORTE_ALVO, DURACAO_ZOOM_MORTE);
             Gdx.app.log(getWorldName(), "Player morreu — iniciando sequência de morte.");
         }
@@ -184,6 +186,8 @@ public abstract class WorldTemplate implements Screen {
         // 3. Após zoom + animação, dispara o fade to black e retorna ao Home
         if (zoomPronto && animacaoPronta && !morteTransicaoDisparada) {
             morteTransicaoDisparada = true;
+            // Esconde o player (último frame não deve ficar "congelado" na tela)
+            player.setMorteFinalizada(true);
             Gdx.app.log(getWorldName(), "Fim da animação de morte — fade para o menu inicial.");
             voltarAoMenu(DURACAO_FADE_MORTE);
         }

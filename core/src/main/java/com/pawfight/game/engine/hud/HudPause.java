@@ -1,17 +1,20 @@
 package com.pawfight.game.engine.hud;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.design.desenhar.DesenharTextura;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.world.Home;
 import com.pawfight.game.world.template.WorldTemplate;
 
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
@@ -31,6 +34,7 @@ public class HudPause {
     private ImageButton settingsButton;
 
     private WorldTemplate world;
+    private boolean inputAtivo = true;
 
     private final Texture normalTextureQuit = Assets.get("menu/button/quit/quit1.png", Texture.class);
     private final Texture hoverTextureQuit = Assets.get("menu/button/quit/quit2.png", Texture.class);
@@ -64,6 +68,16 @@ public class HudPause {
         Batch batch = world.getBatch();
         boolean jogoPausado = world.getPlayer().isPause();
 
+        // Apenas o player atualmente pausado deve receber input no menu de pause.
+        // Isso evita que stages de players "preview"/antigos interceptem os cliques.
+        if (jogoPausado && !inputAtivo) {
+            hudStage.setInputAtivo(true);
+            inputAtivo = true;
+        } else if (!jogoPausado && inputAtivo) {
+            hudStage.setInputAtivo(false);
+            inputAtivo = false;
+        }
+
         boolean renderizaBotao = motorAnimacao.desenharFundo(
             batch, jogoPausado, fundoAnimacao, 1024, hudStage.getStage().getCamera());
         if (jogoPausado) {
@@ -72,6 +86,12 @@ public class HudPause {
                 hudStage.render();
             }
         }
+    }
+
+    /** Ativa/desativa o input deste menu de pausa (usado para players não selecionados). */
+    public void setInputAtivo(boolean ativo) {
+        hudStage.setInputAtivo(ativo);
+        inputAtivo = ativo;
     }
 
     public void botoes(PlayerTemplate player) {
@@ -132,9 +152,16 @@ public class HudPause {
                     public void clicked(InputEvent event, float x, float y) {
                         criarBotao.playClickSound();
                         WorldTemplate mundo = world;
-                        if (mundo != null) {
-                            mundo.voltarAoMenu(1.5f);
+                        if (mundo == null || mundo.getGame() == null) {
+                            Gdx.app.error("HudPause", "Mundo não disponível para voltar ao menu.");
+                            return;
                         }
+                        // Despausa o player e para a música antes da transição
+                        mundo.getPlayer().setPause(false);
+                        mundo.getBackMusic().stop();
+                        ScreenManager.getInstance().fadeToScreen(
+                            new Home(mundo.getGame(), mundo.getCamera(), mundo.getViewport()),
+                            1.5f, Color.BLACK, false);
                     }
                 });
             } catch (Exception e) {

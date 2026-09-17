@@ -12,6 +12,7 @@ import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 
 public class HudStage {
     private Stage stage;
+    private boolean inputAtivo = false;
 
     public HudStage() {
         OrthographicCamera camera = new OrthographicCamera();
@@ -27,6 +28,9 @@ public class HudStage {
     }
 
     private void registerInputProcessor() {
+        if (inputAtivo) {
+            return;
+        }
         InputProcessor current = Gdx.input.getInputProcessor();
         if (current instanceof InputMultiplexer) {
             InputMultiplexer multiplexer = (InputMultiplexer) current;
@@ -40,6 +44,27 @@ public class HudStage {
                 multiplexer.addProcessor(current);
             }
             Gdx.input.setInputProcessor(multiplexer);
+        }
+        inputAtivo = true;
+    }
+
+    private void unregisterInputProcessor() {
+        if (!inputAtivo) {
+            return;
+        }
+        InputProcessor current = Gdx.input.getInputProcessor();
+        if (current instanceof InputMultiplexer) {
+            ((InputMultiplexer) current).removeProcessor(stage);
+        }
+        inputAtivo = false;
+    }
+
+    /** Ativa/desativa este stage no InputMultiplexer. Usado pelo menu de pausa. */
+    public void setInputAtivo(boolean ativo) {
+        if (ativo) {
+            registerInputProcessor();
+        } else {
+            unregisterInputProcessor();
         }
     }
 
