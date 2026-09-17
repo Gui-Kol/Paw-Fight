@@ -16,6 +16,13 @@ public class CameraComponent {
     private final float mapWidth;
     private final float mapHeight;
 
+    // Estado do zoom de morte (suave e focado no player)
+    private float zoomMorteInicial;
+    private float zoomMorteAlvo;
+    private float tempoZoomMorte = 0f;
+    private float duracaoZoomMorte = 1f;
+    private boolean zoomMorteAtivo = false;
+
     public CameraComponent(int dx, int dy, float zoomCamera,
                            int tileWidth, int numTilesX,
                            int tileHeight, int numTilesY) {
@@ -44,6 +51,34 @@ public class CameraComponent {
 
     public void updateZoom() {
         camera.zoom = alteradorZoom.changeZoom();
+    }
+
+    // ── Zoom de morte (suave, focado no player) ───────────────
+
+    public void iniciarZoomMorte(float zoomAlvo, float duracao) {
+        this.zoomMorteInicial = camera.zoom;
+        this.zoomMorteAlvo = zoomAlvo;
+        this.duracaoZoomMorte = duracao;
+        this.tempoZoomMorte = 0f;
+        this.zoomMorteAtivo = true;
+    }
+
+    /** Interpola o zoom até o alvo. Retorna true quando a animação de zoom termina. */
+    public boolean atualizarZoomMorte(float delta) {
+        if (!zoomMorteAtivo) return true;
+
+        tempoZoomMorte += delta;
+        float progresso = Math.min(tempoZoomMorte / duracaoZoomMorte, 1f);
+        progresso = progresso * progresso * (3f - 2f * progresso); // smoothstep
+
+        camera.zoom = MathUtils.lerp(zoomMorteInicial, zoomMorteAlvo, progresso);
+        camera.update();
+
+        if (progresso >= 1f) {
+            zoomMorteAtivo = false;
+            return true;
+        }
+        return false;
     }
 
     // ── Getters ────────────────────────────────────────────────

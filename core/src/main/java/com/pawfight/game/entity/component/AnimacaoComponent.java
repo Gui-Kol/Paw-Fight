@@ -98,13 +98,14 @@ public class AnimacaoComponent {
         idleCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(idleDefinition, false));
         walkCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(walkDefinition, false));
         hurtCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(hurtDefinition, false));
-        deadCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(deadDefinition, false));
+        // A animação de morte NÃO loopa — toca uma vez e fica no último frame (isDeadAnimationFinished)
+        deadCache[DIR_RIGHT] = motorAnimacao.criarAnimacao(withDirection(deadDefinition, false), false);
 
         // Constrói versões esquerda (olhandoEsquerda = true)
         idleCache[DIR_LEFT] = motorAnimacao.animar(withDirection(idleDefinition, true));
         walkCache[DIR_LEFT] = motorAnimacao.animar(withDirection(walkDefinition, true));
         hurtCache[DIR_LEFT] = motorAnimacao.animar(withDirection(hurtDefinition, true));
-        deadCache[DIR_LEFT] = motorAnimacao.animar(withDirection(deadDefinition, true));
+        deadCache[DIR_LEFT] = motorAnimacao.criarAnimacao(withDirection(deadDefinition, true), false);
 
         if (atackDefinition != null) {
             atackCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(atackDefinition, false));
@@ -212,4 +213,9 @@ public class AnimacaoComponent {
     public Texture getSpecialAtackSheet() { return specialAtackSheet; }
     public float getStateTime() { return stateTime; }
     public MotorAnimacao getMotorAnimacao() { return motorAnimacao; }
+
+    /** Retorna true quando a animação de morte (dead) terminou de tocar por completo. */
+    public boolean isDeadAnimationFinished() {
+        return deadAnimation != null && deadAnimation.isAnimationFinished(stateTime);
+    }
 }

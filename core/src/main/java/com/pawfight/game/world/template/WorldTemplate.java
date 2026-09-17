@@ -3,6 +3,7 @@ package com.pawfight.game.world.template;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -11,8 +12,10 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
+import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.GameConfig;
+import com.pawfight.game.world.Home;
 
 import static com.pawfight.game.engine.GameConfig.LARGURA_TELA_BASE;
 import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
@@ -44,6 +47,13 @@ public abstract class WorldTemplate implements Screen {
     protected Music backMusic;
     protected OrthographicCamera camera;
     protected Viewport viewport;
+
+    // ── Fluxo de morte (sequencial e automático) ───────────────
+    private static final float DURACAO_ZOOM_MORTE = 0.8f;
+    private static final float ZOOM_MORTE_ALVO = 0.2f; // zoom < 1 = aproxima do player
+    private static final float DURACAO_FADE_MORTE = 1.8f; // configurável (1.5s – 2s)
+    private boolean morteIniciada = false;
+    private boolean morteTransicaoDisparada = false;
 
 
     public WorldTemplate(PawFight game, String backgroundPath, String musicPath, OrthographicCamera camera, Viewport viewport) {
@@ -135,11 +145,67 @@ public abstract class WorldTemplate implements Screen {
                 player.getCamera().combined
             );
         }
+
+        // Fluxo de morte (sequencial e automático)
+        gerenciarMorte(delta);
     }
 
     protected void updatePlayer(float delta) {
         player.update(delta);
         player.draw(this);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  FLUXO DE MORTE (sequencial e automático)
+    //  1. Zoom da câmera focado no player
+    //  2. Animação de morte toca por completo
+    //  3. Fade to black configurável
+    //  4. Retorno automático ao menu inicial (Home)
+    // ══════════════════════════════════════════════════════════
+    private void gerenciarMorte(float delta) {
+        if (player == null || !player.isMorto()) {
+            morteIniciada = false;
+            morteTransicaoDisparada = false;
+            return;
+        }
+
+        // 1. Inicia a sequência: zoom suave focado no player
+        if (!morteIniciada) {
+            morteIniciada = true;
+            morteTransicaoDisparada = false;
+            player.getCameraComponent().iniciarZoomMorte(ZOOM_MORTE_ALVO, DURACAO_ZOOM_MORTE);
+            Gdx.app.log(getWorldName(), "Player morreu — iniciando sequência de morte.");
+        }
+
+        // 2. Executa o zoom e espera a animação de morte terminar
+        boolean zoomPronto = player.getCameraComponent().atualizarZoomMorte(delta);
+        boolean animacaoPronta = player.getAnimacao().isDeadAnimationFinished();
+
+        // 3. Após zoom + animação, dispara o fade to black e retorna ao Home
+        if (zoomPronto && animacaoPronta && !morteTransicaoDisparada) {
+            morteTransicaoDisparada = true;
+            Gdx.app.log(getWorldName(), "Fim da animação de morte — fade para o menu inicial.");
+            voltarAoMenu(DURACAO_FADE_MORTE);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  NAVEGAÇÃO CENTRALIZADA
+    //  Retorno ao menu inicial (Home) via ScreenManager.
+    //  Não chama dispose() nas telas/recursos — o ScreenManager
+    //  e o AssetManager cuidam disso.
+    // ══════════════════════════════════════════════════════════
+    public void voltarAoMenu(float duracaoTransicao) {
+        if (ScreenManager.getInstance().isTransitioning()) {
+            return;
+        }
+        backMusic.stop();
+        if (player != null) {
+            player.setPause(false);
+        }
+        Gdx.app.log(getWorldName(), "Voltando ao menu inicial.");
+        ScreenManager.getInstance().fadeToScreen(
+            new Home(game, camera, viewport), duracaoTransicao, Color.BLACK, false);
     }
 
     public void carregarParede() {

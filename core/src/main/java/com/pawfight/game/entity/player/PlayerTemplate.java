@@ -390,6 +390,8 @@ public abstract class PlayerTemplate implements Entidade {
 
     // Câmera
     public OrthographicCamera getCamera() { return cameraComponent.getCamera(); }
+    public CameraComponent getCameraComponent() { return cameraComponent; }
+    public AnimacaoComponent getAnimacao() { return animacao; }
 
     // HUD
     public Hud getHud() { return hud; }

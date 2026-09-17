@@ -129,11 +129,14 @@ public class MundoAreia extends WorldTemplate {
                 return;
             }
 
-            if (player != null && !player.isMorto()) {
+            if (player != null) {
                 super.render(delta);
-                cactoDano();
 
-                roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
+                // Enquanto vivo, processa dano de cenário e liberação de portas
+                if (!player.isMorto()) {
+                    cactoDano();
+                    roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
+                }
             }
         } catch (Exception e) {
             // Log original PRIMEIRO — para não perder o erro real

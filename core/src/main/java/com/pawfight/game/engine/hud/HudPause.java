@@ -30,6 +30,8 @@ public class HudPause {
     private ImageButton resumeButton;
     private ImageButton settingsButton;
 
+    private WorldTemplate world;
+
     private final Texture normalTextureQuit = Assets.get("menu/button/quit/quit1.png", Texture.class);
     private final Texture hoverTextureQuit = Assets.get("menu/button/quit/quit2.png", Texture.class);
     private final Texture pressedTextureQuit = Assets.get("menu/button/quit/quit3.png", Texture.class);
@@ -58,6 +60,7 @@ public class HudPause {
     }
 
     public void draw(WorldTemplate world) {
+        this.world = world;
         Batch batch = world.getBatch();
         boolean jogoPausado = world.getPlayer().isPause();
 
@@ -128,7 +131,10 @@ public class HudPause {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         criarBotao.playClickSound();
-                        Gdx.app.exit();
+                        WorldTemplate mundo = world;
+                        if (mundo != null) {
+                            mundo.voltarAoMenu(1.5f);
+                        }
                     }
                 });
             } catch (Exception e) {
