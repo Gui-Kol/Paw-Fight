@@ -121,6 +121,7 @@ public abstract class PlayerTemplate implements Entidade {
         if (input.isPauseToggle()) {
             menuAberto = !menuAberto;
             pause = menuAberto;
+            Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
         }
         if (pause) return;
 
@@ -258,28 +259,36 @@ public abstract class PlayerTemplate implements Entidade {
         if (stats.isMorto()) {
             animacao.resetStateTime();
             audio.playMorte();
+            Gdx.app.log(getName(), "morreu — vida zerada (dano: " + forca + ")");
         } else {
             audio.playDano();
             particulas.spawnDano(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+            Gdx.app.log(getName(), "Tomou " + forca + " de dano — vida " + stats.getVida() + "/" + stats.getVidaBase());
         }
-        Gdx.app.log(getName(), "Tomou " + forca + " de dano!");
     }
 
     public void curar(int pontos) {
+        int vidaAntes = stats.getVida();
         stats.curar(pontos);
         particulas.spawnCura(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+        Gdx.app.log(getName(), "Curou " + pontos + " — vida " + vidaAntes + " -> " + stats.getVida() + "/" + stats.getVidaBase());
     }
 
     public void xpUp(int xpGanho) {
+        int levelAntes = stats.getLevel();
         int levels = stats.xpUp(xpGanho);
         for (int i = 0; i < levels; i++) {
             audio.playLevelUp();
             particulas.spawnLevelUp(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
         }
+        Gdx.app.log(getName(), "Ganhou " + xpGanho + " XP — xp " + stats.getXp() + "/" + stats.getXpNecessario()
+            + (levels > 0 ? " — level " + levelAntes + " -> " + stats.getLevel() : ""));
     }
 
     public void moedaUp(int moedasGanha) {
+        int moedasAntes = stats.getMoedas();
         stats.moedaUp(moedasGanha);
+        Gdx.app.log(getName(), "Ganhou " + moedasGanha + " moedas — total " + moedasAntes + " -> " + stats.getMoedas());
     }
 
     // ══════════════════════════════════════════════════════════

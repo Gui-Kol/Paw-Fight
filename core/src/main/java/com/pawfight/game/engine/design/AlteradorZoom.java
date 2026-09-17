@@ -13,17 +13,17 @@ public class AlteradorZoom {
         if (key.isActive(GameAction.ZOOM_MENOS)) {
             if (zoom < 0.7f) {
                 zoom += 0.1f;
-                Gdx.app.log("PawFight", "Zoom aumentado: " + zoom);
+                Gdx.app.log("AlteradorZoom", "Zoom aumentado: " + zoom);
             } else {
-                Gdx.app.log("PawFight", "Zoom máximo atingido: " + zoom);
+                Gdx.app.log("AlteradorZoom", "Zoom máximo atingido: " + zoom);
             }
         }
         if (key.isActive(GameAction.ZOOM_MAIS)) {
             if (zoom > 0.3f) {
                 zoom -= 0.1f;
-                Gdx.app.log("PawFight", "Zoom diminuído: " + zoom);
+                Gdx.app.log("AlteradorZoom", "Zoom diminuído: " + zoom);
             } else {
-                Gdx.app.log("PawFight", "Zoom mínimo atingido: " + zoom);
+                Gdx.app.log("AlteradorZoom", "Zoom mínimo atingido: " + zoom);
             }
         }
 

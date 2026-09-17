@@ -90,6 +90,7 @@ public class Home implements Screen {
 
     @Override
     public void show() {
+        Gdx.app.log("Home", "show()");
         if (playButton == null && quitButton == null) {
             try {
                 Stage stage = hudStage.getStage();
@@ -129,14 +130,17 @@ public class Home implements Screen {
     @Override
     public void resize(int width, int height) {
         hudStage.resize(width, height);
+        Gdx.app.debug("Home", "resize — " + width + "x" + height);
     }
 
     @Override
     public void pause() {
+        Gdx.app.log("Home", "pause");
     }
 
     @Override
     public void resume() {
+        Gdx.app.log("Home", "resume");
     }
 
     @Override
@@ -144,6 +148,7 @@ public class Home implements Screen {
         if (backMusic != null) {
             backMusic.stop();
         }
+        Gdx.app.log("Home", "hide — música parada.");
     }
 
     @Override

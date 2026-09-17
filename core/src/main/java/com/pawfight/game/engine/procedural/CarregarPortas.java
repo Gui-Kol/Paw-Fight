@@ -68,12 +68,14 @@ public class CarregarPortas {
                 try {
                     List<Rectangle> portas = tilemapHitboxFactory.createTileLayerHitboxes(map, dir.layer, 16, 16);
                     if (!portas.isEmpty() && ChecarColisao.houveColisao(playerBox, portas)) {
+                        Gdx.app.log(nomeClasseOrigem, "Atravessando porta " + dir.name().toLowerCase()
+                            + " — sala [" + currentRoom.getX() + "," + currentRoom.getY() + "] -> [" + destino.getX() + "," + destino.getY() + "]");
                         moverParaSala(destino.getX(), destino.getY(), world);
                         player.setLocal(dir.posX, dir.posY);
                         return;
                     }
                 } catch (Exception e) {
-                    Gdx.app.error(nomeClasseOrigem, "Erro porta " + dir.name().toLowerCase() + ": " + e.getMessage());
+                    Gdx.app.error(nomeClasseOrigem, "Erro porta " + dir.name().toLowerCase() + ": " + e.getMessage(), e);
                 }
             }
         }

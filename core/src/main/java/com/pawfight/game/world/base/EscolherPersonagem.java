@@ -92,6 +92,8 @@ public class EscolherPersonagem {
 
         // Inicializa nuvem fora da tela à direita
         resetNuvem();
+
+        Gdx.app.log("EscolherPersonagem", "Inicializado com " + previews.length + " personagens carregados (saves aplicados).");
     }
 
     private void resetNuvem() {
@@ -134,6 +136,7 @@ public class EscolherPersonagem {
                 personagemAtual = 0;
             }
             personagemPreview = previews[personagemAtual];
+            Gdx.app.debug("EscolherPersonagem", "Navegou para: " + personagemPreview.getName() + " [" + personagemAtual + "]");
         }
 
         if (keys.isActive(GameAction.MENU_LEFT)) {
@@ -142,9 +145,11 @@ public class EscolherPersonagem {
                 personagemAtual = personagens.length - 1;
             }
             personagemPreview = previews[personagemAtual];
+            Gdx.app.debug("EscolherPersonagem", "Navegou para: " + personagemPreview.getName() + " [" + personagemAtual + "]");
         }
 
         if (keys.isActive(GameAction.MENU_CONFIRM)) {
+            Gdx.app.log("EscolherPersonagem", "Personagem confirmado: " + previews[personagemAtual].getName());
             return previews[personagemAtual]; // retorna o player pré-criado
         }
 
