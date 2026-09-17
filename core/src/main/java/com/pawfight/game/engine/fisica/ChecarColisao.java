@@ -1,11 +1,14 @@
 package com.pawfight.game.engine.fisica;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
 
 public class ChecarColisao {
+
+    private static final String TAG = "ChecarColisao";
 
     private static final Rectangle tempX = new Rectangle();
     private static final Rectangle tempY = new Rectangle();
@@ -75,6 +78,9 @@ public class ChecarColisao {
 
         float pushDx = hitBox.x - preX;
         float pushDy = hitBox.y - preY;
+        if (pushDx != 0f || pushDy != 0f) {
+            Gdx.app.debug(TAG, "Sobreposição resolvida — empurrão [" + pushDx + "," + pushDy + "] em (" + preX + "," + preY + ")");
+        }
         float adjustedNextX = player.getNextX() + pushDx;
         float adjustedNextY = player.getNextY() + pushDy;
 

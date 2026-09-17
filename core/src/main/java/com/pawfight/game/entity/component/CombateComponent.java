@@ -1,5 +1,6 @@
 package com.pawfight.game.entity.component;
 
+import com.badlogic.gdx.Gdx;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.Atirar;
 import com.pawfight.game.entity.tiro.TirosTemplate;
@@ -9,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class CombateComponent {
+
+    private static final String TAG = "CombateComponent";
 
     private final List<TirosTemplate> tiros = new ArrayList<>();
     private final List<TirosTemplate> tirosModelos = new ArrayList<>();
@@ -33,6 +36,7 @@ public class CombateComponent {
             if (tiro.isExpirado()) {
                 it.remove();
                 tiro.liberar();
+                Gdx.app.debug(TAG, "Tiro expirado e removido: " + tiro.getClass().getSimpleName() + " — restam " + tiros.size());
             }
         }
     }
@@ -47,10 +51,13 @@ public class CombateComponent {
 
     public void adicionarTiro(TirosTemplate tiro) {
         tiros.add(tiro);
+        Gdx.app.debug(TAG, "Tiro disparado: " + tiro.getClass().getSimpleName() + " — ativos: " + tiros.size());
     }
 
     public void removerTiro(TirosTemplate tiro) {
-        tiros.remove(tiro);
+        if (tiros.remove(tiro)) {
+            Gdx.app.debug(TAG, "Tiro removido: " + tiro.getClass().getSimpleName() + " — restam " + tiros.size());
+        }
     }
 
     public void clearTiros() {
