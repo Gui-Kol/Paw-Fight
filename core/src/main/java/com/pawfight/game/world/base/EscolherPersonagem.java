@@ -76,6 +76,13 @@ public class EscolherPersonagem {
             saveComponent.loadSaveData(new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
         };
 
+        // Desativa o input dos menus de pausa de TODOS os previews.
+        // O preview selecionado terá o input ativado ao entrar no jogo;
+        // os demais não devem interceptar cliques do menu de pausa (mundo nulo).
+        for (PlayerTemplate preview : previews) {
+            preview.getHudPause().setInputAtivo(false);
+        }
+
         // Inicializa duas cópias do background
         bgX1 = 0;
         bgX2 = Gdx.graphics.getWidth() - 1; // começa logo após a primeira

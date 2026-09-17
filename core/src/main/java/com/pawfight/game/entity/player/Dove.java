@@ -46,9 +46,9 @@ public class Dove extends PlayerTemplate {
     public void updateSpriteDefinitions() {
         animacao.setDefinitions(
             new DefinirSprite(animacao.getIdleSheet(), 4, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getWalkSheet(), 6, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getDeadSheet(), 4, 0.1f, false, olhandoEsquerda),
-            new DefinirSprite(animacao.getHurtSheet(), 2, 0.1f, false, olhandoEsquerda)
+            new DefinirSprite(animacao.getWalkSheet(), 4, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getDeadSheet(), 8, 0.1f, false, olhandoEsquerda),
+            new DefinirSprite(animacao.getHurtSheet(), 3, 0.1f, false, olhandoEsquerda)
         );
     }
 

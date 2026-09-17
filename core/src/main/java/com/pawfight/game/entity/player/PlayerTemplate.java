@@ -53,6 +53,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected boolean pause = false;
     protected boolean drawHitBoxes = false;
     protected final Renderizar renderizar = Renderizar.INSTANCE;
+    private boolean morteFinalizada = false;
 
     // ── Métodos abstratos (cada player define os seus) ─────────
     public abstract DadosPlayer dadosPlayer();
@@ -195,10 +196,12 @@ public abstract class PlayerTemplate implements Entidade {
 
         batch.setProjectionMatrix(cam.combined);
         batch.begin();
-        batch.draw(
-            animacao.animaAtual(stats.isMorto(), stats.isHurt(), moving, stats.getHurtTime()),
-            dx, dy, TAMANHO_PX, TAMANHO_PX
-        );
+        if (!morteFinalizada) {
+            batch.draw(
+                animacao.animaAtual(stats.isMorto(), stats.isHurt(), moving, stats.getHurtTime()),
+                dx, dy, TAMANHO_PX, TAMANHO_PX
+            );
+        }
         particulas.desenhar(batch);
         batch.end();
 
@@ -390,9 +393,12 @@ public abstract class PlayerTemplate implements Entidade {
 
     // Câmera
     public OrthographicCamera getCamera() { return cameraComponent.getCamera(); }
+    public CameraComponent getCameraComponent() { return cameraComponent; }
+    public AnimacaoComponent getAnimacao() { return animacao; }
 
     // HUD
     public Hud getHud() { return hud; }
+    public HudPause getHudPause() { return hudPause; }
 
     // Pause
     public boolean isPause() { return pause; }
@@ -400,6 +406,10 @@ public abstract class PlayerTemplate implements Entidade {
         this.pause = pause;
         this.menuAberto = pause;
     }
+
+    // Morte finalizada (esconde o sprite após a animação tocar 1 vez)
+    public boolean isMorteFinalizada() { return morteFinalizada; }
+    public void setMorteFinalizada(boolean morteFinalizada) { this.morteFinalizada = morteFinalizada; }
 
     public StatsComponent getStats() {
         return stats;
