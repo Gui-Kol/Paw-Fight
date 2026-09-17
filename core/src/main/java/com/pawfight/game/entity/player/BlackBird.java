@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
-import com.pawfight.game.entity.tiro.dove.Coco;
+import com.pawfight.game.entity.tiro.blackbird.TiroGelo;
 
 public class BlackBird extends PlayerTemplate {
     public BlackBird(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -38,7 +38,7 @@ public class BlackBird extends PlayerTemplate {
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new Coco(stats.getTamanhoTiro(), this);
+        return new TiroGelo(stats.getTamanhoTiro(), this);
     }
 
     @Override

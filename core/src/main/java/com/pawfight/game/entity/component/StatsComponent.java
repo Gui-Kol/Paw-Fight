@@ -94,6 +94,21 @@ public class StatsComponent {
         return true;
     }
 
+    /**
+     * Dano direto (ex.: efeitos de status/DoT): ignora o cooldown e não
+     * ativa a animação de hurt, mas ainda pode matar.
+     *
+     * @return true se o dano foi aplicado (false quando já está morto)
+     */
+    public boolean aplicarDanoDireto(int forcaDano) {
+        if (morto) return false;
+        vida -= forcaDano;
+        if (vida <= 0) {
+            morto = true;
+        }
+        return true;
+    }
+
     // ── XP / Level ─────────────────────────────────────────────
     public int xpUp(int xpGanho) {
         xp += xpGanho;

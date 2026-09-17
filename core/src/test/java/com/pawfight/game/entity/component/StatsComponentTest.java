@@ -127,6 +127,37 @@ class StatsComponentTest {
         assertEquals(0f, stats.getHurtTime());
     }
 
+    // ── Dano direto (DoT / efeitos de status) ──────────────────
+
+    @Test
+    @DisplayName("Dano direto ignora o cooldown e pode ser aplicado em sequência")
+    void danoDiretoIgnoraCooldown() {
+        assertTrue(stats.aplicarDanoDireto(2));
+        assertTrue(stats.aplicarDanoDireto(2));
+        assertEquals(6, stats.getVida());
+    }
+
+    @Test
+    @DisplayName("Dano direto não ativa a animação de hurt")
+    void danoDiretoSemHurt() {
+        stats.aplicarDanoDireto(2);
+        assertFalse(stats.isHurt());
+    }
+
+    @Test
+    @DisplayName("Dano direto letal marca como morto")
+    void danoDiretoLetal() {
+        assertTrue(stats.aplicarDanoDireto(999));
+        assertTrue(stats.isMorto());
+    }
+
+    @Test
+    @DisplayName("Dano direto não é aplicado em quem já está morto")
+    void danoDiretoEmMorto() {
+        stats.aplicarDano(999);
+        assertFalse(stats.aplicarDanoDireto(1));
+    }
+
     // ── XP / Level ─────────────────────────────────────────────
 
     @Test

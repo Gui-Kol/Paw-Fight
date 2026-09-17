@@ -14,6 +14,7 @@ import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.engine.save.DadosSalvosJogador;
 import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.component.*;
+import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
 
@@ -390,6 +391,9 @@ public abstract class PlayerTemplate implements Entidade {
     // Combate
     public List<TirosTemplate> getTiros() { return combate.getTiros(); }
     public void setPodeAtacar(boolean podeAtacar) { combate.setPodeAtacar(podeAtacar); }
+
+    /** Injeta a lista de inimigos da sala atual (chamado pelo mundo). */
+    public void setFonteInimigos(List<EnemyTemplate> inimigos) { combate.setFonteInimigos(inimigos); }
 
     // Câmera
     public OrthographicCamera getCamera() { return cameraComponent.getCamera(); }

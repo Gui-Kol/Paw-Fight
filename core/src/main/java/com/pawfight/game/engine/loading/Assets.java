@@ -92,6 +92,12 @@ public class Assets {
         manager.load("entitys/player/dove/coco/2.png", Texture.class);
         manager.load("entitys/player/dove/coco/3.png", Texture.class);
 
+        // ── Tiros exclusivos ──
+        // Fantasmagórico (BlackCat) | Solar (Dove) e Gelo (BlackBird) usam
+        // texturas do HUD (raio.png / nuvemChao.png), já carregadas acima
+        manager.load("entitys/player/black_cat/tiro.png", Texture.class);
+        manager.load("effects/sangue/sangue.png", Texture.class);
+
         // ── Enemy: Skeleton ──
         manager.load("entitys/enemy/Skeleton/Idle.png", Texture.class);
         manager.load("entitys/enemy/Skeleton/Walk.png", Texture.class);

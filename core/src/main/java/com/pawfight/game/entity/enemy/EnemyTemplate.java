@@ -9,6 +9,7 @@ import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.component.AnimacaoComponent;
 import com.pawfight.game.entity.component.AudioComponent;
 import com.pawfight.game.entity.component.StatsComponent;
+import com.pawfight.game.entity.component.StatusComponent;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public abstract class EnemyTemplate implements Entidade {
     // ── Componentes ────────────────────────────────────────────
     protected final AnimacaoComponent animacao = new AnimacaoComponent();
     protected final AudioComponent audio = new AudioComponent();
+    protected final StatusComponent status = new StatusComponent();
     protected StatsComponent stats;
 
     // ── Referências ────────────────────────────────────────────
@@ -168,6 +170,12 @@ public abstract class EnemyTemplate implements Entidade {
         // Timers (sempre rodam, mesmo morto — para animação de morte e cooldowns)
         animacao.updateStateTime(delta);
         stats.updateTimers(delta);
+
+        // Efeitos de status: queimadura aplica dano por tick apenas em vida
+        int danoStatus = status.update(delta);
+        if (danoStatus > 0 && !stats.isMorto()) {
+            danoPorStatus(danoStatus);
+        }
     }
 
 
@@ -176,7 +184,9 @@ public abstract class EnemyTemplate implements Entidade {
 
         float distanciaAoPlayer = calcularDistanciaAoPlayer();
 
-        if (distanciaAoPlayer <= DISTANCIA_ATAQUE && ataqueTimer >= ATAQUE_COOLDOWN) {
+        // Lentidão também retarda a cadência de ataque (cooldown efetivo maior)
+        float cooldownAtaque = ATAQUE_COOLDOWN / status.getMultiplicadorVelocidade();
+        if (distanciaAoPlayer <= DISTANCIA_ATAQUE && ataqueTimer >= cooldownAtaque) {
             ataqueBasico();
             ataqueTimer = 0f;
             animacao.resetStateTime();
@@ -196,15 +206,60 @@ public abstract class EnemyTemplate implements Entidade {
     //  AÇÕES
     // ══════════════════════════════════════════════════════════
 
+    @Override
     public void dano(int forca) {
-        if (!stats.aplicarDano(forca)) return;
+        receberDano(forca);
+    }
+
+    /**
+     * Dano de impacto (respeita o cooldown de invulnerabilidade).
+     *
+     * @return true se o dano foi efetivamente aplicado — usado por tiros
+     * para disparar efeitos de acerto (queimadura, lentidão, roubo de vida)
+     */
+    public boolean receberDano(int forca) {
+        if (!stats.aplicarDano(forca)) return false;
+        onDanoRecebido(true);
+        return true;
+    }
+
+    /**
+     * Dano contínuo de status (DoT): ignora cooldown e a animação de hurt,
+     * mas ainda processa a morte.
+     */
+    public void danoPorStatus(int forca) {
+        if (!stats.aplicarDanoDireto(forca)) return;
+        onDanoRecebido(false);
+    }
+
+    private void onDanoRecebido(boolean notificarDano) {
         if (stats.isMorto()) {
             animacao.resetStateTime();
             player.moedaUp(moedasMorte());
             audio.playMorte();
-        } else {
+        } else if (notificarDano) {
             audio.playDano();
         }
+    }
+
+    // ── Efeitos de status (API genérica, usada por qualquer tiro) ──
+
+    public boolean aplicarQueimadura(int danoPorTick, float duracao, float chance) {
+        if (stats.isMorto()) return false;
+        boolean aplicou = status.aplicarQueimadura(danoPorTick, duracao, chance);
+        if (aplicou) {
+            Gdx.app.debug(nome, "Queimadura aplicada (" + danoPorTick + " dano por tick)");
+        }
+        return aplicou;
+    }
+
+    public boolean aplicarLentidao(float multiplicador, float duracao, float chance) {
+        if (stats.isMorto()) return false;
+        boolean aplicou = status.aplicarLentidao(multiplicador, duracao, chance);
+        if (aplicou) {
+            Gdx.app.debug(nome, "Lentidão aplicada (x" + multiplicador + " por " + duracao + "s)");
+        }
+        return aplicou;
     }
 
     public void sincronizarPosicaoComHitbox() {
@@ -255,7 +310,8 @@ public abstract class EnemyTemplate implements Entidade {
     public int getVida()            { return stats.getVida(); }
     public int getVidaBase()        { return stats.getVidaBase(); }
     public int getForca()           { return stats.getForca(); }
-    public int getVelocidade()      { return stats.getVelocidade(); }
+    public int getVelocidade()      { return Math.round(stats.getVelocidade() * status.getMultiplicadorVelocidade()); }
+    public StatusComponent getStatus() { return status; }
     public boolean isMorto()        { return stats.isMorto(); }
     public boolean isOlhandoEsquerda() { return olhandoEsquerda; }
 }
