@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
-import com.pawfight.game.entity.tiro.dove.Coco;
+import com.pawfight.game.entity.tiro.dove.TiroSolar;
 
 public class Dove extends PlayerTemplate {
 
@@ -39,7 +39,7 @@ public class Dove extends PlayerTemplate {
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new Coco(stats.getTamanhoTiro(), this);
+        return new TiroSolar(stats.getTamanhoTiro(), this);
     }
 
     @Override

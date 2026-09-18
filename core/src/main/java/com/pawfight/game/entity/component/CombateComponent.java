@@ -1,6 +1,7 @@
 package com.pawfight.game.entity.component;
 
 import com.badlogic.gdx.Gdx;
+import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.Atirar;
 import com.pawfight.game.entity.tiro.TirosTemplate;
@@ -17,6 +18,9 @@ public class CombateComponent {
     private final List<TirosTemplate> tirosModelos = new ArrayList<>();
     private final Atirar atirar = new Atirar();
     private boolean podeAtacar = false;
+
+    /** Inimigos vivos da sala atual (injetados pelo mundo via PlayerTemplate). */
+    private List<EnemyTemplate> fonteInimigos;
 
     // ── Modelos de tiro ────────────────────────────────────────
 
@@ -44,7 +48,15 @@ public class CombateComponent {
 
     public void processarTirosAutomaticos(PlayerTemplate player, float delta) {
         if (!podeAtacar || tirosModelos == null || tirosModelos.isEmpty()) return;
-        atirar.atira(tirosModelos, player, delta);
+
+        // Guarda global: nenhum tiro é disparado se não houver inimigos na sala
+        if (fonteInimigos == null || fonteInimigos.isEmpty()) return;
+
+        atirar.atira(tirosModelos, player, delta, fonteInimigos);
+    }
+
+    public void setFonteInimigos(List<EnemyTemplate> inimigos) {
+        this.fonteInimigos = inimigos;
     }
 
     // ── Gerenciamento de tiros ativos ──────────────────────────

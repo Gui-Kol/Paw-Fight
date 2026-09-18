@@ -77,6 +77,11 @@ public abstract class WorldTemplate implements Screen {
 
     public void setPlayer(PlayerTemplate player) {
         this.player = player;
+        if (player != null) {
+            // Compartilha a lista viva de inimigos da sala — tiros só nascem
+            // quando houver inimigos e miram neles
+            player.setFonteInimigos(enemyManager.getListaInimigos());
+        }
     }
 
     @Override

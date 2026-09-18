@@ -61,8 +61,17 @@ public class DanoTiro {
             for (int c = 0, cn = candidatos.size(); c < cn; c++) {
                 EnemyTemplate inimigo = candidatos.get(c);
                 if (inimigo.getHitBox().overlaps(tiro.getHitBox())) {
-                    inimigo.dano(tiro.getDano());
-                    totalColisoes++;
+                    if (inimigo.receberDano(tiro.getDano())) {
+                        // Efeitos de acerto (queimadura, lentidão, roubo de vida)
+                        tiro.aoAcertar(inimigo);
+                        totalColisoes++;
+
+                        // Tiro de alvo único: consome o projétil no primeiro acerto
+                        if (tiro.isUnicoAlvo()) {
+                            tiro.expirar();
+                            break;
+                        }
+                    }
                 }
             }
         }

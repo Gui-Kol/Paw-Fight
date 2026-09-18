@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
-import com.pawfight.game.entity.tiro.dove.Coco;
+import com.pawfight.game.entity.tiro.orangecat.TiroSangue;
 
 public class OrangeCat extends PlayerTemplate {
     public OrangeCat(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
@@ -38,7 +38,7 @@ public class OrangeCat extends PlayerTemplate {
 
     @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new Coco(stats.getTamanhoTiro(), this);
+        return new TiroSangue(stats.getTamanhoTiro(), this);
     }
 
     @Override
