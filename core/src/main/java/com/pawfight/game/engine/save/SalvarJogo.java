@@ -13,7 +13,8 @@ public class SalvarJogo {
 
         FileHandle file = Gdx.files.local("save/" + data.nomePersonagem + "Save.json"); // salva no diretório local
         file.writeString(saveString, false);
-        Gdx.app.log("SalvarJogo", "Jogo salvo com sucesso para o personagem: " + data.nomePersonagem);
+        Gdx.app.log("SalvarJogo", "Jogo salvo em " + file.file().getPath() + " — personagem: " + data.nomePersonagem
+            + " (level " + data.level + ", xp " + data.xp + "/" + data.xpNecessario + ", moedas " + data.moedas + ")");
     }
 
     public DadosSalvosJogador loadGame(String nomePersonagem) {
@@ -24,10 +25,15 @@ public class SalvarJogo {
         if (!file.exists()) {
             file = Gdx.files.internal(path);
         }
-        if (!file.exists()) return null; // se não existir, retorna null
+        if (!file.exists()) {
+            Gdx.app.log("SalvarJogo", "Nenhum save em " + path + " para: " + nomePersonagem);
+            return null;
+        }
 
         Json json = new Json();
-        Gdx.app.log("SalvarJogo", "Jogo carregado com sucesso para o personagem: " + nomePersonagem);
-        return json.fromJson(DadosSalvosJogador.class, file.readString());
+        DadosSalvosJogador dados = json.fromJson(DadosSalvosJogador.class, file.readString());
+        Gdx.app.log("SalvarJogo", "Jogo carregado de " + file.file().getPath() + " — personagem: " + nomePersonagem
+            + " (level " + dados.level + ", xp " + dados.xp + "/" + dados.xpNecessario + ", moedas " + dados.moedas + ")");
+        return dados;
     }
 }

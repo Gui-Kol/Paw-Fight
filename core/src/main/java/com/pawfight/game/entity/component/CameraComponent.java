@@ -61,6 +61,7 @@ public class CameraComponent {
         this.duracaoZoomMorte = duracao;
         this.tempoZoomMorte = 0f;
         this.zoomMorteAtivo = true;
+        Gdx.app.log("CameraComponent", "Zoom de morte iniciado: " + zoomMorteInicial + " -> " + zoomAlvo + " em " + duracao + "s");
     }
 
     /** Interpola o zoom até o alvo. Retorna true quando a animação de zoom termina. */
@@ -76,6 +77,7 @@ public class CameraComponent {
 
         if (progresso >= 1f) {
             zoomMorteAtivo = false;
+            Gdx.app.log("CameraComponent", "Zoom de morte concluído: zoom final " + camera.zoom);
             return true;
         }
         return false;

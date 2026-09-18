@@ -21,6 +21,8 @@ public class SaveComponent {
         data.moedas            = stats.getMoedas();
         data.pontosDisponiveis = stats.getPontosDisponiveis();
         save.salvar(data);
+        Gdx.app.log("SaveComponent", "Dados coletados para save de " + player.getName()
+            + " (level " + data.level + ", vida base " + data.vidaBase + ", força " + data.forca + ")");
     }
 
     public PlayerTemplate loadSaveData(PlayerTemplate player) {
@@ -40,7 +42,9 @@ public class SaveComponent {
         stats.setXpNecessario(data.xpNecessario);
         stats.setMoedas(data.moedas);
         stats.setPontosDisponiveis(data.pontosDisponiveis);
-        Gdx.app.log("SaveComponent", "Save carregado para " + data.nomePersonagem);
+        Gdx.app.log("SaveComponent", "Save aplicado a " + data.nomePersonagem
+            + " — level " + data.level + ", vida " + data.vidaBase + ", força " + data.forca
+            + ", velocidade " + data.velocidade + ", moedas " + data.moedas);
         return player;
     }
 }

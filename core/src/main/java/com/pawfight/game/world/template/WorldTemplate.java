@@ -54,6 +54,8 @@ public abstract class WorldTemplate implements Screen {
     private static final float DURACAO_FADE_MORTE = 1.8f; // configurável (1.5s – 2s)
     private boolean morteIniciada = false;
     private boolean morteTransicaoDisparada = false;
+    private boolean zoomMorteConcluido = false;
+    private boolean animacaoMorteConcluida = false;
 
 
     public WorldTemplate(PawFight game, String backgroundPath, String musicPath, OrthographicCamera camera, Viewport viewport) {
@@ -91,6 +93,7 @@ public abstract class WorldTemplate implements Screen {
             backMusic.setLooping(true);
             backMusic.setVolume(GameConfig.getInstance().getVolumeMusica());
             backMusic.play();
+            Gdx.app.log(getWorldName(), "show() — mapa carregado: " + getMapPath());
         } catch (Exception e) {
             Gdx.app.error(getWorldName(), "Erro no Show: " + e.getMessage(), e);
         }
@@ -171,6 +174,8 @@ public abstract class WorldTemplate implements Screen {
         if (player == null || !player.isMorto()) {
             morteIniciada = false;
             morteTransicaoDisparada = false;
+            zoomMorteConcluido = false;
+            animacaoMorteConcluida = false;
             return;
         }
 
@@ -178,22 +183,34 @@ public abstract class WorldTemplate implements Screen {
         if (!morteIniciada) {
             morteIniciada = true;
             morteTransicaoDisparada = false;
+            zoomMorteConcluido = false;
+            animacaoMorteConcluida = false;
             // Remove todos os inimigos — nenhum continua agindo ou aparecendo durante a morte
             enemyManager.clearInimigos();
             player.getCameraComponent().iniciarZoomMorte(ZOOM_MORTE_ALVO, DURACAO_ZOOM_MORTE);
-            Gdx.app.log(getWorldName(), "Player morreu — iniciando sequência de morte.");
+            Gdx.app.log(getWorldName(), "Player morreu — iniciando sequência de morte (zoom para " + ZOOM_MORTE_ALVO
+                + " em " + DURACAO_ZOOM_MORTE + "s).");
         }
 
         // 2. Executa o zoom e espera a animação de morte terminar
         boolean zoomPronto = player.getCameraComponent().atualizarZoomMorte(delta);
         boolean animacaoPronta = player.getAnimacao().isDeadAnimationFinished();
 
+        if (zoomPronto && !zoomMorteConcluido) {
+            zoomMorteConcluido = true;
+            Gdx.app.log(getWorldName(), "Zoom de morte concluído.");
+        }
+        if (animacaoPronta && !animacaoMorteConcluida) {
+            animacaoMorteConcluida = true;
+            Gdx.app.log(getWorldName(), "Animação de morte concluída.");
+        }
+
         // 3. Após zoom + animação, dispara o fade to black e retorna ao Home
         if (zoomPronto && animacaoPronta && !morteTransicaoDisparada) {
             morteTransicaoDisparada = true;
             // Esconde o player (último frame não deve ficar "congelado" na tela)
             player.setMorteFinalizada(true);
-            Gdx.app.log(getWorldName(), "Fim da animação de morte — fade para o menu inicial.");
+            Gdx.app.log(getWorldName(), "Fade de morte disparado (" + DURACAO_FADE_MORTE + "s) — retornando ao menu inicial.");
             voltarAoMenu(DURACAO_FADE_MORTE);
         }
     }
@@ -253,19 +270,23 @@ public abstract class WorldTemplate implements Screen {
         if (player != null) {
             player.getHud().resize(width, height);
         }
+        Gdx.app.debug(getWorldName(), "resize() — " + width + "x" + height);
     }
 
     @Override
     public void pause() {
+        Gdx.app.log(getWorldName(), "pause");
     }
 
     @Override
     public void resume() {
+        Gdx.app.log(getWorldName(), "resume");
     }
 
     @Override
     public void hide() {
         backMusic.stop();
+        Gdx.app.log(getWorldName(), "hide — música parada.");
     }
 
     @Override

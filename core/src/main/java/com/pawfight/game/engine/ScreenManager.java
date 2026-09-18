@@ -53,6 +53,8 @@ public class ScreenManager {
         this.transitionDuration = duration;
         this.currentEffect = new FadeTransitionEffect(duration, color, useGradient);
         this.currentEffect.reset();
+        Gdx.app.log("ScreenManager", "Transição iniciada: fade -> " + nextScreen.getClass().getSimpleName()
+            + " (" + duration + "s, gradiente=" + useGradient + ")");
     }
 
     public void fadeToScreen(Screen nextScreen, float duration) {
@@ -67,6 +69,8 @@ public class ScreenManager {
         this.transitionDuration = duration;
         this.currentEffect = new SlideTransitionEffect(duration, direction);
         this.currentEffect.reset();
+        Gdx.app.log("ScreenManager", "Transição iniciada: slide " + direction + " -> " + nextScreen.getClass().getSimpleName()
+            + " (" + duration + "s)");
     }
 
     // ────────────────────────── Update / Render ───────────────────────────
@@ -79,6 +83,7 @@ public class ScreenManager {
         if (fadingOut && currentEffect.getElapsedTime() >= transitionDuration / 2f) {
             if (nextScreen != null) {
                 game.setScreen(nextScreen);
+                Gdx.app.log("ScreenManager", "Tela trocada no meio da transição: " + nextScreen.getClass().getSimpleName());
             }
             fadingOut = false;
 
@@ -91,6 +96,7 @@ public class ScreenManager {
 
         if (currentEffect.isFinished()) {
             transitioning = false;
+            Gdx.app.log("ScreenManager", "Transição concluída.");
             disposeCurrentEffect();
         }
     }

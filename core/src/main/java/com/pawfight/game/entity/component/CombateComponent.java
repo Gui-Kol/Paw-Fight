@@ -11,6 +11,8 @@ import java.util.List;
 
 public class CombateComponent {
 
+    private static final String TAG = "CombateComponent";
+
     private final List<TirosTemplate> tiros = new ArrayList<>();
     private final List<TirosTemplate> tirosModelos = new ArrayList<>();
     private final Atirar atirar = new Atirar();
@@ -37,6 +39,7 @@ public class CombateComponent {
             if (tiro.isExpirado()) {
                 it.remove();
                 tiro.liberar();
+                Gdx.app.debug(TAG, "Tiro expirado e removido: " + tiro.getClass().getSimpleName() + " — restam " + tiros.size());
             }
         }
     }
@@ -59,10 +62,13 @@ public class CombateComponent {
 
     public void adicionarTiro(TirosTemplate tiro) {
         tiros.add(tiro);
+        Gdx.app.debug(TAG, "Tiro disparado: " + tiro.getClass().getSimpleName() + " — ativos: " + tiros.size());
     }
 
     public void removerTiro(TirosTemplate tiro) {
-        tiros.remove(tiro);
+        if (tiros.remove(tiro)) {
+            Gdx.app.debug(TAG, "Tiro removido: " + tiro.getClass().getSimpleName() + " — restam " + tiros.size());
+        }
     }
 
     public void clearTiros() {

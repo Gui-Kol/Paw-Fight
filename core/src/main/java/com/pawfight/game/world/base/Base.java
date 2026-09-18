@@ -99,6 +99,7 @@ public class Base extends WorldTemplate {
             portalAreia.exibirMensagem(player, batch, shapeRenderer);
             if (!entrouPortal && portalAreia.ativarTransicao(player, game, camera, viewport)) {
                 entrouPortal = true;
+                Gdx.app.log("Base", "Portal de areia ativado — iniciando transição de mundo.");
             }
 
             if (player.getLevel() < 5) {
@@ -107,7 +108,7 @@ public class Base extends WorldTemplate {
             }
             player.adicionarColisaoPorLevel(portaoNeve, 5);
         } catch (Exception e) {
-            Gdx.app.error("Base", "Erro ao verificar portais: " + e.getMessage());
+            Gdx.app.error("Base", "Erro ao verificar portais: " + e.getMessage(), e);
         }
     }
 
