@@ -1,5 +1,6 @@
 package com.pawfight.game.entity.component;
 
+import com.badlogic.gdx.Gdx;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.Atirar;
