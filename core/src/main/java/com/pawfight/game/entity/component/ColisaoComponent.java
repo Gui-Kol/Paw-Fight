@@ -16,17 +16,13 @@ public class ColisaoComponent {
     private final List<Rectangle> listColisores = new ArrayList<>();
     private final ChecarColisao checarColisao = new ChecarColisao();
 
-    // ── Checagem de colisão ────────────────────────────────────
-
     public void checarColisao(PlayerTemplate player) {
-        // Em modo debug, aplica movimento sem verificar paredes (noclip)
+        // Debug (noclip): move sem verificar paredes
         List<Rectangle> colisores = GameConfig.getInstance().isDebugMode()
             ? java.util.Collections.emptyList()
             : listColisores;
         checarColisao.checarColisaoSeparadoEixo(colisores, player);
     }
-
-    // ── Gerenciamento de colisores ─────────────────────────────
 
     public void adicionarColisao(List<Rectangle> colisores) {
         listColisores.addAll(colisores);
@@ -47,8 +43,6 @@ public class ColisaoComponent {
         listColisores.clear();
     }
 
-    // ── Desenho de debug ───────────────────────────────────────
-
     public void drawDebugHitboxes(ShapeRenderer shapeRenderer, OrthographicCamera camera) {
         TilemapHitboxFactory.draw(shapeRenderer, camera, listColisores);
     }
@@ -56,8 +50,6 @@ public class ColisaoComponent {
     public void drawDebugHitboxesNoBatch(ShapeRenderer shapeRenderer) {
         TilemapHitboxFactory.drawRects(shapeRenderer, listColisores);
     }
-
-    // ── Getters ────────────────────────────────────────────────
 
     public List<Rectangle> getListColisores() { return listColisores; }
 }

@@ -62,11 +62,10 @@ public class DesenharMiniMapa {
 
         desenharSalaAtual(world);
 
-        int tamanho = 10; // tamanho de cada quadrado
+        int tamanho = 10;
         int offsetX = 150;
         int offsetY = 150;
 
-        // calcula limites do minimapa
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
         int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
 
@@ -86,13 +85,11 @@ public class DesenharMiniMapa {
         float rectX = offsetX + minX * SEPARACAO - 20;
         float rectY = offsetY + minY * SEPARACAO - 20;
 
-        // habilita blending para transparência
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        // desenha fundo primeiro
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(BG_COLOR); // preto com 30% de opacidade
+        shapeRenderer.setColor(BG_COLOR);
         shapeRenderer.rect(rectX, rectY, largura, altura);
         shapeRenderer.end();
 

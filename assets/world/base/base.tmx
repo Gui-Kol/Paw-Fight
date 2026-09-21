@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="200" height="150" tilewidth="16" tileheight="16" infinite="0" nextlayerid="32" nextobjectid="157">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="200" height="150" tilewidth="16" tileheight="16" infinite="0" nextlayerid="32" nextobjectid="157">
  <tileset firstgid="1" name="solo" tilewidth="16" tileheight="16" tilecount="650" columns="25">
   <image source="editorSave/Tilesets/Floors_Tiles.png" width="400" height="416"/>
  </tileset>
@@ -868,6 +868,6 @@
   <object id="129" x="2608" y="31.3333" width="80.3333" height="80.3333"/>
  </objectgroup>
  <objectgroup id="16" name="EntradaPortalAreia" visible="0">
-  <object id="88" x="545" y="31.6667" width="79" height="80.3333"/>
+  <object id="88" x="508.333" y="-4.3333" width="149.667" height="153"/>
  </objectgroup>
 </map>

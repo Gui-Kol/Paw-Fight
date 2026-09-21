@@ -3,6 +3,7 @@ package com.pawfight.game.entity.tiro.orangecat;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Pool;
 import com.pawfight.game.engine.loading.Assets;
@@ -10,20 +11,16 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 
-/**
- * Espadada sangrenta do Orange Cat: dano corpo a corpo (hitbox curta,
- * na frente do player) com roubo de vida — regenera HP proporcional
- * ao dano causado (2% do dano por acerto, mínimo de 1).
- */
+// Espadada do Orange Cat: golpe corpo a corpo à frente do player com roubo de vida (2% do dano, mínimo 1 HP).
 public class TiroSangue extends TirosTemplate {
 
-    /** Extensão (largura) do golpe corpo a corpo. */
+    // Extensão (largura) do golpe corpo a corpo.
     private static final float ALCANCE = 42f;
-    /** Distância do ponto de nascimento à frente do player. */
+    // Distância do ponto de nascimento à frente do player.
     private static final float DISTANCIA_NASCIMENTO = 50f;
     private static final float MARGEM_VERTICAL = 6f;
 
-    /** Proporção do dano convertida em cura (roubo de vida reutilizável). */
+    // Proporção do dano convertida em cura (roubo de vida reutilizável).
     public static final float PROPORCAO_ROUBO_VIDA = 0.02f;
     private static final int CURA_MINIMA = 1;
 
@@ -57,7 +54,7 @@ public class TiroSangue extends TirosTemplate {
         return hb;
     }
 
-    /** Hitbox corpo a corpo: nasce ~50px à frente do player, na direção do olhar. */
+    // Hitbox corpo a corpo: nasce ~50px à frente do player, na direção do olhar.
     private void configurarHitBox(Rectangle hb) {
         Rectangle pb = dono.getHitBox();
         float centroPlayerX = pb.x + pb.width / 2f;
@@ -96,9 +93,16 @@ public class TiroSangue extends TirosTemplate {
 
     @Override
     public void desenhar(Batch batch) {
-        if (texture == null) return;
+        garantirAnimacao();
+        TextureRegion frame = frameAtual();
+        if (frame == null) return;
         // Efeito visual cobre exatamente a área do golpe
-        batch.draw(texture, hitBox.x, hitBox.y, hitBox.width, hitBox.height);
+        batch.draw(frame, hitBox.x, hitBox.y, hitBox.width, hitBox.height);
+    }
+
+    @Override
+    protected int definirQuantidadeFrames() {
+        return 1; // textura estática (frame único)
     }
 
     @Override

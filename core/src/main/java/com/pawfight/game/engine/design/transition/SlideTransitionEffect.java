@@ -50,7 +50,7 @@ public class SlideTransitionEffect implements TransitionEffect {
     public void update(float delta) {
         elapsedTime += delta;
         float progress = Math.min(elapsedTime / duration, 1f);
-        progress = easeInOutCubic(progress); // Easing mais avançado
+        progress = easeInOutCubic(progress);
 
         offset = slidingOut ? progress : 1f - progress;
     }

@@ -18,8 +18,6 @@ public class KeyBindings {
 
     private final EnumMap<GameAction, Integer> bindings = new EnumMap<>(GameAction.class);
 
-    // ── Singleton ─────────────────────────────────────────────
-
     private KeyBindings() {
         resetToDefaults();
     }
@@ -37,7 +35,6 @@ public class KeyBindings {
         return instance;
     }
 
-    // ── API Principal ─────────────────────────────────────────
     public boolean isActive(GameAction action) {
         int key = bindings.getOrDefault(action, action.getDefaultKey());
         return action.isJustPressed()
@@ -54,7 +51,6 @@ public class KeyBindings {
     }
 
     public void setKey(GameAction action, int newKeyCode) {
-        // Procura se outra ação já usa essa tecla
         GameAction conflict = null;
         for (Map.Entry<GameAction, Integer> entry : bindings.entrySet()) {
             if (entry.getValue() == newKeyCode && entry.getKey() != action) {
@@ -85,7 +81,6 @@ public class KeyBindings {
         return Map.copyOf(bindings);
     }
 
-    // ── Persistência ──────────────────────────────────────────
     public void save() {
         try {
             Json json = new Json();

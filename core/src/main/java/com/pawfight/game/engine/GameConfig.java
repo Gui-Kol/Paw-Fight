@@ -1,11 +1,11 @@
 package com.pawfight.game.engine;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.MathUtils;
 
 public final class GameConfig {
 
-    // ── Singleton ────────────────────────────────────────────────
     private static final GameConfig INSTANCE = new GameConfig();
 
     private GameConfig() { }
@@ -14,22 +14,41 @@ public final class GameConfig {
         return INSTANCE;
     }
 
-    // ── Constantes de tela (imutáveis) ──────────────────────────
     public static final int LARGURA_TELA_BASE = 1920;
     public static final int ALTURA_TELA_BASE = 1080;
 
-    // ── Estado de debug ─────────────────────────────────────────
     private boolean debugMode = false;
     private boolean hitboxVisivel = false;
 
-    // ── Volumes (0.0 – 1.0) ─────────────────────────────────────
     private float volumeMusica = 0.3f;
     private float volumeEfeitos = 0.7f;
     private float volumePassos = 0.2f;
+    private boolean telaCheia = true;
 
-    // ═══════════════════════════════════════════════════════════
-    //  DEBUG
-    // ═══════════════════════════════════════════════════════════
+    public boolean isTelaCheia() {
+        return telaCheia;
+    }
+
+    public void setTelaCheia(boolean telaCheia) {
+        this.telaCheia = telaCheia;
+    }
+
+    public void carregarConfiguracoes() {
+        Preferences preferencias = Gdx.app.getPreferences("pawfight-config");
+        setVolumeMusica(preferencias.getFloat("volumeMusica", 0.3f));
+        setVolumeEfeitos(preferencias.getFloat("volumeEfeitos", 0.7f));
+        setVolumePassos(preferencias.getFloat("volumePassos", 0.2f));
+        setTelaCheia(preferencias.getBoolean("telaCheia", true));
+    }
+
+    public void salvarConfiguracoes() {
+        Preferences preferencias = Gdx.app.getPreferences("pawfight-config");
+        preferencias.putFloat("volumeMusica", volumeMusica);
+        preferencias.putFloat("volumeEfeitos", volumeEfeitos);
+        preferencias.putFloat("volumePassos", volumePassos);
+        preferencias.putBoolean("telaCheia", telaCheia);
+        preferencias.flush();
+    }
 
     public boolean isDebugMode() {
         return debugMode;
@@ -42,10 +61,6 @@ public final class GameConfig {
     public void setHitboxVisivel(boolean hitboxVisivel) {
         this.hitboxVisivel = hitboxVisivel;
     }
-
-    // ═══════════════════════════════════════════════════════════
-    //  VOLUMES (com validação de limites)
-    // ═══════════════════════════════════════════════════════════
 
     public float getVolumeMusica() {
         return volumeMusica;
@@ -83,13 +98,9 @@ public final class GameConfig {
         setVolumePassos(percent / 100f);
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  UTILITÁRIOS
-    // ═══════════════════════════════════════════════════════════
     public float getScale() {
         float screenW = Gdx.graphics.getWidth();
         float screenH = Gdx.graphics.getHeight();
         return Math.min(screenW / LARGURA_TELA_BASE, screenH / ALTURA_TELA_BASE);
     }
 }
-

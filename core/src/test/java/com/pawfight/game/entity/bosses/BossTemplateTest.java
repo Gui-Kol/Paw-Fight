@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("BossTemplate")
 class BossTemplateTest {
 
-    /** Fase falsa que registra quantas vezes cada ataque foi delegado. */
+    // Fase falsa que registra quantas vezes cada ataque foi delegado.
     static class FaseFake extends FaseBoss {
         int ataquesNormais = 0;
         int ataquesEspeciais = 0;
@@ -38,7 +38,7 @@ class BossTemplateTest {
         public void executarAtaqueEspecial(BossTemplate boss) { ataquesEspeciais++; }
     }
 
-    /** Boss mínimo (sem texturas/áudio) para exercitar o template method. */
+    // Boss mínimo (sem texturas/áudio) para exercitar o template method.
     static class BossFake extends BossTemplate {
         int mudancasFase = 0;
         int atualizacoesEstado = 0;
@@ -111,8 +111,6 @@ class BossTemplateTest {
         boss = new BossFake();
     }
 
-    // ── Construção ─────────────────────────────────────────────
-
     @Test
     @DisplayName("Inicia na primeira fase com todas as fases registradas")
     void inicializacaoCorreta() {
@@ -120,8 +118,6 @@ class BossTemplateTest {
         assertEquals(2, boss.getFases().size());
         assertFalse(boss.isEmTransicao());
     }
-
-    // ── FaseBoss: condição de transição ────────────────────────
 
     @Test
     @DisplayName("vidaLimiar: só transiciona com vida menor ou igual ao limiar")
@@ -135,8 +131,6 @@ class BossTemplateTest {
         assertTrue(fase.deveTransicionar(50, 100));
         assertTrue(fase.deveTransicionar(10, 100));
     }
-
-    // ── Delegação de ataque por fase ───────────────────────────
 
     @Test
     @DisplayName("Ataque normal é delegado à fase atual")
@@ -159,8 +153,6 @@ class BossTemplateTest {
         assertEquals(1, boss.fase(1).ataquesNormais);
         assertEquals(1, boss.fase(1).ataquesEspeciais);
     }
-
-    // ── mudarFase ──────────────────────────────────────────────
 
     @Test
     @DisplayName("mudarFase ignora índice fora da lista de fases")
@@ -215,8 +207,6 @@ class BossTemplateTest {
         assertEquals(0, boss.fase(1).ataquesNormais);
         assertEquals(0, boss.fase(1).ataquesEspeciais);
     }
-
-    // ── atualizarEstado / template method ──────────────────────
 
     @Test
     @DisplayName("atualizarEstado não transiciona com vida acima do limiar")

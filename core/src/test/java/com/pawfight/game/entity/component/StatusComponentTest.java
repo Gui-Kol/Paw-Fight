@@ -16,8 +16,6 @@ class StatusComponentTest {
         status = new StatusComponent();
     }
 
-    // ── Queimadura ─────────────────────────────────────────────
-
     @Test
     @DisplayName("Queimadura com chance 1 sempre é aplicada")
     void queimaduraComChanceCerta() {
@@ -70,8 +68,6 @@ class StatusComponentTest {
         assertEquals(6, status.update(0.1f), "Novo dano por tick deve valer");
     }
 
-    // ── Lentidão ───────────────────────────────────────────────
-
     @Test
     @DisplayName("Lentidão com chance 1 sempre é aplicada")
     void lentidaoComChanceCerta() {
@@ -111,8 +107,6 @@ class StatusComponentTest {
         outro.aplicarLentidao(2f, 2f, 1f);
         assertEquals(1f, outro.getMultiplicadorVelocidade(), "Nunca acima de 1");
     }
-
-    // ── Estado neutro ──────────────────────────────────────────
 
     @Test
     @DisplayName("Sem efeitos, update não causa dano e multiplicador é 1")

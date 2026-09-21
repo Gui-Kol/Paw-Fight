@@ -47,7 +47,6 @@ public class TiroCoco extends TirosTemplate {
     protected TirosTemplate obterDoPool(PlayerTemplate player) {
         TiroCoco c = pool.obtain();
 
-        // Reinicializa campos-base (posição, dano, tamanho)
         c.reiniciarBase(
             player.getDx() - tamanho / 2,
             player.getDy() - tamanho / 2,
@@ -56,7 +55,6 @@ public class TiroCoco extends TirosTemplate {
             player
         );
 
-        // Campos específicos do Coco: hitbox e textura aleatória
         c.xHitBox += c.tamanho / 4;
         c.yHitBox += c.tamanho / 4;
         c.hitBox.set(c.xHitBox, c.yHitBox, (float) c.tamanho / 2, (float) c.tamanho / 2);
@@ -69,6 +67,11 @@ public class TiroCoco extends TirosTemplate {
     @Override
     protected int definirTamanhoPadrao() {
         return 16;
+    }
+
+    @Override
+    protected int definirQuantidadeFrames() {
+        return 1; // cada textura aleatória é estática (frame único)
     }
 
     @Override

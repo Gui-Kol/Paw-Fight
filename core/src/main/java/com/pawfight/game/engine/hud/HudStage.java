@@ -59,7 +59,7 @@ public class HudStage {
         inputAtivo = false;
     }
 
-    /** Ativa/desativa este stage no InputMultiplexer. Usado pelo menu de pausa. */
+    // Ativa/desativa este stage no InputMultiplexer. Usado pelo menu de pausa.
     public void setInputAtivo(boolean ativo) {
         if (ativo) {
             registerInputProcessor();
@@ -83,7 +83,6 @@ public class HudStage {
     }
 
     public void dispose() {
-        // Remove este stage do InputMultiplexer ao fazer dispose
         InputProcessor current = Gdx.input.getInputProcessor();
         if (current instanceof InputMultiplexer) {
             ((InputMultiplexer) current).removeProcessor(stage);

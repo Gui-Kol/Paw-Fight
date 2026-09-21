@@ -18,9 +18,8 @@ public class GifDecoder {
 
     private static final int MAX_STACK_SIZE = 4096;
 
-    // ── Campos de leitura ──
     private InputStream in;
-    private boolean eof;   // flag de fim de stream
+    private boolean eof;
 
     private int width;
     private int height;
@@ -43,17 +42,12 @@ public class GifDecoder {
     private final byte[] block = new byte[256];
     private int blockSize;
 
-    // LZW
     private short[] prefix;
     private byte[] suffix;
     private byte[] pixelStack;
     private byte[] pixels;
 
     private final List<GifFrame> frames = new ArrayList<>();
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  API PÚBLICA
-    // ═══════════════════════════════════════════════════════════════════════════
 
     public static GifAnimation loadGifAnimation(FileHandle gifFile) {
         GifDecoder decoder = new GifDecoder();
@@ -77,11 +71,12 @@ public class GifDecoder {
         for (GifFrame gf : decoder.frames) {
             Pixmap pixmap = new Pixmap(decoder.width, decoder.height, Pixmap.Format.RGBA8888);
             ByteBuffer buf = pixmap.getPixels();
+            // Converte cada int ARGB em bytes RGBA para o pixmap
             for (int argb : gf.pixels) {
-                buf.put((byte) ((argb >> 16) & 0xFF)); // R
-                buf.put((byte) ((argb >> 8) & 0xFF));  // G
-                buf.put((byte) (argb & 0xFF));          // B
-                buf.put((byte) ((argb >> 24) & 0xFF)); // A
+                buf.put((byte) ((argb >> 16) & 0xFF));
+                buf.put((byte) ((argb >> 8) & 0xFF));
+                buf.put((byte) (argb & 0xFF));
+                buf.put((byte) ((argb >> 24) & 0xFF));
             }
             buf.flip();
 
@@ -95,10 +90,6 @@ public class GifDecoder {
         Animation<TextureRegion> anim = new Animation<>(frameDuration, regions, Animation.PlayMode.LOOP);
         return new GifAnimation(anim, textures);
     }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  LEITURA DO GIF
-    // ═══════════════════════════════════════════════════════════════════════════
 
     private void read(FileHandle file) {
         try {
@@ -126,7 +117,7 @@ public class GifDecoder {
         String sig = new String(header);
         if (!sig.startsWith("GIF")) {
             Gdx.app.error("GifDecoder", "Assinatura inválida: [" + sig + "]");
-            eof = true; // impede leitura
+            eof = true;
             return;
         }
 
@@ -193,7 +184,6 @@ public class GifDecoder {
         }
     }
 
-    // ── Graphic Control Extension ──
     private void readGraphicControlExt() {
         readByte(); // block size (sempre 4)
         int packed = readByte();
@@ -204,7 +194,6 @@ public class GifDecoder {
         readByte(); // block terminator
     }
 
-    // ── Imagem (frame) ──
     private void readImage() {
         ix = readShort();
         iy = readShort();
@@ -251,16 +240,13 @@ public class GifDecoder {
             prev = dest.clone();
         }
 
-        // Decodificar LZW + consumir todos os sub-blocos de dados
         int minCodeSize = readByte();
         if (!eof) {
             decodeLZW(minCodeSize);
         }
 
-        // Transferir pixels para o canvas
         transferPixels();
 
-        // Salvar frame
         GifFrame frame = new GifFrame();
         frame.pixels = dest.clone();
         frame.delay = Math.max(delay, 20);
@@ -318,10 +304,6 @@ public class GifDecoder {
             }
         }
     }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  LZW DECODER
-    // ═══════════════════════════════════════════════════════════════════════════
 
     private void decodeLZW(int minCodeSize) {
         if (minCodeSize < 2 || minCodeSize > 12) {
@@ -423,26 +405,15 @@ public class GifDecoder {
             i++;
         }
 
-        // Preencher restantes com 0
         for (int i = pi; i < npix; i++) {
             pixels[i] = 0;
         }
 
-        // ── Consumir TODOS os sub-blocos restantes do image data ──
-        // Isso é ESSENCIAL para não desincronizar o stream.
-        // Após o LZW, podem existir sub-blocos não lidos + o terminador 0x00.
-        // O readBlock anterior já consumiu o bloco atual do stream,
-        // então skipSubBlocks lerá corretamente os próximos.
+        // Consome sub-blocos restantes do frame — essencial para não desincronizar o stream
         skipSubBlocks();
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  UTILITÁRIOS DE LEITURA
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    /**
-     * Lê um byte do stream. Retorna 0 e seta {@code eof = true} no fim do stream.
-     */
+    // Lê um byte; retorna 0 e seta eof = true no fim do stream
     private int readByte() {
         try {
             int b = in.read();
@@ -463,10 +434,7 @@ public class GifDecoder {
         return lo | (hi << 8);
     }
 
-    /**
-     * Lê um sub-bloco GIF: primeiro byte é o tamanho, seguido pelos dados.
-     * Retorna quantos bytes de dados foram lidos.
-     */
+    // Lê um sub-bloco GIF (1 byte de tamanho + dados) e retorna quantos bytes foram lidos
     private int readBlock() {
         blockSize = readByte();
         int n = 0;
@@ -509,23 +477,16 @@ public class GifDecoder {
         return tab;
     }
 
-    /**
-     * Pula todos os sub-blocos até encontrar o terminador (bloco de tamanho 0).
-     * Usa readByte() byte-a-byte (sem in.skip) para máxima confiabilidade.
-     */
+    // Pula sub-blocos até o terminador (tamanho 0), byte a byte (sem in.skip) por confiabilidade
     private void skipSubBlocks() {
         while (!eof) {
             int size = readByte();
             if (size <= 0 || eof) break;
             for (int i = 0; i < size && !eof; i++) {
-                readByte(); // descarta cada byte individualmente
+                readByte();
             }
         }
     }
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  CLASSES INTERNAS
-    // ═══════════════════════════════════════════════════════════════════════════
 
     private static class GifFrame {
         int[] pixels;

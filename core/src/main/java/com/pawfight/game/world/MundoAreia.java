@@ -25,14 +25,13 @@ public class MundoAreia extends WorldTemplate {
     private Texture cactoTexture;
     private final List<String> layerBuffer = new ArrayList<>();
     private final List<String> layerUpBuffer = new ArrayList<>();
-    private String[] layerArray = new String[8]; // pre-allocated, resized if needed
+    private String[] layerArray = new String[8]; // pré-alocado, realocado se necessário
 
     public MundoAreia(PawFight game, PlayerTemplate player, OrthographicCamera camera, Viewport viewport) {
         super(game, "menu/menu.png", "audio/music/mundoAreia.wav", camera, viewport);
         Gdx.app.log("MundoAreia", "Iniciando Mundo...");
         setPlayer(player);
 
-        // Reseta estado do player
         player.setLocal(500, 100);
         player.setPodeAtacar(true);
 
@@ -132,7 +131,6 @@ public class MundoAreia extends WorldTemplate {
             if (player != null) {
                 super.render(delta);
 
-                // Enquanto vivo, processa dano de cenário e liberação de portas
                 if (!player.isMorto()) {
                     cactoDano();
                     roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
@@ -242,7 +240,7 @@ public class MundoAreia extends WorldTemplate {
         roomManager.getCarregarPortas().carregar(this);
     }
 
-    /** Reutiliza o layerArray para evitar alocação de String[] a cada frame. */
+    // Reutiliza o layerArray para evitar alocação de String[] a cada frame.
     private String[] toArray(List<String> list) {
         int size = list.size();
         if (layerArray.length < size) {

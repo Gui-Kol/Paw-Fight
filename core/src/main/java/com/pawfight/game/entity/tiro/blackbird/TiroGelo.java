@@ -8,16 +8,10 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 
-/**
- * Disparo congelante do Black Bird: ao nascer, aponta para o inimigo
- * mais próximo do player e se desloca em <b>alta velocidade</b>, em
- * linha reta (retilíneo mesmo se o alvo morrer no trajeto). Alcance
- * longo, dano moderado em um único alvo e chance de aplicar lentidão
- * (reduz velocidade de movimento e de ataque por um tempo).
- */
+// Disparo do Black Bird: mira no inimigo mais próximo, segue retilíneo em alta velocidade; alvo único com chance de lentidão.
 public class TiroGelo extends TirosTemplate {
 
-    /** Velocidade de deslocamento do projétil (px/segundo). */
+    // Velocidade de deslocamento do projétil (px/segundo).
     private static final float VELOCIDADE_TIRO = 900f;
 
     // Lentidão — chance e valores configuráveis
@@ -55,7 +49,7 @@ public class TiroGelo extends TirosTemplate {
         return new Rectangle(xHitBox, yHitBox, tamanho, tamanho);
     }
 
-    /** Nasce no centro do player (a trajetória é definida pela mira). */
+    // Nasce no centro do player (a trajetória é definida pela mira).
     private void posicionarNoPlayer() {
         Rectangle pb = dono.getHitBox();
         sincronizarPosicao(pb.x + pb.width / 2f, pb.y + pb.height / 2f);
@@ -85,18 +79,22 @@ public class TiroGelo extends TirosTemplate {
 
     @Override
     public boolean isUnicoAlvo() {
-        return true; // disparo atinge um único alvo
+        return true;
     }
 
     @Override
     public void aoAcertar(EnemyTemplate inimigo) {
-        // Efeito secundário: chance de lentidão
         inimigo.aplicarLentidao(MULTIPLICADOR_LENTIDAO, DURACAO_LENTIDAO, CHANCE_LENTIDAO);
     }
 
     @Override
     protected int definirTamanhoPadrao() {
         return 20;
+    }
+
+    @Override
+    protected int definirQuantidadeFrames() {
+        return 1; // textura estática (frame único)
     }
 
     @Override

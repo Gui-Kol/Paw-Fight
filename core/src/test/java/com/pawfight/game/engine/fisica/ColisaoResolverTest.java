@@ -97,8 +97,7 @@ class ColisaoResolverTest {
     @Test
     @DisplayName("Cluster de inimigos em cadeia é resolvido dentro do limite de iterações")
     void clusterDeInimigos() {
-        // O resolver faz no máximo 4 iterações; 3 inimigos com overlap pequeno (< metade do tamanho)
-        // representam o caso realista que ele garante resolver.
+        // O resolver faz no máx. 4 iterações; 3 inimigos com overlap < metade do tamanho é o caso realista garantido.
         List<EnemyTemplate> inimigos = new ArrayList<>();
         List<Rectangle> hitboxes = new ArrayList<>();
         for (int i = 0; i < 3; i++) {

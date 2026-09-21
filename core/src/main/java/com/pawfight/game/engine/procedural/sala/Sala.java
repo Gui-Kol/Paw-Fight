@@ -6,7 +6,6 @@ public class Sala {
     private boolean north, south, east, west;
     private final TipoSala type;
 
-    // Referências para salas vizinhas
     private Sala northRoom, southRoom, eastRoom, westRoom;
 
     public Sala(int x, int y, TipoSala type) {
@@ -25,7 +24,7 @@ public class Sala {
     public boolean hasEast() { return east; }
     public boolean hasWest() { return west; }
 
-    // Métodos de conexão que também guardam referência
+    // Métodos de conexão que também guardam referência do vizinho
     public void connectNorth(Sala sala) {
         this.north = true;
         this.northRoom = sala;

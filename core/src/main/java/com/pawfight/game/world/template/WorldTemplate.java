@@ -30,13 +30,11 @@ import java.util.List;
 
 public abstract class WorldTemplate implements Screen {
 
-    // ── Managers (composição) ──────────────────────────────────
     protected final WorldRenderer worldRenderer;
     protected final WorldPhysics worldPhysics;
     protected final RoomManager roomManager;
     protected final EnemyManager enemyManager;
 
-    // ── Core (permanece no WorldTemplate) ──────────────────────
     private final Stage stage;
     protected RenderizadorCamada renderizadorCamada;
     protected TiledMap map;
@@ -48,7 +46,6 @@ public abstract class WorldTemplate implements Screen {
     protected OrthographicCamera camera;
     protected Viewport viewport;
 
-    // ── Fluxo de morte (sequencial e automático) ───────────────
     private static final float DURACAO_ZOOM_MORTE = 0.8f;
     private static final float ZOOM_MORTE_ALVO = 0.2f; // zoom < 1 = aproxima do player
     private static final float DURACAO_FADE_MORTE = 1.8f; // configurável (1.5s – 2s)
@@ -64,7 +61,6 @@ public abstract class WorldTemplate implements Screen {
         this.viewport = viewport;
         this.batch = game.getBatch();
 
-        // Inicializa managers
         worldRenderer = new WorldRenderer(backgroundPath);
         worldPhysics = new WorldPhysics();
         roomManager = new RoomManager();
@@ -78,8 +74,7 @@ public abstract class WorldTemplate implements Screen {
     public void setPlayer(PlayerTemplate player) {
         this.player = player;
         if (player != null) {
-            // Compartilha a lista viva de inimigos da sala — tiros só nascem
-            // quando houver inimigos e miram neles
+            // Compartilha a lista viva de inimigos da sala — tiros só nascem com inimigos presentes e miram neles
             player.setFonteInimigos(enemyManager.getListaInimigos());
         }
     }
@@ -134,6 +129,8 @@ public abstract class WorldTemplate implements Screen {
                 pause();
             }
             worldRenderer.renderizarInimigos(this);
+            // Ataques (tiros) renderizados por cima dos inimigos
+            player.desenharTiros(this);
         }
 
         renderLayersUp();
@@ -154,7 +151,6 @@ public abstract class WorldTemplate implements Screen {
             );
         }
 
-        // Fluxo de morte (sequencial e automático)
         gerenciarMorte(delta);
     }
 
@@ -163,13 +159,7 @@ public abstract class WorldTemplate implements Screen {
         player.draw(this);
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  FLUXO DE MORTE (sequencial e automático)
-    //  1. Zoom da câmera focado no player
-    //  2. Animação de morte toca por completo
-    //  3. Fade to black configurável
-    //  4. Retorno automático ao menu inicial (Home)
-    // ══════════════════════════════════════════════════════════
+    // Fluxo de morte: 1) zoom da câmera no player, 2) animação de morte completa, 3) fade to black, 4) retorno ao Home
     private void gerenciarMorte(float delta) {
         if (player == null || !player.isMorto()) {
             morteIniciada = false;
@@ -179,7 +169,6 @@ public abstract class WorldTemplate implements Screen {
             return;
         }
 
-        // 1. Inicia a sequência: zoom suave focado no player
         if (!morteIniciada) {
             morteIniciada = true;
             morteTransicaoDisparada = false;
@@ -192,7 +181,6 @@ public abstract class WorldTemplate implements Screen {
                 + " em " + DURACAO_ZOOM_MORTE + "s).");
         }
 
-        // 2. Executa o zoom e espera a animação de morte terminar
         boolean zoomPronto = player.getCameraComponent().atualizarZoomMorte(delta);
         boolean animacaoPronta = player.getAnimacao().isDeadAnimationFinished();
 
@@ -205,7 +193,6 @@ public abstract class WorldTemplate implements Screen {
             Gdx.app.log(getWorldName(), "Animação de morte concluída.");
         }
 
-        // 3. Após zoom + animação, dispara o fade to black e retorna ao Home
         if (zoomPronto && animacaoPronta && !morteTransicaoDisparada) {
             morteTransicaoDisparada = true;
             // Esconde o player (último frame não deve ficar "congelado" na tela)
@@ -215,12 +202,7 @@ public abstract class WorldTemplate implements Screen {
         }
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  NAVEGAÇÃO CENTRALIZADA
-    //  Retorno ao menu inicial (Home) via ScreenManager.
-    //  Não chama dispose() nas telas/recursos — o ScreenManager
-    //  e o AssetManager cuidam disso.
-    // ══════════════════════════════════════════════════════════
+    // Navegação centralizada: retorna ao menu inicial via ScreenManager; dispose fica a cargo do ScreenManager e do AssetManager
     public void voltarAoMenu(float duracaoTransicao) {
         if (ScreenManager.getInstance().isTransitioning()) {
             return;
@@ -275,7 +257,7 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void pause() {
-        Gdx.app.log(getWorldName(), "pause");
+
     }
 
     @Override
@@ -301,8 +283,6 @@ public abstract class WorldTemplate implements Screen {
         Gdx.app.log(getWorldName(), "foi disposed");
     }
 
-    // ── Acesso aos managers ────────────────────────────────────
-
     public WorldRenderer getWorldRenderer() {
         return worldRenderer;
     }
@@ -318,8 +298,6 @@ public abstract class WorldTemplate implements Screen {
     public EnemyManager getEnemyManager() {
         return enemyManager;
     }
-
-    // ── Getters de campos próprios ─────────────────────────────
 
     public PlayerTemplate getPlayer() {
         return player;

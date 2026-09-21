@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.pawfight.game.engine.ScreenManager;
@@ -27,6 +29,9 @@ public class HudPause {
     private final CriarBotao criarBotao;
     private final Texture fundo;
     private final DefinirSprite fundoAnimacao;
+    private final Group menuPrincipal = new Group();
+    private HudConfiguracoes configuracoes;
+    private boolean descartado;
 
     private ImageButton quitButton;
     private ImageButton saveButton;
@@ -60,16 +65,22 @@ public class HudPause {
         fundo = Assets.get("menu/pause/pauseFundo-Sheet.png", Texture.class);
         fundoAnimacao = new DefinirSprite(fundo, 6, 0.05f, false, false);
         botoes(player);
+        menuPrincipal.addActor(resumeButton);
+        menuPrincipal.addActor(saveButton);
+        menuPrincipal.addActor(settingsButton);
+        menuPrincipal.addActor(quitButton);
+        hudStage.getStage().addActor(menuPrincipal);
+        setInputAtivo(false);
         Gdx.app.log("HudPause", "Sendo carregado para ser desenhado...");
     }
 
     public void draw(WorldTemplate world) {
+        if (descartado) return;
         this.world = world;
         Batch batch = world.getBatch();
         boolean jogoPausado = world.getPlayer().isPause();
 
-        // Apenas o player atualmente pausado deve receber input no menu de pause.
-        // Isso evita que stages de players "preview"/antigos interceptem os cliques.
+        // Só o player pausado recebe input, evitando que stages de players antigos interceptem cliques
         if (jogoPausado && !inputAtivo) {
             hudStage.setInputAtivo(true);
             inputAtivo = true;
@@ -88,8 +99,9 @@ public class HudPause {
         }
     }
 
-    /** Ativa/desativa o input deste menu de pausa (usado para players não selecionados). */
+    // Ativa/desativa o input deste menu de pausa (usado para players não selecionados)
     public void setInputAtivo(boolean ativo) {
+        if (descartado) return;
         hudStage.setInputAtivo(ativo);
         inputAtivo = ativo;
     }
@@ -137,7 +149,7 @@ public class HudPause {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         criarBotao.playClickSound();
-                        player.setPause(false);
+                        abrirConfiguracoes();
                     }
                 });
 
@@ -159,6 +171,7 @@ public class HudPause {
                         // Despausa o player e para a música antes da transição
                         mundo.getPlayer().setPause(false);
                         mundo.getBackMusic().stop();
+                        dispose();
                         ScreenManager.getInstance().fadeToScreen(
                             new Home(mundo.getGame(), mundo.getCamera(), mundo.getViewport()),
                             1.5f, Color.BLACK, false);
@@ -171,4 +184,33 @@ public class HudPause {
     }
 
 
+    public boolean isConfiguracoesAberta() {
+        return configuracoes != null && configuracoes.isVisible();
+    }
+
+    public void abrirConfiguracoes() {
+        if (world == null || !world.getPlayer().isPause()) return;
+        if (configuracoes == null) {
+            configuracoes = new HudConfiguracoes(criarBotao, () -> world, this::fecharConfiguracoes);
+            hudStage.getStage().addActor(configuracoes);
+        }
+        hudStage.getStage().unfocusAll();
+        menuPrincipal.setVisible(false);
+        menuPrincipal.setTouchable(Touchable.disabled);
+        configuracoes.definirVisivel(true);
+    }
+
+    public void fecharConfiguracoes() {
+        hudStage.getStage().unfocusAll();
+        if (configuracoes != null) configuracoes.definirVisivel(false);
+        menuPrincipal.setVisible(true);
+        menuPrincipal.setTouchable(Touchable.childrenOnly);
+    }
+
+    public void dispose() {
+        if (descartado) return;
+        hudStage.dispose();
+        if (configuracoes != null) configuracoes.dispose();
+        descartado = true;
+    }
 }

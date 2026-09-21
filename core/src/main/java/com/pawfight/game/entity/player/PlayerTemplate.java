@@ -24,7 +24,6 @@ import java.util.List;
 
 public abstract class PlayerTemplate implements Entidade {
 
-    // ── Componentes ────────────────────────────────────────────
     protected final InputComponent input = new InputComponent();
     protected final MovimentoComponent movimento = new MovimentoComponent();
     protected final AnimacaoComponent animacao = new AnimacaoComponent();
@@ -37,7 +36,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
     protected CameraComponent cameraComponent; // inicializado no construtor (precisa de params do mapa)
 
-    // ── Estado espacial (usado por muitos componentes e classes externas) ──
+    // Estado espacial (usado por muitos componentes e classes externas)
     protected int dx, dy;
     protected final Rectangle hitBox;
     protected int TAMANHO_PX;
@@ -47,7 +46,6 @@ public abstract class PlayerTemplate implements Entidade {
     protected boolean olhandoEsquerda = false;
     protected boolean moving = false;
 
-    // ── UI / HUD ───────────────────────────────────────────────
     protected final Hud hud;
     protected HudPause hudPause;
     private boolean menuAberto = false;
@@ -56,7 +54,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final Renderizar renderizar = Renderizar.INSTANCE;
     private boolean morteFinalizada = false;
 
-    // ── Métodos abstratos (cada player define os seus) ─────────
+    // Métodos abstratos (cada player define os seus)
     public abstract DadosPlayer dadosPlayer();
     public abstract void updateSpriteDefinitions();
     public abstract String getName();
@@ -66,22 +64,17 @@ public abstract class PlayerTemplate implements Entidade {
     protected abstract void definirAudios();
     protected abstract TirosTemplate modeloTiroExclusivo();
 
-    // ── Construtor ─────────────────────────────────────────────
-
     public PlayerTemplate(int dx, int dy, int tileWidth, int numTilesX, int tileHeight, int numTilesY, float zoomCamera) {
         this.dx = dx;
         this.dy = dy;
 
-        // 1. Dados do personagem (subclasse define)
+        // dadosPlayer é implementado pela subclasse
         DadosPlayer dados = dadosPlayer();
 
-        // 2. Stats
         stats = new StatsComponent(dados);
 
-        // 3. Áudio
         audio.init(dados);
 
-        // 4. Configuração de hitbox
         TAMANHO_PX = dados.tamanho();
         hitboxSize = dados.hitboxSize();
         hitboxOffsetY = dados.hitboxOffsetY();
@@ -94,32 +87,27 @@ public abstract class PlayerTemplate implements Entidade {
             hitboxSize
         );
 
-        // 5. Câmera
         cameraComponent = new CameraComponent(dx, dy, zoomCamera, tileWidth, numTilesX, tileHeight, numTilesY);
 
-        // 6. Animação
         animacao.initTextures(dados.idleSheet(), dados.walkSheet(), dados.deadSheet(), dados.hurtSheet());
         updateSpriteDefinitions();
         animacao.rebuildAnimations();
 
-        // 7. HUD
         hud = new Hud();
         hudPause = new HudPause(this);
 
-        // 8. Áudios extras da subclasse
+        // Áudios extras da subclasse
         definirAudios();
 
-        // 9. Modelo de tiro exclusivo
         combate.addModeloTiro(modeloTiroExclusivo());
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  UPDATE (orquestra todos os componentes)
-    // ══════════════════════════════════════════════════════════
-
     public void update(float delta) {
-        // Pause
         if (input.isPauseToggle()) {
+            if (pause && hudPause.isConfiguracoesAberta()) {
+                hudPause.fecharConfiguracoes();
+                return;
+            }
             menuAberto = !menuAberto;
             pause = menuAberto;
             Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
@@ -127,37 +115,31 @@ public abstract class PlayerTemplate implements Entidade {
         if (pause) return;
 
         if (!stats.isMorto()) {
-            // Movimento
             movimento.update(hitBox, stats.getVelocidade(), delta, input);
             moving = movimento.isMoving();
             olhandoEsquerda = movimento.isOlhandoEsquerda();
 
-            // Combate
             ataqueBasico(delta);
             combate.processarTirosAutomaticos(this, delta);
             if (input.isAttackSpecial()) ataqueEspecial();
             if (input.isAbility()) usarHabilidadeEspecial();
 
-            // Debug
             if (input.isDebugToggle()) {
                 drawHitBoxes = !drawHitBoxes;
                 Gdx.app.log("PlayerTemplate", "Exibir detalhes = " + drawHitBoxes);
                 GameConfig.getInstance().setHitboxVisivel(drawHitBoxes);
             }
 
-            // Zoom
             cameraComponent.updateZoom();
 
-            // Cheats
             if (GameConfig.getInstance().isDebugMode() && input.isCheatToggle()) {
                 xpUp(999999999);
                 stats.setVida(999999999);
             }
 
-            // Animação — troca direção do cache (sem rebuild)
+            // Troca a direção no cache (sem rebuild)
             animacao.checkDirectionChange(olhandoEsquerda);
 
-            // Posição da hitbox
             int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
             hitBox.setPosition(
                 dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
@@ -165,33 +147,23 @@ public abstract class PlayerTemplate implements Entidade {
             );
         }
 
-        // Timers (sempre rodam, mesmo morto)
+        // Timers rodam mesmo com o player morto
         animacao.updateStateTime(delta);
         stats.updateTimers(delta);
 
-        // Partículas
         particulas.atualizar(delta);
 
-        // Tiros
         combate.updateTiros(delta);
 
-        // Áudio
         audio.updateAudio(moving);
 
-        // Colisão → ajusta dx, dy
+        // Ajusta dx e dy conforme colisão
         colisao.checarColisao(this);
 
-        // Câmera
         cameraComponent.updateCamera(dx, dy);
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  DRAW (renderização)
-    // ══════════════════════════════════════════════════════════
-
     public void draw(WorldTemplate world) {
-        desenharTiros(world);
-
         Batch batch = world.getBatch();
         ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
         OrthographicCamera cam = cameraComponent.getCamera();
@@ -251,10 +223,6 @@ public abstract class PlayerTemplate implements Entidade {
         hudPause.draw(world);
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  AÇÕES
-    // ══════════════════════════════════════════════════════════
-
     public void dano(int forca) {
         if (!stats.aplicarDano(forca)) return;
         if (stats.isMorto()) {
@@ -292,10 +260,6 @@ public abstract class PlayerTemplate implements Entidade {
         Gdx.app.log(getName(), "Ganhou " + moedasGanha + " moedas — total " + moedasAntes + " -> " + stats.getMoedas());
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  SAVE / LOAD
-    // ══════════════════════════════════════════════════════════
-
     public void saveData() {
         save.saveData(this);
     }
@@ -303,10 +267,6 @@ public abstract class PlayerTemplate implements Entidade {
     public void loadSaveData() {
         save.loadSaveData(this);
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  COLISÃO (delegação)
-    // ══════════════════════════════════════════════════════════
 
     public void adicionarColisao(List<Rectangle> colisores) {
         colisao.adicionarColisao(colisores);
@@ -321,10 +281,6 @@ public abstract class PlayerTemplate implements Entidade {
         combate.clearTiros();
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  TIROS (delegação)
-    // ══════════════════════════════════════════════════════════
-
     public void adicionarTiro(TirosTemplate tiro) {
         combate.adicionarTiro(tiro);
     }
@@ -332,10 +288,6 @@ public abstract class PlayerTemplate implements Entidade {
     public void removerTiro(TirosTemplate tiro) {
         combate.removerTiro(tiro);
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  POSIÇÃO / LOCAL
-    // ══════════════════════════════════════════════════════════
 
     public void setLocal(float x, float y) {
         this.dx = (int) x;
@@ -351,19 +303,12 @@ public abstract class PlayerTemplate implements Entidade {
         cameraComponent.updateCamera(dx, dy);
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  DISPOSE
-    // ══════════════════════════════════════════════════════════
-
     public void dispose() {
         clearList();
+        hudPause.dispose();
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  GETTERS (mantém API pública compatível com código externo)
-    // ══════════════════════════════════════════════════════════
-
-    // Posição
+    // Getters (mantém API pública compatível com código externo)
     public int getDx() { return dx; }
     public void setDx(int dx) { this.dx = dx; }
     public int getDy() { return dy; }
@@ -374,12 +319,11 @@ public abstract class PlayerTemplate implements Entidade {
     public int getHitboxOffsetX() { return hitboxOffsetX; }
     public int getHitboxOffsetY() { return hitboxOffsetY; }
 
-    // Movimento
     public float getNextX() { return movimento.getNextX(); }
     public float getNextY() { return movimento.getNextY(); }
     public boolean isOlhandoEsquerda() { return olhandoEsquerda; }
 
-    // Stats (delegam ao StatsComponent)
+    // Delegam ao StatsComponent
     public int getVida() { return stats.getVida(); }
     public int getVidaBase() { return stats.getVidaBase(); }
     public int getForca() { return stats.getForca(); }
@@ -392,29 +336,24 @@ public abstract class PlayerTemplate implements Entidade {
     public int getQuantidadeDeTiros() { return stats.getQuantidadeDeTiros(); }
     public boolean isMorto() { return stats.isMorto(); }
 
-    // Stats upgrade
     public void vidaBaseUp(int pontosGastos) { stats.vidaBaseUp(pontosGastos); }
     public void forcaUp(int pontosGastos) { stats.forcaUp(pontosGastos); }
     public void velocidadeUp(int pontosGastos) { stats.velocidadeUp(pontosGastos); }
     public void gastouPontos(int pontosGastos) { stats.gastouPontos(pontosGastos); }
 
-    // Combate
     public List<TirosTemplate> getTiros() { return combate.getTiros(); }
     public void setPodeAtacar(boolean podeAtacar) { combate.setPodeAtacar(podeAtacar); }
 
-    /** Injeta a lista de inimigos da sala atual (chamado pelo mundo). */
+    // Injeta a lista de inimigos da sala atual (chamado pelo mundo).
     public void setFonteInimigos(List<EnemyTemplate> inimigos) { combate.setFonteInimigos(inimigos); }
 
-    // Câmera
     public OrthographicCamera getCamera() { return cameraComponent.getCamera(); }
     public CameraComponent getCameraComponent() { return cameraComponent; }
     public AnimacaoComponent getAnimacao() { return animacao; }
 
-    // HUD
     public Hud getHud() { return hud; }
     public HudPause getHudPause() { return hudPause; }
 
-    // Pause
     public boolean isPause() { return pause; }
     public void setPause(boolean pause) {
         this.pause = pause;

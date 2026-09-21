@@ -11,19 +11,14 @@ public class ColisaoResolver {
 
     private static final float MARGEM = 0.5f;
 
-    // ══════════════════════════════════════════════════════════
-    //  API PÚBLICA
-    // ══════════════════════════════════════════════════════════
     public void resolver(List<EnemyTemplate> enemies, List<Rectangle> paredes) {
         if (enemies == null) return;
 
         for (int iter = 0; iter < MAX_ITERACOES; iter++) {
             boolean houveCorrecao = false;
 
-            // 1. Inimigo vs Inimigo
             houveCorrecao |= resolverEntreInimigos(enemies);
 
-            // 2. Inimigo vs Paredes
             if (paredes != null && !paredes.isEmpty()) {
                 houveCorrecao |= resolverInimigosVsParedes(enemies, paredes);
             }
@@ -33,9 +28,6 @@ public class ColisaoResolver {
         }
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  INIMIGO vs INIMIGO
-    // ══════════════════════════════════════════════════════════
     private boolean resolverEntreInimigos(List<EnemyTemplate> enemies) {
         boolean corrigiu = false;
         for (int i = 0; i < enemies.size(); i++) {
@@ -57,9 +49,6 @@ public class ColisaoResolver {
         return corrigiu;
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  ENTIDADE vs PAREDES
-    // ══════════════════════════════════════════════════════════
     private boolean resolverInimigosVsParedes(List<EnemyTemplate> enemies, List<Rectangle> paredes) {
         boolean corrigiu = false;
         for (EnemyTemplate enemy : enemies) {
@@ -75,9 +64,7 @@ public class ColisaoResolver {
     }
 
 
-    // ══════════════════════════════════════════════════════════
-    //  MTV — SEPARAR DUAS HITBOXES
-    // ══════════════════════════════════════════════════════════
+    // Separa pelo eixo de menor sobreposição (MTV)
     private void separarDuasHitboxes(Rectangle a, Rectangle b) {
         float overlapX = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
         float overlapY = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);

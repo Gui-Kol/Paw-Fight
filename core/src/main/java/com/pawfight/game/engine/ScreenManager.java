@@ -17,14 +17,11 @@ public class ScreenManager {
 
     private final PawFight game;
 
-    // Estado da transição
     private boolean transitioning = false;
     private boolean fadingOut = true;
     private Screen nextScreen;
     private float transitionDuration;
     private TransitionEffect currentEffect;
-
-    // ────────────────────────────── Lifecycle ──────────────────────────────
 
     private ScreenManager(PawFight game) {
         this.game = game;
@@ -44,7 +41,6 @@ public class ScreenManager {
         return instance;
     }
 
-    // ──────────────────────────── Iniciar transição ────────────────────────
     public void fadeToScreen(Screen nextScreen, float duration, Color color, boolean useGradient) {
         disposeCurrentEffect();
         this.nextScreen = nextScreen;
@@ -73,7 +69,6 @@ public class ScreenManager {
             + " (" + duration + "s)");
     }
 
-    // ────────────────────────── Update / Render ───────────────────────────
     public void update(float delta) {
         if (!transitioning || currentEffect == null) return;
 
@@ -110,16 +105,12 @@ public class ScreenManager {
 
         currentEffect.render(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        // Restaura a projeção original
         batch.setProjectionMatrix(tempMatrix);
     }
 
-    // ──────────────────────────── Consultas ────────────────────────────────
     public boolean isTransitioning() {
         return transitioning;
     }
-
-    // ──────────────────────────── Dispose ──────────────────────────────────
 
     private void disposeCurrentEffect() {
         if (currentEffect != null) {

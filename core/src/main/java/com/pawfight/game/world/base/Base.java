@@ -20,7 +20,6 @@ public class Base extends WorldTemplate {
     private Portoes portoes;
     private int carregarPosPlayer = 0;
 
-    // Sistema de portal reutilizável
     private Portal portalAreia;
 
     // Hitboxes cacheadas — criadas uma única vez em vez de cada frame
@@ -55,10 +54,8 @@ public class Base extends WorldTemplate {
             game.resize(viewport.getScreenWidth(), viewport.getScreenHeight());
             carregarParede();
 
-            // Cachear hitboxes dos portais uma única vez
             var tilemapHitboxFactory = worldPhysics.getTilemapHitboxFactory();
 
-            // Portal reutilizável: define nome, layer, mensagem e mundo de destino
             portalAreia = new Portal(
                 "PortalAreia",
                 "EntradaPortalAreia",
@@ -95,7 +92,6 @@ public class Base extends WorldTemplate {
         try {
             var shapeRenderer = worldRenderer.getShapeRenderer();
 
-            // Portal de areia: exibe mensagem e ativa a transição via sistema reutilizável
             portalAreia.exibirMensagem(player, batch, shapeRenderer);
             if (!entrouPortal && portalAreia.ativarTransicao(player, game, camera, viewport)) {
                 entrouPortal = true;

@@ -10,7 +10,6 @@ public class AnimacaoComponent {
 
     private final MotorAnimacao motorAnimacao = new MotorAnimacao();
 
-    // Texturas (carregadas uma vez)
     private Texture idleSheet;
     private Texture walkSheet;
     private Texture deadSheet;
@@ -18,7 +17,6 @@ public class AnimacaoComponent {
     private Texture atackSheet;
     private Texture specialAtackSheet;
 
-    // Definições de sprite (atualizadas quando direção muda)
     private DefinirSprite idleDefinition;
     private DefinirSprite walkDefinition;
     private DefinirSprite deadDefinition;
@@ -26,7 +24,7 @@ public class AnimacaoComponent {
     private DefinirSprite atackDefinition;
     private DefinirSprite specialAtackDefinition;
 
-    // Cache de animações: [0] = direita, [1] = esquerda
+    // Cache por direção: [0] direita, [1] esquerda
     private static final int DIR_RIGHT = 0;
     private static final int DIR_LEFT = 1;
 
@@ -43,7 +41,7 @@ public class AnimacaoComponent {
     @SuppressWarnings("unchecked")
     private final Animation<TextureRegion>[] specialAtackCache = new Animation[2];
 
-    // Animações ativas (apontam para cache da direção atual)
+    // Apontam para o cache da direção atual
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> walkAnimation;
     private Animation<TextureRegion> hurtAnimation;
@@ -54,8 +52,6 @@ public class AnimacaoComponent {
     private boolean animationsDirty = true;
     private boolean lastOlhandoEsquerda = false;
     private float stateTime = 0f;
-
-    // ── Inicialização ──────────────────────────────────────────
 
     public void initTextures(Texture idle, Texture walk, Texture dead, Texture hurt) {
         this.idleSheet = idle;
@@ -94,14 +90,12 @@ public class AnimacaoComponent {
     public void rebuildAnimations() {
         if (idleDefinition == null) return;
 
-        // Constrói versões direita (olhandoEsquerda = false)
         idleCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(idleDefinition, false));
         walkCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(walkDefinition, false));
         hurtCache[DIR_RIGHT] = motorAnimacao.animar(withDirection(hurtDefinition, false));
-        // A animação de morte NÃO loopa — toca uma vez e fica no último frame (isDeadAnimationFinished)
+        // Morte não loopa: toca uma vez e congela no último frame
         deadCache[DIR_RIGHT] = motorAnimacao.criarAnimacao(withDirection(deadDefinition, false), false);
 
-        // Constrói versões esquerda (olhandoEsquerda = true)
         idleCache[DIR_LEFT] = motorAnimacao.animar(withDirection(idleDefinition, true));
         walkCache[DIR_LEFT] = motorAnimacao.animar(withDirection(walkDefinition, true));
         hurtCache[DIR_LEFT] = motorAnimacao.animar(withDirection(hurtDefinition, true));
@@ -116,7 +110,6 @@ public class AnimacaoComponent {
             specialAtackCache[DIR_LEFT] = motorAnimacao.animar(withDirection(specialAtackDefinition, true));
         }
 
-        // Aponta animações ativas para a direção atual
         applyDirection(lastOlhandoEsquerda);
         animationsDirty = false;
     }
@@ -131,8 +124,6 @@ public class AnimacaoComponent {
         specialAtackAnimation = specialAtackCache[dir];
     }
 
-    // ── Update ─────────────────────────────────────────────────
-
     public void updateStateTime(float delta) {
         stateTime += delta;
     }
@@ -145,20 +136,18 @@ public class AnimacaoComponent {
         if (olhandoEsquerda != lastOlhandoEsquerda) {
             lastOlhandoEsquerda = olhandoEsquerda;
 
-            // Se o cache já foi construído, apenas troca a direção — SEM rebuild
+            // Cache pronto: troca a direção sem rebuild
             if (!animationsDirty && idleCache[DIR_RIGHT] != null) {
                 applyDirection(olhandoEsquerda);
                 return true;
             }
 
-            // Se cache não existe ainda, marca dirty para rebuild completo
+            // Cache inexistente: marca dirty para rebuild completo
             animationsDirty = true;
             return true;
         }
         return false;
     }
-
-    // ── Obter frame atual ──────────────────────────────────────
 
     public TextureRegion animaAtual(boolean morto, boolean hurt, boolean moving, float hurtTime) {
         if (animationsDirty) {
@@ -203,8 +192,6 @@ public class AnimacaoComponent {
             : idleAnimation.getKeyFrame(stateTime, true);
     }
 
-    // ── Getters (para subclasses acessarem texturas/direção) ───
-
     public Texture getIdleSheet() { return idleSheet; }
     public Texture getWalkSheet() { return walkSheet; }
     public Texture getDeadSheet() { return deadSheet; }
@@ -214,7 +201,7 @@ public class AnimacaoComponent {
     public float getStateTime() { return stateTime; }
     public MotorAnimacao getMotorAnimacao() { return motorAnimacao; }
 
-    /** Retorna true quando a animação de morte (dead) terminou de tocar por completo. */
+    // Retorna true quando a animação de morte terminou de tocar por completo.
     public boolean isDeadAnimationFinished() {
         return deadAnimation != null && deadAnimation.isAnimationFinished(stateTime);
     }

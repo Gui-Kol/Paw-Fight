@@ -45,9 +45,6 @@ public class Quadtree<T> {
         this.dividida = false;
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  API PÚBLICA
-    // ══════════════════════════════════════════════════════════
     public void clear() {
         items.clear();
         hitboxes.clear();
@@ -105,7 +102,7 @@ public class Quadtree<T> {
         shapeRenderer.setColor(cor);
         shapeRenderer.rect(limites.x, limites.y, limites.width, limites.height);
 
-        // Desenha o número de itens neste nó (como pequenas marcas no canto)
+        // Quantidade de itens do nó como marcas no canto
         if (!items.isEmpty()) {
             float markSize = 3f;
             for (int i = 0, n = items.size(); i < n; i++) {
@@ -122,10 +119,6 @@ public class Quadtree<T> {
             }
         }
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  INTERNOS
-    // ══════════════════════════════════════════════════════════
 
     private void subdividir() {
         float x     = limites.x;

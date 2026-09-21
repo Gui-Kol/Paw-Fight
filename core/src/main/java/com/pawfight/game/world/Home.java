@@ -29,7 +29,6 @@ import com.pawfight.game.world.base.Base;
 public class Home implements Screen {
     private final HudStage hudStage;
 
-    // Texturas para os estados do botão
     private final Texture normalTexturePlay = Assets.get("menu/button/play/play1.png", Texture.class);
     private final Texture hoverTexturePlay = Assets.get("menu/button/play/play2.png", Texture.class);
     private final Texture pressedTexturePlay = Assets.get("menu/button/play/play3.png", Texture.class);
@@ -60,7 +59,7 @@ public class Home implements Screen {
         try {
             background = Assets.get("menu/menu.png", Texture.class);
             backgroundImage = new Image(background);
-            backgroundImage.setFillParent(true); // ocupa toda a tela
+            backgroundImage.setFillParent(true);
         } catch (Exception e) {
             Gdx.app.error("Home", "Erro ao carregar background: " + e.getMessage(), e);
         }
@@ -135,7 +134,6 @@ public class Home implements Screen {
 
     @Override
     public void pause() {
-        Gdx.app.log("Home", "pause");
     }
 
     @Override
@@ -153,8 +151,7 @@ public class Home implements Screen {
 
     @Override
     public void dispose() {
-        // Texturas e música são gerenciadas pelo AssetManager — NÃO dar dispose aqui
-        // Transição é gerenciada pelo ScreenManager — NÃO dar dispose aqui
+        // Texturas/música (AssetManager) e transição (ScreenManager) — NÃO dar dispose aqui
         if (hudStage != null) hudStage.dispose();
         Gdx.app.log("Home","foi disposed");
     }

@@ -16,7 +16,7 @@ public class LoadingScreen implements Screen {
     private final OrthographicCamera camera;
     private final Viewport viewport;
     private final SpriteBatch batch;
-    private float minLoadingTime = 2f; // tempo mínimo em segundos
+    private float minLoadingTime = 2f;
     private boolean minTimePassed = false;
     private final TextureRegion primeiroFrame;
 
@@ -32,7 +32,6 @@ public class LoadingScreen implements Screen {
         this.batch = game.getBatch();
 
 
-        // Escolhe aleatoriamente qual GIF exibir
         String gifPath = MathUtils.randomBoolean()
             ? "menu/loading/loadingScreen.gif"
             : "menu/loading/loadingScreen2.gif";
@@ -46,7 +45,6 @@ public class LoadingScreen implements Screen {
     public void render(float delta) {
         stateTime += delta;
 
-        // ── 1) Desenha o GIF ──
         ScreenUtils.clear(0, 0, 0, 1);
         TextureRegion frame = gifAnimation.animation.getKeyFrame(stateTime);
         if (frame == null){
@@ -57,23 +55,19 @@ public class LoadingScreen implements Screen {
         batch.draw(frame, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         batch.end();
 
-        // ── 2) Enfileira assets depois do primeiro frame ──
         if (!assetsQueued) {
             assetsQueued = true;
             Assets.queueAll();
             Gdx.app.log("LoadingScreen", "Assets enfileirados para carregamento.");
         }
 
-        // ── 3) Atualiza carregamento ──
         boolean finishedLoading = Assets.manager.update();
 
-        // ── 4) Verifica se tempo mínimo já passou ──
         if (!minTimePassed && stateTime >= minLoadingTime) {
             minTimePassed = true;
             Gdx.app.log("LoadingScreen", "Tempo mínimo de loading atingido.");
         }
 
-        // ── 5) Só troca de tela quando assets + tempo mínimo ──
         if (!loadingDone && finishedLoading && minTimePassed) {
             loadingDone = true;
             Gdx.app.log("LoadingScreen", "Assets carregados e tempo mínimo atingido!");

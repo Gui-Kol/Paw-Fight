@@ -21,24 +21,23 @@ class StatsComponentTest {
 
     @BeforeEach
     void setUp() {
+        // Ordem dos args: forca, cadenciaTiro, duracaoTiro, vidaBase, velocidade, tamanho, tamanhoTiro, hitboxSize, hitboxOffsetY, hitboxOffsetX, texturas (não usadas), audio
         DadosPlayer dados = new DadosPlayer(
-            2,      // forca
-            0.3f,   // cadenciaTiro
-            1.0f,   // duracaoTiro
-            10,     // vidaBase
-            350,    // velocidade
-            64,     // tamanho
-            16,     // tamanhoTiro
-            25,     // hitboxSize
-            0,      // hitboxOffsetY
-            -5,     // hitboxOffsetX
-            null, null, null, null, // texturas (não usadas nos testes)
-            null    // audio
+            2,
+            0.3f,
+            1.0f,
+            10,
+            350,
+            64,
+            16,
+            25,
+            0,
+            -5,
+            null, null, null, null,
+            null
         );
         stats = new StatsComponent(dados);
     }
-
-    // ── Construção ─────────────────────────────────────────────
 
     @Test
     @DisplayName("Inicializa com stats base, vida cheia, level 1 e XP zero")
@@ -65,8 +64,6 @@ class StatsComponentTest {
         assertEquals(3, inimigo.getForca());
         assertFalse(inimigo.isMorto());
     }
-
-    // ── Dano ───────────────────────────────────────────────────
 
     @Test
     @DisplayName("Dano reduz vida e ativa estado hurt")
@@ -96,8 +93,8 @@ class StatsComponentTest {
     @Test
     @DisplayName("Cooldown impede dano consecutivo imediato")
     void cooldownBloqueiaDano() {
-        assertTrue(stats.aplicarDano(2));   // primeiro acerta
-        assertFalse(stats.aplicarDano(2));  // segundo é bloqueado (cooldown)
+        assertTrue(stats.aplicarDano(2));
+        assertFalse(stats.aplicarDano(2));
         assertEquals(8, stats.getVida());
     }
 
@@ -127,8 +124,6 @@ class StatsComponentTest {
         assertEquals(0f, stats.getHurtTime());
     }
 
-    // ── Dano direto (DoT / efeitos de status) ──────────────────
-
     @Test
     @DisplayName("Dano direto ignora o cooldown e pode ser aplicado em sequência")
     void danoDiretoIgnoraCooldown() {
@@ -157,8 +152,6 @@ class StatsComponentTest {
         stats.aplicarDano(999);
         assertFalse(stats.aplicarDanoDireto(1));
     }
-
-    // ── XP / Level ─────────────────────────────────────────────
 
     @Test
     @DisplayName("Ganhar XP abaixo do necessário não sobe de nível")
@@ -203,8 +196,6 @@ class StatsComponentTest {
             "XP necessário não deveria diminuir ao subir de nível");
     }
 
-    // ── Moedas ─────────────────────────────────────────────────
-
     @Test
     @DisplayName("moedaUp acumula moedas")
     void moedasAcumulam() {
@@ -212,8 +203,6 @@ class StatsComponentTest {
         stats.moedaUp(3);
         assertEquals(8, stats.getMoedas());
     }
-
-    // ── Quantidade de tiros ────────────────────────────────────
 
     @Test
     @DisplayName("quantidadeDeTiros começa em 1 por padrão")
@@ -230,8 +219,6 @@ class StatsComponentTest {
         stats.setQuantidadeDeTiros(0);
         assertEquals(1, stats.getQuantidadeDeTiros(), "Valor mínimo é 1 projétil");
     }
-
-    // ── Upgrades com pontos ────────────────────────────────────
 
     @Test
     @DisplayName("vidaBaseUp aumenta vida base e restaura vida, gastando pontos")

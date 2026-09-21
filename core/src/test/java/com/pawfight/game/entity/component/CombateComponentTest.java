@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @DisplayName("CombateComponent — guarda global de inimigos na sala")
 class CombateComponentTest {
 
-    /** Modelo de tiro mínimo: cadência alta para nunca disparar nos testes. */
+    // Modelo de tiro mínimo: cadência alta para nunca disparar nos testes.
     private static class TiroStub extends TirosTemplate {
         List<EnemyTemplate> inimigosRecebidos;
 
@@ -34,6 +34,7 @@ class CombateComponentTest {
         }
 
         @Override protected int definirTamanhoPadrao() { return 0; }
+        @Override protected int definirQuantidadeFrames() { return 1; }
         @Override protected float definirDuracao() { return 1f; }
         @Override protected float definirIntervalo() { return 10f; }
         @Override protected Texture randomTex() { return null; }

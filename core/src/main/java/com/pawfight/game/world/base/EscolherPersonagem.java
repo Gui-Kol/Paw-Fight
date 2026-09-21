@@ -24,23 +24,20 @@ import static com.pawfight.game.engine.GameConfig.ALTURA_TELA_BASE;
 public class EscolherPersonagem {
     private final ExibirDadosPersonagem exibirDadosPersonagem;
     private PlayerTemplate personagemPreview;
-    private final Texture[] personagens;   // lista de texturas dos personagens
-    private int personagemAtual;     // índice do personagem atual
+    private final Texture[] personagens;
+    private int personagemAtual;
     private final SpriteBatch batch;
     private final Texture backGroud;
     private final Texture nuvem;
 
-    // Variáveis para controle do background
     private float bgX1, bgX2;
     private float bgVelocidade = 50; // pixels por segundo
 
-    // Controle da nuvem
     private float nuvemX;
     private float nuvemY;
     private float nuvemVelocidade = 200; // pixels por segundo
     private Random random;
 
-    //Game
     private PawFight game;
     private final FitViewport viewport;
 
@@ -67,7 +64,6 @@ public class EscolherPersonagem {
 
         random = new Random();
 
-        // Cria os 4 players uma única vez e carrega os seus saves
         SaveComponent saveComponent = new SaveComponent();
         previews = new PlayerTemplate[] {
             saveComponent.loadSaveData(new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
@@ -76,37 +72,32 @@ public class EscolherPersonagem {
             saveComponent.loadSaveData(new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
         };
 
-        // Desativa o input dos menus de pausa de TODOS os previews.
-        // O preview selecionado terá o input ativado ao entrar no jogo;
-        // os demais não devem interceptar cliques do menu de pausa (mundo nulo).
+        // Desativa o input do menu de pausa dos previews; o selecionado é reativado ao entrar no jogo
         for (PlayerTemplate preview : previews) {
             preview.getHudPause().setInputAtivo(false);
         }
 
-        // Inicializa duas cópias do background
+        // Duas cópias do background para scroll infinito
         bgX1 = 0;
-        bgX2 = Gdx.graphics.getWidth() - 1; // começa logo após a primeira
+        bgX2 = Gdx.graphics.getWidth() - 1;
 
         exibirDadosPersonagem = new ExibirDadosPersonagem();
         personagemPreview = previews[personagemAtual];
 
-        // Inicializa nuvem fora da tela à direita
         resetNuvem();
 
         Gdx.app.log("EscolherPersonagem", "Inicializado com " + previews.length + " personagens carregados (saves aplicados).");
     }
 
     private void resetNuvem() {
-        nuvemX = Gdx.graphics.getWidth(); // começa fora da tela
-        nuvemY = random.nextInt(Gdx.graphics.getHeight() - nuvem.getHeight()); // altura aleatória
+        nuvemX = Gdx.graphics.getWidth();
+        nuvemY = random.nextInt(Gdx.graphics.getHeight() - nuvem.getHeight());
     }
 
     private void updateNuvem() {
-        // Movimento do background
         bgX1 -= bgVelocidade * Gdx.graphics.getDeltaTime();
         bgX2 -= bgVelocidade * Gdx.graphics.getDeltaTime();
 
-        // Movimento da nuvem
         nuvemX -= nuvemVelocidade * Gdx.graphics.getDeltaTime();
 
         // Se uma imagem saiu da tela, reposiciona à direita da outra
@@ -118,7 +109,6 @@ public class EscolherPersonagem {
         }
 
 
-        // Se saiu da tela, reinicia
         if (nuvemX + nuvem.getWidth() < 0) {
             resetNuvem();
         }
@@ -127,7 +117,7 @@ public class EscolherPersonagem {
     public PlayerTemplate update() {
         updateNuvem();
 
-        // Navegar com setas (usa KeyBindings para respeitar remapeamento)
+        // Navegação por setas via KeyBindings (respeita remapeamento de teclas)
         KeyBindings keys = KeyBindings.getInstance();
 
         if (keys.isActive(GameAction.MENU_RIGHT)) {
@@ -150,7 +140,7 @@ public class EscolherPersonagem {
 
         if (keys.isActive(GameAction.MENU_CONFIRM)) {
             Gdx.app.log("EscolherPersonagem", "Personagem confirmado: " + previews[personagemAtual].getName());
-            return previews[personagemAtual]; // retorna o player pré-criado
+            return previews[personagemAtual];
         }
 
         return null;
@@ -168,11 +158,9 @@ public class EscolherPersonagem {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
-        // Background
         batch.draw(backGroud, bgX1, 0, LARGURA_TELA_BASE, ALTURA_TELA_BASE);
         batch.draw(backGroud, bgX2, 0, LARGURA_TELA_BASE, ALTURA_TELA_BASE);
 
-        // Personagem centralizado
         Texture personagem = personagens[personagemAtual];
         float largura = 200 * scale;
         float altura = 200 * scale;
@@ -183,8 +171,8 @@ public class EscolherPersonagem {
         // Nuvem nos pés do player
         float nuvemW = (nuvem.getWidth() * scale) * 1.5f;
         float nuvemH = (nuvem.getHeight() * scale) * 1.5f;
-        float nuvemX = (playerX - (nuvemW - largura) / 2f) + 100 * scale; // centraliza com player
-        float nuvemY = (playerY - nuvemH) + 100 * scale;                  // pés do player
+        float nuvemX = (playerX - (nuvemW - largura) / 2f) + 100 * scale;
+        float nuvemY = (playerY - nuvemH) + 100 * scale;
         batch.draw(nuvem, nuvemX, nuvemY, nuvemW, nuvemH);
 
         batch.end();
@@ -194,7 +182,7 @@ public class EscolherPersonagem {
     }
 
 
-    // Corrige o resize para manter proporção
+    // Mantém a proporção no resize
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         viewport.getCamera().position.set(
@@ -204,7 +192,6 @@ public class EscolherPersonagem {
         );
         viewport.getCamera().update();
 
-        // Reposiciona elementos dependentes
         bgX1 = 0;
         bgX2 = viewport.getWorldWidth() - 1;
         nuvemX = viewport.getWorldWidth();

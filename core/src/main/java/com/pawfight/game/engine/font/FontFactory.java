@@ -9,8 +9,8 @@ public class FontFactory {
     public static BitmapFont createCustomFont(String path, int size) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(path));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = size;          // tamanho da fonte
-        parameter.color = Color.WHITE;  // cor padrão
+        parameter.size = size;
+        parameter.color = Color.WHITE;
         BitmapFont font = generator.generateFont(parameter);
         generator.dispose();
         return font;
