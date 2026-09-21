@@ -17,6 +17,8 @@ public class StatsComponent {
     private final int tamanhoTiro;
     private final float cadenciaTiro;
     private final float duracaoTiro;
+    /** Quantos projéteis são lançados por disparo (cresce com upgrades). */
+    private int quantidadeDeTiros = 1;
 
     // Progressão
     private int xp;
@@ -162,6 +164,7 @@ public class StatsComponent {
     public int getTamanhoTiro() { return tamanhoTiro; }
     public float getCadenciaTiro() { return cadenciaTiro; }
     public float getDuracaoTiro() { return duracaoTiro; }
+    public int getQuantidadeDeTiros() { return quantidadeDeTiros; }
     public int getXp() { return xp; }
     public int getXpNecessario() { return xpNecessario; }
     public int getPontosDisponiveis() { return pontosDisponiveis; }
@@ -186,5 +189,6 @@ public class StatsComponent {
     public void setXpNecessario(int xpNecessario) { this.xpNecessario = xpNecessario; }
     public void setPontosDisponiveis(int pontosDisponiveis) { this.pontosDisponiveis = pontosDisponiveis; }
     public void setMoedas(int moedas) { this.moedas = moedas; }
+    public void setQuantidadeDeTiros(int quantidadeDeTiros) { this.quantidadeDeTiros = Math.max(1, quantidadeDeTiros); }
 }
 

@@ -213,6 +213,24 @@ class StatsComponentTest {
         assertEquals(8, stats.getMoedas());
     }
 
+    // ── Quantidade de tiros ────────────────────────────────────
+
+    @Test
+    @DisplayName("quantidadeDeTiros começa em 1 por padrão")
+    void quantidadeDeTirosPadrao() {
+        assertEquals(1, stats.getQuantidadeDeTiros());
+    }
+
+    @Test
+    @DisplayName("quantidadeDeTiros é mutável e nunca fica abaixo de 1")
+    void quantidadeDeTirosMutavel() {
+        stats.setQuantidadeDeTiros(3);
+        assertEquals(3, stats.getQuantidadeDeTiros());
+
+        stats.setQuantidadeDeTiros(0);
+        assertEquals(1, stats.getQuantidadeDeTiros(), "Valor mínimo é 1 projétil");
+    }
+
     // ── Upgrades com pontos ────────────────────────────────────
 
     @Test

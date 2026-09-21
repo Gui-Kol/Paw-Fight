@@ -389,6 +389,7 @@ public abstract class PlayerTemplate implements Entidade {
     public int getPontosDisponiveis() { return stats.getPontosDisponiveis(); }
     public float getCadenciaTiro() { return stats.getCadenciaTiro(); }
     public float getDuracaoTiro() { return stats.getDuracaoTiro(); }
+    public int getQuantidadeDeTiros() { return stats.getQuantidadeDeTiros(); }
     public boolean isMorto() { return stats.isMorto(); }
 
     // Stats upgrade

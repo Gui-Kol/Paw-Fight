@@ -5,7 +5,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.sala.Sala;
-import com.pawfight.game.entity.bosses.BossesTemplate;
+import com.pawfight.game.entity.bosses.BossTemplate;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
 
@@ -15,7 +15,7 @@ import java.util.Random;
 
 public class GerarInimigos {
     private final List<EnemyTemplate> listaInimigosFortes;
-    private final List<BossesTemplate> listaBosses;
+    private final List<BossTemplate> listaBosses;
     private final Random random;
 
     public GerarInimigos() {
@@ -108,7 +108,7 @@ public class GerarInimigos {
         return listaInimigosFortes;
     }
 
-    public List<BossesTemplate> getBosses() {
+    public List<BossTemplate> getBosses() {
         return listaBosses;
     }
 
