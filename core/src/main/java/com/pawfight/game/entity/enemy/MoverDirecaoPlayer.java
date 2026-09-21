@@ -33,12 +33,11 @@ public class MoverDirecaoPlayer {
         float moveX = (deltaX / distanciaTotal) * enemy.getVelocidade() * delta;
         float moveY = (deltaY / distanciaTotal) * enemy.getVelocidade() * delta;
 
-        // Direção visual que o inimigo vai olhar
         boolean willFaceLeft = deltaX < 0;
         int offsetX = willFaceLeft ? -HITBOX_OFFSET_X : HITBOX_OFFSET_X;
         boolean moved = false;
 
-        // ── Eixo X ──────────────────────────────────────────────
+        // Movimento separado por eixo: permite deslizar ao longo das paredes
         float newDx = enemy.dx + moveX;
         tempHitBox.set(
             newDx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
@@ -51,7 +50,6 @@ public class MoverDirecaoPlayer {
             moved = true;
         }
 
-        // ── Eixo Y ──────────────────────────────────────────────
         float newDy = enemy.dy + moveY;
         tempHitBox.set(
             enemy.dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
@@ -67,7 +65,6 @@ public class MoverDirecaoPlayer {
         enemy.olhandoEsquerda = willFaceLeft;
         enemy.moving = moved;
 
-        // Atualiza hitbox com posição final
         offsetX = enemy.olhandoEsquerda ? -HITBOX_OFFSET_X : HITBOX_OFFSET_X;
         enemy.hitBox.setPosition(
             enemy.dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
@@ -76,7 +73,6 @@ public class MoverDirecaoPlayer {
     }
 
     private boolean colide(Rectangle testHitbox, EnemyTemplate self) {
-        // Verifica colisão com paredes
         List<Rectangle> paredes = self.paredesColisores;
         if (paredes != null) {
             for (int i = 0, n = paredes.size(); i < n; i++) {
@@ -86,7 +82,6 @@ public class MoverDirecaoPlayer {
             }
         }
 
-        // Verifica colisão com outros inimigos
         List<EnemyTemplate> others = self.enemiesList;
         if (others != null) {
             for (EnemyTemplate other : others) {

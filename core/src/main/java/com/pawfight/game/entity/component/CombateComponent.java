@@ -19,18 +19,14 @@ public class CombateComponent {
     private final Atirar atirar = new Atirar();
     private boolean podeAtacar = false;
 
-    /** Inimigos vivos da sala atual (injetados pelo mundo via PlayerTemplate). */
+    // Inimigos vivos da sala atual (injetados pelo mundo via PlayerTemplate).
     private List<EnemyTemplate> fonteInimigos;
-
-    // ── Modelos de tiro ────────────────────────────────────────
 
     public void addModeloTiro(TirosTemplate modelo) {
         if (modelo != null) {
             tirosModelos.add(modelo);
         }
     }
-
-    // ── Update (chamado todo frame) ────────────────────────────
 
     public void updateTiros(float delta) {
         Iterator<TirosTemplate> it = tiros.iterator();
@@ -59,8 +55,6 @@ public class CombateComponent {
         this.fonteInimigos = inimigos;
     }
 
-    // ── Gerenciamento de tiros ativos ──────────────────────────
-
     public void adicionarTiro(TirosTemplate tiro) {
         tiros.add(tiro);
         Gdx.app.debug(TAG, "Tiro disparado: " + tiro.getClass().getSimpleName() + " — ativos: " + tiros.size());
@@ -78,8 +72,6 @@ public class CombateComponent {
         }
         tiros.clear();
     }
-
-    // ── Getters / Setters ──────────────────────────────────────
 
     public List<TirosTemplate> getTiros() { return tiros; }
     public List<TirosTemplate> getTirosModelos() { return tirosModelos; }

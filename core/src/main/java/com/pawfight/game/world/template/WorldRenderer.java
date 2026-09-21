@@ -55,8 +55,6 @@ public class WorldRenderer {
         gerarObjetos.gerar(world, infoObjetos);
     }
 
-    // ── Getters ──────────────────────────────────────────────────
-
     public ShapeRenderer getShapeRenderer() {
         return shapeRenderer;
     }

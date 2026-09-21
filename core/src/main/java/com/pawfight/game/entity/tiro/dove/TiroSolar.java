@@ -8,12 +8,7 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 
-/**
- * Raio de sol da Dove: "velocidade instantânea" — nasce caindo
- * diretamente sobre o inimigo mais próximo do player e permanece por
- * apenas 0.5s. Dano elevado em um único alvo, com chance de causar
- * queimadura (dano adicional por tempo).
- */
+// Raio da Dove: cai sobre o inimigo mais próximo; alvo único, alta cadência de dano, chance de queimadura (DoT).
 public class TiroSolar extends TirosTemplate {
 
     // Queimadura (DoT) — chance e valores configuráveis
@@ -53,7 +48,7 @@ public class TiroSolar extends TirosTemplate {
         return new Rectangle(xHitBox, yHitBox, tamanho, tamanho);
     }
 
-    /** Faz o raio cair sobre o alvo (ou sobre o player, se não houver alvos). */
+    // Faz o raio cair sobre o alvo (ou sobre o player, se não houver alvos).
     private void posicionarNoAlvo() {
         EnemyTemplate alvo = inimigoMaisProximo();
         Rectangle referencia = (alvo != null) ? alvo.getHitBox() : dono.getHitBox();
@@ -71,7 +66,7 @@ public class TiroSolar extends TirosTemplate {
         t.reiniciarBase(player.getDx(), player.getDy(), calcularDano(player), tamanho - tamanhoPadrao, player);
         t.inimigos = inimigos;
         t.hitBox.set(t.xHitBox, t.yHitBox, t.tamanho, t.tamanho);
-        t.posicionarNoAlvo(); // sempre cai no inimigo mais próximo
+        t.posicionarNoAlvo();
         t.texture = t.raio;
         t.ownerPool = pool;
 
@@ -80,12 +75,11 @@ public class TiroSolar extends TirosTemplate {
 
     @Override
     public boolean isUnicoAlvo() {
-        return true; // dano elevado em um único alvo
+        return true;
     }
 
     @Override
     public void aoAcertar(EnemyTemplate inimigo) {
-        // Efeito secundário: chance de queimadura (dano por tempo)
         int danoPorTick = Math.max(1, dano / 4);
         inimigo.aplicarQueimadura(danoPorTick, DURACAO_QUEIMADURA, CHANCE_QUEIMADURA);
     }
@@ -93,6 +87,11 @@ public class TiroSolar extends TirosTemplate {
     @Override
     protected int definirTamanhoPadrao() {
         return 20;
+    }
+
+    @Override
+    protected int definirQuantidadeFrames() {
+        return 1; // textura estática (frame único)
     }
 
     @Override

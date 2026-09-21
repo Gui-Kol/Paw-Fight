@@ -16,7 +16,6 @@ import java.util.Map;
 
 public class GerenciadorParticulas {
 
-    // ── Parâmetros ajustáveis: Dano ────────────────────────────
     public static final String SPRITE_DANO_PATH = "particles/dano.png";
     public static final int DANO_NUM_FRAME = 6;
     public static final float DANO_FRAME_DURATION = 0.4f / DANO_NUM_FRAME;
@@ -27,7 +26,6 @@ public class GerenciadorParticulas {
     public static final float DANO_TEMPO_VIDA = 0.4f;
     public static final boolean DANO_REVERSE = false;
 
-    // ── Parâmetros ajustáveis: Cura ────────────────────────────
     public static final String SPRITE_CURA_PATH = "particles/cura.png";
     public static final int CURA_NUM_FRAME = 6;
     public static final float CURA_FRAME_DURATION = 0.6f / CURA_NUM_FRAME;
@@ -38,7 +36,6 @@ public class GerenciadorParticulas {
     public static final float CURA_TEMPO_VIDA = 0.6f;
     public static final boolean CURA_REVERSE = false;
 
-    // ── Parâmetros ajustáveis: Level Up ────────────────────────
     public static final String SPRITE_LEVEL_UP_PATH = "particles/levelup.png";
     public static final int LEVEL_UP_NUM_FRAME = 5;
     public static final float LEVEL_UP_FRAME_DURATION = 0.16f;
@@ -49,12 +46,10 @@ public class GerenciadorParticulas {
     public static final float LEVEL_UP_TEMPO_VIDA = 0.8f;
     public static final boolean LEVEL_UP_REVERSE = false;
 
-    // ── Estado ─────────────────────────────────────────────────
     private final MotorAnimacao motorAnimacao = new MotorAnimacao();
     private final List<Particula> particulas = new ArrayList<>();
     private final Map<Texture, Animation<TextureRegion>> cacheAnimacoes = new HashMap<>();
 
-    // ── Registro / Update / Render ─────────────────────────────
     public void registrarParticula(Particula particula) {
         particulas.add(particula);
     }
@@ -76,7 +71,6 @@ public class GerenciadorParticulas {
         }
     }
 
-    // ── Spawns de conveniência ─────────────────────────────────
     public void spawnDano(float x, float y) {
         Particula p = new Particula(
             animacaoDe(definirSpriteDano()), motorAnimacao,
@@ -104,7 +98,6 @@ public class GerenciadorParticulas {
         registrarParticula(p);
     }
 
-    // ── Definições de sprite (placeholder via Assets) ──────────
     public DefinirSprite definirSpriteDano() {
         return new DefinirSprite(
             Assets.get(SPRITE_DANO_PATH, Texture.class),
@@ -126,7 +119,7 @@ public class GerenciadorParticulas {
         );
     }
 
-    // ── Cache de animações (evita rebuild do spritesheet) ─────
+    // Cache evita reconstruir a animação a cada spawn
     private Animation<TextureRegion> animacaoDe(DefinirSprite def) {
         Animation<TextureRegion> anim = cacheAnimacoes.get(def.texture());
         if (anim == null) {

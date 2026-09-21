@@ -33,8 +33,6 @@ public class RoomManager {
         return salasVisitadas.contains(key);
     }
 
-    // ── Getters & Setters ──────────────────────────────────────
-
     public GeradorSalas getRoomGenerator() {
         return geradorSalas;
     }

@@ -16,18 +16,15 @@ import java.util.List;
 
 public abstract class EnemyTemplate implements Entidade {
 
-    // ── Componentes ────────────────────────────────────────────
     protected final AnimacaoComponent animacao = new AnimacaoComponent();
     protected final AudioComponent audio = new AudioComponent();
     protected final StatusComponent status = new StatusComponent();
     protected StatsComponent stats;
 
-    // ── Referências ────────────────────────────────────────────
     protected PlayerTemplate player;
     protected List<EnemyTemplate> enemiesList;
     protected List<Rectangle> paredesColisores;
 
-    // ── Estado espacial ────────────────────────────────────────
     protected float dx, dy;
     protected Rectangle hitBox;
     protected int TAMANHO_PX = 64;
@@ -37,7 +34,6 @@ public abstract class EnemyTemplate implements Entidade {
     protected boolean olhandoEsquerda = false;
     protected boolean moving = false;
 
-    // ── Estado de combate ──────────────────────────────────────
     protected String nome;
     protected boolean forte;
     protected boolean atacando = false;
@@ -47,8 +43,6 @@ public abstract class EnemyTemplate implements Entidade {
     protected final float ATAQUE_DURATION = 0.5f;
     protected final float DISTANCIA_ATAQUE = 60f;
 
-
-    // ── Construtor ─────────────────────────────────────────────
 
     public EnemyTemplate(int dx, int dy, boolean forte, PlayerTemplate player) {
         DadosInimigo dadosInimigo = dadosInimigo();
@@ -60,17 +54,14 @@ public abstract class EnemyTemplate implements Entidade {
         this.dy = dy;
         this.forte = forte;
 
-        // 1. Stats
         stats = new StatsComponent(
             dadosInimigo.vidaBase() * (int) multiplicador,
             dadosInimigo.forca() * (int) multiplicador,
             dadosInimigo.velocidade() * (int) multiplicador
         );
 
-        // 2. Áudio
         audio.initEnemy(dadosInimigo.audioDano(), dadosInimigo.audioMorte());
 
-        // 3. Animação
         animacao.initTextures(
             dadosInimigo.idleSheet(),
             dadosInimigo.walkSheet(),
@@ -80,7 +71,6 @@ public abstract class EnemyTemplate implements Entidade {
             dadosInimigo.specialAtackSheet()
         );
 
-        // 4. Hitbox (usa valores do record)
         TAMANHO_PX = dadosInimigo.tamanho();
         HITBOX_SIZE = dadosInimigo.hitboxSize();
         HITBOX_OFFSET_X = dadosInimigo.hitboxOffsetX();
@@ -89,8 +79,6 @@ public abstract class EnemyTemplate implements Entidade {
         updateSpriteDefinitions();
         animacao.rebuildAnimations();
     }
-
-    // ── Métodos abstratos ──────────────────────────────────────
 
     protected abstract DadosInimigo dadosInimigo();
     public abstract void ataqueBasico();
@@ -102,7 +90,6 @@ public abstract class EnemyTemplate implements Entidade {
     protected abstract int moedasMorte();
     public abstract void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer);
 
-    // ── Hitbox ─────────────────────────────────────────────────
     protected int getHitboxOffsetXDirecional() {
         return olhandoEsquerda ? -HITBOX_OFFSET_X : HITBOX_OFFSET_X;
     }
@@ -136,10 +123,6 @@ public abstract class EnemyTemplate implements Entidade {
         return paredesColisores;
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  UPDATE
-    // ══════════════════════════════════════════════════════════
-
     public void update(float delta) {
         if (player != null && player.isPause()) {
             return;
@@ -151,17 +134,16 @@ public abstract class EnemyTemplate implements Entidade {
             executarIA(delta);
             ataqueTimer += delta;
 
-            // Animação — troca direção do cache (sem rebuild)
+            // Troca só a direção no cache de animação (sem rebuild)
             animacao.checkDirectionChange(olhandoEsquerda);
 
-            // Posição da hitbox (acompanha direção esquerda/direita)
+            // Hitbox acompanha a direção esquerda/direita
             int offsetX = getHitboxOffsetXDirecional();
             hitBox.setPosition(
                 dx + (TAMANHO_PX - HITBOX_SIZE) / 2f + offsetX,
                 dy + HITBOX_OFFSET_Y
             );
 
-            // Duração do ataque
             if (atacando && animacao.getStateTime() >= ATAQUE_DURATION) {
                 atacando = false;
             }
@@ -202,31 +184,19 @@ public abstract class EnemyTemplate implements Entidade {
         return (float) Math.sqrt(ddx * ddx + ddy * ddy);
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  AÇÕES
-    // ══════════════════════════════════════════════════════════
-
     @Override
     public void dano(int forca) {
         receberDano(forca);
     }
 
-    /**
-     * Dano de impacto (respeita o cooldown de invulnerabilidade).
-     *
-     * @return true se o dano foi efetivamente aplicado — usado por tiros
-     * para disparar efeitos de acerto (queimadura, lentidão, roubo de vida)
-     */
+    // Dano de impacto (respeita invulnerabilidade); true se aplicado — usado por tiros p/ efeitos de acerto.
     public boolean receberDano(int forca) {
         if (!stats.aplicarDano(forca)) return false;
         onDanoRecebido(true);
         return true;
     }
 
-    /**
-     * Dano contínuo de status (DoT): ignora cooldown e a animação de hurt,
-     * mas ainda processa a morte.
-     */
+    // Dano contínuo de status (DoT): ignora cooldown e animação de hurt, mas processa a morte.
     public void danoPorStatus(int forca) {
         if (!stats.aplicarDanoDireto(forca)) return;
         onDanoRecebido(false);
@@ -241,8 +211,6 @@ public abstract class EnemyTemplate implements Entidade {
             audio.playDano();
         }
     }
-
-    // ── Efeitos de status (API genérica, usada por qualquer tiro) ──
 
     public boolean aplicarQueimadura(int danoPorTick, float duracao, float chance) {
         if (stats.isMorto()) return false;
@@ -268,10 +236,6 @@ public abstract class EnemyTemplate implements Entidade {
         this.dy = hitBox.y - HITBOX_OFFSET_Y;
     }
 
-    // ══════════════════════════════════════════════════════════
-    //  DRAW
-    // ══════════════════════════════════════════════════════════
-
     protected TextureRegion animaAtual() {
         return animacao.animaAtual(
             stats.isMorto(), stats.isHurt(),
@@ -285,10 +249,6 @@ public abstract class EnemyTemplate implements Entidade {
     }
 
 
-    // ══════════════════════════════════════════════════════════
-    //  FORTE (modificador)
-    // ══════════════════════════════════════════════════════════
-
     public void setForte(boolean forte) {
         if (this.forte != forte) {
             this.forte = forte;
@@ -299,10 +259,6 @@ public abstract class EnemyTemplate implements Entidade {
     protected void aplicarStatsForte() {
         // implementação padrão vazia — subclasses sobrescrevem
     }
-
-    // ══════════════════════════════════════════════════════════
-    //  GETTERS (contrato Entidade + API pública)
-    // ══════════════════════════════════════════════════════════
 
     public int getDx()              { return Math.round(dx); }
     public int getDy()              { return Math.round(dy); }

@@ -29,8 +29,9 @@ public class CriarBotao {
         style.over = hoverDrawable;
         style.down = pressedDrawable;
 
-        float bW = width; // use base units
-        float bH = height; // use base units
+        // tamanhos e posições em unidades base (sem escala)
+        float bW = width;
+        float bH = height;
         float bX = x - (bW / 2f);
         float bY = y - (bH / 2f);
 
@@ -48,7 +49,7 @@ public class CriarBotao {
 
     public Music playClickSound() {
         if (clickAudio != null) {
-            clickAudio.play();
+            audioEngine.efeito(clickAudio);
             return clickAudio;
         }
         return null;

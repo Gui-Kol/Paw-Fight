@@ -29,7 +29,7 @@ public class GerarInimigos {
         List<EnemyTemplate> novosInimigos = new ArrayList<>();
 
         if (modelosDisponiveis == null || modelosDisponiveis.isEmpty() || regioesSpawn == null || regioesSpawn.isEmpty()) {
-            return novosInimigos; // retorna vazio se não há modelos ou regiões
+            return novosInimigos;
         }
 
         // Garante que qntMin <= qntMax para evitar bound negativo
@@ -42,13 +42,11 @@ public class GerarInimigos {
         int quantidade = qntMin + random.nextInt(qntMax - qntMin + 1);
 
         while (novosInimigos.size() < quantidade) {
-            // Escolhe modelo aleatório
             EnemyTemplate modelo = modelosDisponiveis.get(random.nextInt(modelosDisponiveis.size()));
 
             // Tamanho do sprite do inimigo (para não ultrapassar a área)
             int tamanho = modelo.getTamanho();
 
-            // Escolhe região aleatória
             Rectangle regiao = regioesSpawn.get(random.nextInt(regioesSpawn.size()));
 
             // Garante que a área de spawn é grande o suficiente para caber o inimigo
@@ -58,7 +56,6 @@ public class GerarInimigos {
             int x = (int) (regiao.x + random.nextFloat() * spawnWidth);
             int y = (int) (regiao.y + random.nextFloat() * spawnHeight);
 
-            // Clona inimigo base e posiciona
             EnemyTemplate novoInimigo = modelo.cloneEnemy();
             novoInimigo.setLocation(x, y);
             if (forte) {

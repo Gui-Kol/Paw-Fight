@@ -21,7 +21,6 @@ public class RenderizadorCamada {
         this.renderer = new OrthogonalTiledMapRenderer(map);
     }
 
-    // Renderiza apenas uma ‘layer’ pelo nome
     public void renderLayer(String layerName, OrthographicCamera camera) {
         MapLayer layer = map.getLayers().get(layerName);
         if (layer == null) {
@@ -37,7 +36,7 @@ public class RenderizadorCamada {
     public void renderLayerTiled(TiledMapTileLayer layer, OrthographicCamera camera) {
         int index = map.getLayers().getIndex(layer);
         if (index == -1) {
-            // Se não estiver no mapa, adiciona
+            // index -1 = não está no mapa; adiciona
             map.getLayers().add(layer);
             index = map.getLayers().getIndex(layer);
         }
@@ -46,7 +45,6 @@ public class RenderizadorCamada {
     }
 
 
-    // Renderiza múltiplos layers pelo nome
     public void renderLayers(String[] layerNames, OrthographicCamera camera) {
         if (layerNames == null || layerNames.length == 0) return;
         indicesBuffer.clear();

@@ -15,12 +15,7 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
 
-/**
- * Rei Esqueleto — boss mínimo para validar o sistema multi-fase.
- * Fase 1 (acima de 50% de vida): perseguição e golpe corpo a corpo.
- * Fase 2 (50% ou menos): golpe mais forte + Grito de Fúria (dano em área).
- * Reutiliza os assets do Skeleton.
- */
+// Rei Esqueleto: Fase 1 (>50% de vida) corpo a corpo; Fase 2 (≤50%) golpe mais forte + Grito de Fúria em área. Reutiliza assets do Skeleton.
 public class ReiEsqueleto extends BossTemplate {
 
     private static final String TAG = "ReiEsqueleto";
@@ -77,7 +72,7 @@ public class ReiEsqueleto extends BossTemplate {
         fases.add(new FaseFuria(ataqueRapido));
     }
 
-    // ── Ciclo do boss: delega tudo à fase vigente ──────────────
+    // Ciclo do boss: delega tudo à fase vigente
 
     @Override
     public void executarAtaqueNormal() {
@@ -106,8 +101,6 @@ public class ReiEsqueleto extends BossTemplate {
         Gdx.app.log(TAG, nome + " entrou na fase " + (novaFase + 1) + "/" + fases.size() + " — " + fase.getNome());
     }
 
-    // ── Movimento e dados básicos ──────────────────────────────
-
     @Override
     public void andarIA(float delta) {
         mover.mover(this);
@@ -132,9 +125,7 @@ public class ReiEsqueleto extends BossTemplate {
     public void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
     }
 
-    // ── Fases concretas ────────────────────────────────────────
-
-    /** Fase 1 — golpe corpo a corpo simples, sem especial. */
+    // Fase 1 — golpe corpo a corpo simples, sem especial.
     private static class FasePosturaReal extends FaseBoss {
 
         FasePosturaReal(Animation<TextureRegion> animacaoAtaque) {
@@ -157,7 +148,7 @@ public class ReiEsqueleto extends BossTemplate {
         }
     }
 
-    /** Fase 2 — golpe mais forte + Grito de Fúria (dano em área, com cooldown). */
+    // Fase 2 — golpe mais forte + Grito de Fúria (dano em área, com cooldown).
     private static class FaseFuria extends FaseBoss {
 
         private static final float DISTANCIA_FURIA = 150f;

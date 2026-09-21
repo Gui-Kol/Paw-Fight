@@ -8,29 +8,23 @@ import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 
-/**
- * "Unhada" espectral do Black Cat: nasce diretamente sobre o inimigo
- * mais próximo do player e fica <b>grudada</b> nele, causando dano
- * contínuo até o fim da duração. Área de dano um pouco maior que a
- * dos demais tiros. Se o alvo morrer antes, re-mira no vivo mais
- * próximo; sem alvos, permanece onde está até expirar.
- */
+// "Unhada" grudada no inimigo mais próximo, dano contínuo; re-mira no vivo mais próximo se o alvo morrer.
 public class TiroFantasmagorico extends TirosTemplate {
 
-    /** Multiplicador da área de dano em relação ao tamanho padrão dos tiros. */
+    // Multiplicador da área de dano em relação ao tamanho padrão dos tiros.
     private static final float FATOR_AREA = 1.4f;
     private static final float MULTIPLICADOR_DANO = 1.5f;
 
     private final Texture fantasma;
 
-    /** Inimigo ao qual a garra espectral está grudada. */
+    // Inimigo ao qual a garra espectral está grudada.
     private EnemyTemplate alvo;
 
     private Pool<TiroFantasmagorico> pool;
 
     public TiroFantasmagorico(int tamanho, PlayerTemplate player) {
         super(player.getDx(), player.getDy(), calcularDano(player), tamanho, player);
-        fantasma = Assets.get("entitys/player/black_cat/tiro.png", Texture.class);
+        fantasma = Assets.get("entitys/player/black_cat/arranhao.png", Texture.class);
         texture = fantasma;
         posicionarNoAlvo();
 
@@ -45,7 +39,7 @@ public class TiroFantasmagorico extends TirosTemplate {
 
     private TiroFantasmagorico() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
-        fantasma = Assets.get("entitys/player/black_cat/tiro.png", Texture.class);
+        fantasma = Assets.get("entitys/player/black_cat/arranhao.png", Texture.class);
     }
 
     private static int calcularDano(PlayerTemplate player) {
@@ -58,7 +52,7 @@ public class TiroFantasmagorico extends TirosTemplate {
         return new Rectangle(xHitBox, yHitBox, lado, lado);
     }
 
-    /** Sobe a garra sobre o alvo (ou sobre o player, se não houver alvos). */
+    // Posiciona a garra sobre o alvo (ou sobre o player, se não houver alvos).
     private void posicionarNoAlvo() {
         Rectangle referencia = (alvo != null) ? alvo.getHitBox() : dono.getHitBox();
         sincronizarPosicao(
@@ -93,7 +87,7 @@ public class TiroFantasmagorico extends TirosTemplate {
             alvo = inimigoMaisProximo();
             if (alvo == null) return; // sala limpa: fica onde está até expirar
         }
-        posicionarNoAlvo(); // gruda no alvo
+        posicionarNoAlvo();
     }
 
     @Override
@@ -104,7 +98,12 @@ public class TiroFantasmagorico extends TirosTemplate {
 
     @Override
     protected int definirTamanhoPadrao() {
-        return 24;
+        return 48;
+    }
+
+    @Override
+    protected int definirQuantidadeFrames() {
+        return 13; // spritesheet com 13 frames
     }
 
     @Override

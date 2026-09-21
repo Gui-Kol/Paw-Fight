@@ -5,10 +5,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.MathUtils;
 import com.pawfight.game.engine.design.AlteradorZoom;
 
-/**
- * Componente responsável pela câmera do jogador.
- * Gerencia posição, zoom e limites do mapa.
- */
+// Câmera do jogador: posição, zoom e limites do mapa.
 public class CameraComponent {
 
     private final OrthographicCamera camera;
@@ -16,7 +13,6 @@ public class CameraComponent {
     private final float mapWidth;
     private final float mapHeight;
 
-    // Estado do zoom de morte (suave e focado no player)
     private float zoomMorteInicial;
     private float zoomMorteAlvo;
     private float tempoZoomMorte = 0f;
@@ -42,8 +38,6 @@ public class CameraComponent {
         camera.update();
     }
 
-    // ── Update ─────────────────────────────────────────────────
-
     public void updateCamera(int dx, int dy) {
         camera.position.set(dx, dy, 0);
         camera.update();
@@ -52,8 +46,6 @@ public class CameraComponent {
     public void updateZoom() {
         camera.zoom = alteradorZoom.changeZoom();
     }
-
-    // ── Zoom de morte (suave, focado no player) ───────────────
 
     public void iniciarZoomMorte(float zoomAlvo, float duracao) {
         this.zoomMorteInicial = camera.zoom;
@@ -64,7 +56,7 @@ public class CameraComponent {
         Gdx.app.log("CameraComponent", "Zoom de morte iniciado: " + zoomMorteInicial + " -> " + zoomAlvo + " em " + duracao + "s");
     }
 
-    /** Interpola o zoom até o alvo. Retorna true quando a animação de zoom termina. */
+    // Interpola o zoom até o alvo; retorna true quando a animação de zoom termina.
     public boolean atualizarZoomMorte(float delta) {
         if (!zoomMorteAtivo) return true;
 
@@ -82,8 +74,6 @@ public class CameraComponent {
         }
         return false;
     }
-
-    // ── Getters ────────────────────────────────────────────────
 
     public OrthographicCamera getCamera() { return camera; }
     public float getMapWidth() { return mapWidth; }

@@ -1,10 +1,14 @@
 package com.pawfight.game.entity.tiro;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Pool;
+import com.pawfight.game.engine.design.DefinirSprite;
+import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
@@ -12,6 +16,10 @@ import com.pawfight.game.entity.player.PlayerTemplate;
 import java.util.List;
 
 public abstract class TirosTemplate implements Pool.Poolable {
+
+    // Duração padrão entre frames da animação do tiro (segundos por frame).
+    public static final float DURACAO_FRAME_PADRAO = 0.08f;
+
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
@@ -22,13 +30,24 @@ public abstract class TirosTemplate implements Pool.Poolable {
     protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int xHitBox, yHitBox;
 
-    /** Quem disparou — usado por efeitos de acerto (ex.: roubo de vida). */
+    // Quantidade de frames horizontais da spritesheet do tiro (definida na criação).
+    protected int quantidadeFrames;
+    // Animação em loop construída a partir da spritesheet (preparada uma única vez).
+    protected Animation<TextureRegion> animacao;
+    // Tempo acumulado da animação (avança com delta, independente do movimento).
+    protected float tempoAnimacao = 0f;
+    // Textura a partir da qual a animação atual foi construída.
+    private Texture texturaAnimacao;
+    // Utilitário de animação reutilizado (divide a spritesheet e monta o loop).
+    private final MotorAnimacao motorAnimacao = new MotorAnimacao();
+
+    // Quem disparou — usado por efeitos de acerto (ex.: roubo de vida).
     protected PlayerTemplate dono;
-    /** Direção do olhar no momento do disparo (posicionamento direcional). */
+    // Direção do olhar no momento do disparo (posicionamento direcional).
     protected boolean spawnEsquerda;
-    /** Inimigos vivos da sala atual (referência do mundo, injetada no disparo). */
+    // Inimigos vivos da sala atual (referência do mundo, injetada no disparo).
     protected List<EnemyTemplate> inimigos;
-    /** Direção unitária de deslocamento (tiros que se movem). */
+    // Direção unitária de deslocamento (tiros que se movem).
     protected float dirMovimentoX = 1f, dirMovimentoY = 0f;
 
     @SuppressWarnings("rawtypes")
@@ -39,6 +58,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        iniciarQuantidadeFrames();
 
         this.dono = player;
         this.spawnEsquerda = player.isOlhandoEsquerda();
@@ -66,13 +86,61 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        iniciarQuantidadeFrames();
         hitBox = new Rectangle();
     }
 
-    // ── Pool helpers ────────────────────────────────────────────
+    // Quantidade de frames horizontais da spritesheet do tiro (deve ser maior que zero).
+    protected abstract int definirQuantidadeFrames();
+
+    // Valida e define a quantidade de frames da spritesheet informada pela subclasse.
+    private void iniciarQuantidadeFrames() {
+        int frames = definirQuantidadeFrames();
+        if (frames <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames do tiro precisa ser maior que zero. Valor recebido: " + frames);
+        }
+        this.quantidadeFrames = frames;
+    }
+
+    // Monta a animação em loop uma única vez por textura (largura do frame = largura da textura / frames).
+    protected void prepararAnimacao(Texture spritesheet, int quantidadeFrames) {
+        if (quantidadeFrames <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames do tiro precisa ser maior que zero. Valor recebido: " + quantidadeFrames);
+        }
+        if (spritesheet == null) {
+            return; // textura ainda não definida: a animação será preparada em garantirAnimacao()
+        }
+        int larguraTextura = spritesheet.getWidth();
+        if (larguraTextura % quantidadeFrames != 0) {
+            throw new IllegalArgumentException(
+                "Spritesheet do tiro inválida: a largura da textura (" + larguraTextura
+                    + "px) não é divisível pela quantidade de frames (" + quantidadeFrames + ").");
+        }
+        this.quantidadeFrames = quantidadeFrames;
+        this.texturaAnimacao = spritesheet;
+        this.animacao = motorAnimacao.animar(
+            new DefinirSprite(spritesheet, quantidadeFrames, DURACAO_FRAME_PADRAO, false, false));
+    }
+
+    // Constrói a animação uma única vez; reconstrói só se a textura mudar (ex.: textura aleatória por disparo).
+    protected void garantirAnimacao() {
+        if (texture == null) return;
+        if (animacao == null || texturaAnimacao != texture) {
+            prepararAnimacao(texture, quantidadeFrames);
+        }
+    }
+
+    // Frame atual da animação do tiro (loop contínuo enquanto o tiro existir).
+    public TextureRegion frameAtual() {
+        if (animacao == null) return null;
+        return animacao.getKeyFrame(tempoAnimacao, true);
+    }
 
     protected void reiniciarBase(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         this.tempoVida = 0f;
+        this.tempoAnimacao = 0f;
         this.dono = player;
         this.spawnEsquerda = player.isOlhandoEsquerda();
         this.tamanho = tamanho + tamanhoPadrao;
@@ -88,7 +156,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         }
     }
 
-    /** Devolve este projétil ao pool de onde veio (se houver). */
+    // Devolve este projétil ao pool de onde veio (se houver).
     @SuppressWarnings("unchecked")
     public void liberar() {
         if (ownerPool != null) {
@@ -101,6 +169,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
     @Override
     public void reset() {
         tempoVida = 0f;
+        tempoAnimacao = 0f;
     }
 
     protected abstract int definirTamanhoPadrao();
@@ -108,8 +177,10 @@ public abstract class TirosTemplate implements Pool.Poolable {
     protected abstract float definirDuracao();
 
     public void desenhar(Batch batch) {
-        if (texture == null) return;
-        batch.draw(texture, x, y, tamanhoDraw, tamanhoDraw);
+        garantirAnimacao();
+        TextureRegion frame = frameAtual();
+        if (frame == null) return;
+        batch.draw(frame, x, y, tamanhoDraw, tamanhoDraw);
     }
 
     public void desenharHitbox(ShapeRenderer shapeRenderer) {
@@ -128,45 +199,34 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
     public void update(float delta) {
         tempoVida += delta;
+        tempoAnimacao += delta;
     }
 
     public boolean isExpirado() {
         return tempoVida >= duracao;
     }
 
-    /** Força a expiração (usado por tiros de alvo único após o acerto). */
+    // Força a expiração (usado por tiros de alvo único após o acerto).
     public void expirar() {
         tempoVida = duracao;
     }
 
-    /**
-     * true quando o tiro atinge apenas um inimigo e some (sem dano em área).
-     * A verificação de dano em DanoTiro expira o tiro após o primeiro acerto.
-     */
+    // true quando o tiro some após atingir um único inimigo (DanoTiro o expira no primeiro acerto).
     public boolean isUnicoAlvo() {
         return false;
     }
 
-    /**
-     * Hook chamado por DanoTiro sempre que o dano do tiro é efetivamente
-     * aplicado em um inimigo. Subclasses sobrescrevem para aplicar efeitos
-     * (queimadura, lentidão, roubo de vida). {@link #dono} aponta o atirador.
-     */
+    // Hook chamado por DanoTiro quando o dano é aplicado; subclasses sobrescrevem (queimadura, lentidão, roubo de vida).
     public void aoAcertar(EnemyTemplate inimigo) {
         // padrão: sem efeito adicional
     }
 
-    // ── Targeting / movimento (genérico e reutilizável) ────────
-
-    /**
-     * Injeta a lista de inimigos vivos da sala atual (mesma referência do
-     * EnemyManager, compartilhada — nunca copiar nem modificar aqui).
-     */
+    // Injeta a lista de inimigos vivos da sala (referência compartilhada — nunca copiar nem modificar).
     public void setInimigos(List<EnemyTemplate> inimigos) {
         this.inimigos = inimigos;
     }
 
-    /** Inimigo vivo mais próximo do atirador (null se não houver nenhum). */
+    // Inimigo vivo mais próximo do atirador (null se não houver nenhum).
     protected EnemyTemplate inimigoMaisProximo() {
         if (inimigos == null || inimigos.isEmpty() || dono == null) return null;
         EnemyTemplate maisProximo = null;
@@ -184,10 +244,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         return maisProximo;
     }
 
-    /**
-     * Move posição de desenho e hitbox juntos, centrando a hitbox em
-     * (centroX, centroY). Base para qualquer tiro que se desloca/segue alvo.
-     */
+    // Move desenho e hitbox juntos, centrando a hitbox em (centroX, centroY).
     protected void sincronizarPosicao(float centroX, float centroY) {
         xHitBox = Math.round(centroX - hitBox.width / 2f);
         yHitBox = Math.round(centroY - hitBox.height / 2f);
@@ -196,10 +253,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         y = Math.round(centroY - tamanhoDraw / 2f);
     }
 
-    /**
-     * Define a direção unitária de movimento apontando para o centro do alvo.
-     * Sem alvo, segue a direção do olhar do player no momento do disparo.
-     */
+    // Aponta a direção para o centro do alvo; sem alvo, segue o olhar do player no momento do disparo.
     protected void definirDirecaoPara(EnemyTemplate alvo) {
         if (alvo != null) {
             Rectangle hbAlvo = alvo.getHitBox();
@@ -216,17 +270,14 @@ public abstract class TirosTemplate implements Pool.Poolable {
         dirMovimentoY = 0f;
     }
 
-    /** Desloca o tiro em linha reta na direção atual de movimento. */
+    // Desloca o tiro em linha reta na direção atual de movimento.
     protected void moverNaDirecao(float velocidade, float delta) {
         float centroX = xHitBox + hitBox.width / 2f + dirMovimentoX * velocidade * delta;
         float centroY = yHitBox + hitBox.height / 2f + dirMovimentoY * velocidade * delta;
         sincronizarPosicao(centroX, centroY);
     }
 
-    /**
-     * Rotaciona a direção de movimento pelo ângulo em graus (usado pelo leque
-     * multi-tiro). Sem efeito em tiros que não usam dirMovimento. Zero alocação.
-     */
+    // Rotaciona a direção de movimento (leque multi-tiro); sem efeito em tiros sem dirMovimento. Zero alocação.
     public void rotacionarDirecao(float graus) {
         if (graus == 0f) return;
         double rad = Math.toRadians(graus);

@@ -39,18 +39,16 @@ public class DanoTiro {
             return;
         }
 
-        // 1. Cópia defensiva reutilizável
+        // Cópia defensiva reutilizável
         tirosSnapshot.clear();
         tirosSnapshot.addAll(tiros);
 
-        // 2. Preenche a quadtree com os inimigos e suas hitboxes
         quadtree.clear();
         for (int i = 0, n = inimigos.size(); i < n; i++) {
             EnemyTemplate inimigo = inimigos.get(i);
             quadtree.inserir(inimigo, inimigo.getHitBox());
         }
 
-        // 3. Para cada tiro, consulta apenas os inimigos próximos
         int totalColisoes = 0;
         for (int t = 0, tn = tirosSnapshot.size(); t < tn; t++) {
             TirosTemplate tiro = tirosSnapshot.get(t);
@@ -76,7 +74,7 @@ public class DanoTiro {
             }
         }
 
-        // 4. Acumula estatísticas para log throttled
+        // Estatísticas acumuladas para log throttled
         if (GameConfig.getInstance().isDebugMode()) {
             acumColisoes += totalColisoes;
             acumFramesProcessados++;
@@ -95,10 +93,7 @@ public class DanoTiro {
         }
     }
 
-    /**
-     * Desenha as divisões da quadtree sobre o mundo.
-     * Chamado quando F3 está ativo (hitboxes visíveis).
-     */
+    // Desenha as divisões da quadtree (chamado quando F3 ativa as hitboxes visíveis).
     public void drawDebugQuadtree(ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
         if (!GameConfig.getInstance().isHitboxVisivel()) return;
 

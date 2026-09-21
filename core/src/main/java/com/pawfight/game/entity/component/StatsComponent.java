@@ -8,7 +8,6 @@ public class StatsComponent {
     private static final float HURT_DURATION = 0.5f;
     private static final float DANO_COOLDOWN_DURATION = 0.5f;
 
-    // Stats base
     private int vidaBase;
     private int vida;
     private int forca;
@@ -17,17 +16,15 @@ public class StatsComponent {
     private final int tamanhoTiro;
     private final float cadenciaTiro;
     private final float duracaoTiro;
-    /** Quantos projéteis são lançados por disparo (cresce com upgrades). */
+    // Projéteis lançados por disparo (cresce com upgrades).
     private int quantidadeDeTiros = 1;
 
-    // Progressão
     private int xp;
     private float xpMultiplicador = 1;
     private int xpNecessario;
     private int pontosDisponiveis;
     private int moedas;
 
-    // Estado de dano
     private boolean morto = false;
     private boolean hurt = false;
     private boolean podeTomarDano = true;
@@ -64,7 +61,6 @@ public class StatsComponent {
         this.moedas = 0;
     }
 
-    // ── Timers (chamado todo frame) ────────────────────────────
     public void updateTimers(float delta) {
         if (hurt) {
             hurtTime += delta;
@@ -82,7 +78,6 @@ public class StatsComponent {
         }
     }
 
-    // ── Dano ───────────────────────────────────────────────────
     public boolean aplicarDano(int forcaDano) {
         if (!podeTomarDano) return false;
         podeTomarDano = false;
@@ -96,12 +91,7 @@ public class StatsComponent {
         return true;
     }
 
-    /**
-     * Dano direto (ex.: efeitos de status/DoT): ignora o cooldown e não
-     * ativa a animação de hurt, mas ainda pode matar.
-     *
-     * @return true se o dano foi aplicado (false quando já está morto)
-     */
+    // Dano direto (DoT/status): ignora cooldown e animação de hurt, mas pode matar; false se já morto.
     public boolean aplicarDanoDireto(int forcaDano) {
         if (morto) return false;
         vida -= forcaDano;
@@ -111,7 +101,6 @@ public class StatsComponent {
         return true;
     }
 
-    // ── XP / Level ─────────────────────────────────────────────
     public int xpUp(int xpGanho) {
         xp += xpGanho;
         int levelsGanhos = 0;
@@ -129,12 +118,10 @@ public class StatsComponent {
         return levelsGanhos;
     }
 
-    // ── Moedas ─────────────────────────────────────────────────
     public void moedaUp(int moedasGanha) {
         moedas += moedasGanha;
     }
 
-    // ── Upgrade de stats (gastando pontos) ─────────────────────
     public void vidaBaseUp(int pontosGastos) {
         vidaBase += 1;
         vida = vidaBase;
@@ -155,7 +142,6 @@ public class StatsComponent {
         pontosDisponiveis -= pontosGastos;
     }
 
-    // ── Getters ────────────────────────────────────────────────
     public int getVida() { return vida; }
     public int getVidaBase() { return vidaBase; }
     public int getForca() { return forca; }
@@ -173,13 +159,12 @@ public class StatsComponent {
     public boolean isHurt() { return hurt; }
     public float getHurtTime() { return hurtTime; }
 
-    // ── Cura (respeita o teto de vidaBase) ─────────────────────
+    // Cura limitada ao teto de vidaBase.
     public void curar(int pontos) {
         if (morto) return;
         vida = Math.min(vida + pontos, vidaBase);
     }
 
-    // ── Setters (para save/load e cheats) ──────────────────────
     public void setVida(int vida) { this.vida = vida; }
     public void setVidaBase(int vidaBase) { this.vidaBase = vidaBase; }
     public void setForca(int forca) { this.forca = forca; }

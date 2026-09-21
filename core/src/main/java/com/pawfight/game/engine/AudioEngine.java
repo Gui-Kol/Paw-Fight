@@ -15,15 +15,15 @@ public class AudioEngine {
     }
 
     public void efeito(Music audio) {
+        if (audio != null) audio.setVolume(config.getVolumeEfeitos());
         if (audio != null && !audio.isPlaying()) {
-            audio.setVolume(config.getVolumeEfeitos());
             audio.play();
             Gdx.app.debug(TAG, "Efeito tocado com volume " + config.getVolumeEfeitos());
         }
     }
     public void passos(Music audio) {
+        if (audio != null) audio.setVolume(config.getVolumePassos());
         if (audio != null && !audio.isPlaying()) {
-            audio.setVolume(config.getVolumePassos());
             audio.play();
         }
     }

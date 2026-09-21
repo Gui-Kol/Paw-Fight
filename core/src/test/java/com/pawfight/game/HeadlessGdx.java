@@ -5,12 +5,7 @@ import com.badlogic.gdx.Gdx;
 
 import static org.mockito.Mockito.mock;
 
-/**
- * Fornece um Gdx.app mínimo para os testes.
- * Necessário porque algumas classes chamam Gdx.app.log() (ex.: StatsComponent.xpUp).
- * Usa um mock de Application para evitar carregar nativos DLL (backend headless).
- * Chame ensureGdx() no @BeforeAll das classes de teste que precisam do Gdx.
- */
+// Mock mínimo de Gdx.app (sem backend nativo) porque classes como StatsComponent chamam Gdx.app.log(); usar ensureGdx() no @BeforeAll.
 public final class HeadlessGdx {
 
     private HeadlessGdx() {

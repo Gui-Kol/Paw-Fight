@@ -23,8 +23,6 @@ class AtirarTest {
         HeadlessGdx.ensureGdx();
     }
 
-    // ── Cálculo do ângulo do leque ─────────────────────────────
-
     @Test
     @DisplayName("Com 1 projétil o desvio é zero (comportamento atual preservado)")
     void anguloComUmTiro() {
@@ -47,14 +45,13 @@ class AtirarTest {
         assertEquals(15f, Atirar.anguloLeque(1, 2));
     }
 
-    // ── Rotação da direção do projétil ─────────────────────────
-
     private static class TiroStub extends TirosTemplate {
         TiroStub() {
             super();
         }
 
         @Override protected int definirTamanhoPadrao() { return 0; }
+        @Override protected int definirQuantidadeFrames() { return 1; }
         @Override protected float definirDuracao() { return 1f; }
         @Override protected float definirIntervalo() { return 1f; }
         @Override protected Texture randomTex() { return null; }
@@ -88,8 +85,6 @@ class AtirarTest {
         assertEquals(0.6f, tiro.dirMovimentoX);
         assertEquals(0.8f, tiro.dirMovimentoY);
     }
-
-    // ── Disparo em rajada ──────────────────────────────────────
 
     private PlayerTemplate playerCom(int quantidadeDeTiros) {
         PlayerTemplate player = mock(PlayerTemplate.class);

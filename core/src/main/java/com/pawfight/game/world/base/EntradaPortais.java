@@ -50,13 +50,10 @@ public class EntradaPortais {
             batch.setProjectionMatrix(hud.getHudCamera().combined);
 
             if (entrarPortal(player, entradaPortal, batch, shapeRenderer)) {
-                // Reseta estado do player
                 player.clearList();
 
-                // Cria MundoAreia (gera salas)
                 MundoAreia mundoAreia = new MundoAreia(game, player, camera, viewport);
 
-                // Transição via ScreenManager centralizado
                 ScreenManager.getInstance().fadeToScreen(mundoAreia, 2f, Color.BLACK, false);
                 return true;
             } else {

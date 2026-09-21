@@ -76,15 +76,13 @@ public class TransicaoTela {
 
     public void render(SpriteBatch batch) {
         if (transitioning) {
-            // Salva a matriz de projeção atual (reutiliza tempMatrix)
+            // Salva a projeção atual e muda para coordenadas de tela (reutiliza tempMatrix)
             tempMatrix.set(batch.getProjectionMatrix());
 
-            // Define para coordenadas de tela
             batch.getProjectionMatrix().setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
             currentEffect.render(batch, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-            // Restaura a matriz original
             batch.setProjectionMatrix(tempMatrix);
         }
     }

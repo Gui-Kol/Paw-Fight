@@ -16,7 +16,6 @@ import com.pawfight.game.engine.GameConfig;
 public class Renderizar {
     public static final Renderizar INSTANCE = new Renderizar();
 
-    //Inimigo
     public void atualizarListaInimigos(float delta, List<EnemyTemplate> listaInimigos) {
         for (EnemyTemplate enemy : listaInimigos) {
             enemy.update(delta);
@@ -55,7 +54,6 @@ public class Renderizar {
         }
     }
 
-    //Objeto
     public void renderizarObjects(WorldTemplate world) {
         if (world.getWorldRenderer().getListaObjetos() == null || world.getWorldRenderer().getListaObjetos().isEmpty()) {
             return;
@@ -74,8 +72,6 @@ public class Renderizar {
         }
         batch.end();
     }
-
-    // ── HitBox ──────────────────────────────────────────────────
 
     public void hitboxRect(ShapeRenderer shapeRenderer, Rectangle hitbox, Color color) {
         shapeRenderer.setColor(color);

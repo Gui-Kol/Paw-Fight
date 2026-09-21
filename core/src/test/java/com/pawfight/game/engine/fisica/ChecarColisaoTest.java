@@ -13,8 +13,6 @@ class ChecarColisaoTest {
 
     private static final Rectangle PAREDE_DIREITA = new Rectangle(50, 0, 10, 100);
 
-    // ── houveColisao ───────────────────────────────────────────
-
     @Test
     @DisplayName("Detecta sobreposição com parede")
     void detectaColisao() {
@@ -34,8 +32,6 @@ class ChecarColisaoTest {
     void listaVazia() {
         assertFalse(ChecarColisao.houveColisao(new Rectangle(0, 0, 10, 10), List.of()));
     }
-
-    // ── empurrarForaParedes ────────────────────────────────────
 
     @Test
     @DisplayName("Hitbox dentro da parede é empurrada para fora (eixo de menor overlap)")

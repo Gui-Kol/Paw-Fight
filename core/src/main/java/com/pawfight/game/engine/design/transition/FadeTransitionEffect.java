@@ -42,7 +42,7 @@ public class FadeTransitionEffect implements TransitionEffect {
     public void update(float delta) {
         elapsedTime += delta;
         float progress = Math.min(elapsedTime / duration, 1f);
-        progress = easeInOutSine(progress); // Easing mais suave
+        progress = easeInOutSine(progress);
 
         if (fadingOut) {
             alpha = progress;
@@ -57,7 +57,7 @@ public class FadeTransitionEffect implements TransitionEffect {
             batch.begin();
             batch.setColor(fadeColor.r, fadeColor.g, fadeColor.b, alpha);
             if (useGradient) {
-                // Gradiente radial simples para efeito mais bonito
+                // Gradiente radial simples
                 for (int i = 0; i < 10; i++) {
                     float radius = (i / 10f) * Math.max(screenWidth, screenHeight);
                     batch.draw(fadeTexture, screenWidth / 2 - radius, screenHeight / 2 - radius, radius * 2, radius * 2);

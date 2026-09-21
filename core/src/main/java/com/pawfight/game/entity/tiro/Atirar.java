@@ -7,14 +7,10 @@ import java.util.List;
 
 public class Atirar {
 
-    /** Ângulo total do leque (graus) quando o player dispara mais de um projétil. */
+    // Ângulo total do leque (graus) quando o player dispara mais de um projétil.
     private static final float ANGULO_LEQUE = 30f;
 
-    /**
-     * Desvio angular do projétil de índice {@code indice} numa rajada de
-     * {@code total} projéteis, simétrico ao redor da direção original.
-     * Com um único projétil, retorna 0 (comportamento idêntico ao original).
-     */
+    // Desvio angular simétrico do projétil de índice i numa rajada de n; com 1 projétil retorna 0.
     static float anguloLeque(int indice, int total) {
         if (total <= 1) return 0f;
         return -ANGULO_LEQUE / 2f + ANGULO_LEQUE * indice / (total - 1);
@@ -24,19 +20,16 @@ public class Atirar {
         if (modelos == null || player == null || modelos.isEmpty()) return;
 
         for (TirosTemplate tiroModelo : modelos) {
-            // Modelo sempre conhece os inimigos da sala — os tiros do pool
-            // usam essa lista para mirar no momento em que nascem
+            // Os tiros do pool usam a lista de inimigos da sala para mirar ao nascer
             tiroModelo.setInimigos(inimigos);
             float cadencia = tiroModelo.getCadencia() * player.getCadenciaTiro();
             float duracao = tiroModelo.getDuracao() * player.getDuracaoTiro();
             float intervalo = tiroModelo.getIntervalo();
 
-            // Acumula o tempo decorrido
             intervalo += delta;
 
-            // Se passou o intervalo, dispara
             if (intervalo >= cadencia) {
-                intervalo = 0f; // reseta o acumulador
+                intervalo = 0f;
 
                 // Rajada em leque: cada projétil sai do pool com um desvio angular
                 int quantidade = player.getQuantidadeDeTiros();

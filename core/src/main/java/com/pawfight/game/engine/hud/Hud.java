@@ -34,7 +34,6 @@ public class Hud {
     private final DesenharTextura desenharTextura;
     private final float opacidadeHud;
 
-    // câmera e viewport fixos para HUD
     private final OrthographicCamera hudCamera;
     private final Viewport hudViewport;
 
@@ -55,7 +54,7 @@ public class Hud {
 
     public Hud() {
         hudCamera = new OrthographicCamera();
-        hudViewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE, hudCamera); // mantém proporção
+        hudViewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE, hudCamera);
         hudCamera.position.set(hudViewport.getWorldWidth() / 2f, hudViewport.getWorldHeight() / 2f, 0);
         hudCamera.update();
         desenharTexto = new DesenharTexto(hudViewport, hudCamera);

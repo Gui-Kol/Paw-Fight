@@ -30,7 +30,6 @@ public class GerarObjetos {
                     return;
                 }
 
-                // Gera objetos apenas se o tipo da sala combina com o tipo do objeto
                 if (world.getRoomManager().getCurrentRoom().getType() == infoObj.typeRoom()) {
                     objetosGerados.addAll(gerarObj(infoObj, regiaoSpawn));
                 }
@@ -54,13 +53,11 @@ public class GerarObjetos {
         int quantidade = info.qntMin() + random.nextInt(info.qntMax() - info.qntMin() + 1);
 
         while (novosObjetos.size() < quantidade) {
-            // Escolhe uma região aleatória da lista
             Rectangle regiao = regioesSpawn.get((random.nextInt(regioesSpawn.size())));
 
             int x = random((int) regiao.x, (int) (regiao.x + regiao.width));
             int y = random((int) regiao.y, (int) (regiao.y + regiao.height));
 
-            // Cria uma hitbox baseada na posição
             Rectangle novaHitbox = new Rectangle(x + info.ajusteXHitBox(), y + info.ajusteYHitBox(), info.texture().getWidth() + info.ajusteLarguraHitBox(), info.texture().getHeight() + info.ajusteAlturaHitBox());
 
             ObjetoGerado obj = new ObjetoGerado(info.texture(), info.nomeObjeto(), novaHitbox, x, y, info.areaToque(), info.tamanhoPx());

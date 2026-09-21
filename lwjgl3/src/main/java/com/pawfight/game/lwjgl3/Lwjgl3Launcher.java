@@ -5,12 +5,9 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.pawfight.game.PawFight;
 
-/**
- * Launches the desktop (LWJGL3) application.
- */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
-        if (StartupHelper.startNewJvmIfRequired()) return; // This handles macOS support and helps on Windows.
+        if (StartupHelper.startNewJvmIfRequired()) return; // Necessário no macOS e ajuda no Windows
         createApplication();
     }
 
@@ -22,14 +19,10 @@ public class Lwjgl3Launcher {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("PawFight");
 
-        // Enable Vsync to limit frame rate and reduce screen tearing
+        // Vsync limita o frame rate e reduz screen tearing
         configuration.useVsync(true);
 
-        // Set icons for the application window
         configuration.setWindowIcon("icon/logoPaw.png");
-
-        // Uncomment the following line if OpenGL emulation is needed
-        // configuration.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.ANGLE_GLES20, 0, 0);
 
         return configuration;
     }

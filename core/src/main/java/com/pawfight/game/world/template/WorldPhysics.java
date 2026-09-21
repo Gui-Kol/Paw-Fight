@@ -47,8 +47,6 @@ public class WorldPhysics {
         danoTiro.drawDebugQuadtree(shapeRenderer, cameraMatrix);
     }
 
-    // ── Getters ────────────────────────────────────────────────
-
     public TilemapHitboxFactory getTilemapHitboxFactory() {
         return tilemapHitboxFactory;
     }

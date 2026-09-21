@@ -12,8 +12,6 @@ public class AudioComponent {
     private Music audioLevelUp;
     private Music audioMoving;
 
-    // ── Inicialização ──────────────────────────────────────────
-
     public void init(DadosPlayer dados) {
         audioLevelUp = audioEngine.criarAudio("entitys/player/audios/power_up.wav");
         audioDano = audioEngine.criarAudio("entitys/player/audios/hurt.wav");
@@ -25,8 +23,6 @@ public class AudioComponent {
         this.audioMorte = audioMorte;
     }
 
-    // ── Update (chamado todo frame) ────────────────────────────
-
     public void updateAudio(boolean moving) {
         if (moving) {
             audioEngine.passos(audioMoving);
@@ -35,13 +31,9 @@ public class AudioComponent {
         }
     }
 
-    // ── Tocar efeitos ──────────────────────────────────────────
-
     public void playDano()    { audioEngine.efeito(audioDano); }
     public void playMorte()   { audioEngine.efeito(audioMorte); }
     public void playLevelUp() { audioEngine.efeito(audioLevelUp); }
-
-    // ── Getters / Setters ──────────────────────────────────────
 
     public AudioEngine getAudioEngine() { return audioEngine; }
 

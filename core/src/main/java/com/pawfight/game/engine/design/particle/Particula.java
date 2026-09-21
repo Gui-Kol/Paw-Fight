@@ -7,7 +7,6 @@ import com.pawfight.game.engine.design.animation.MotorAnimacao;
 
 public class Particula {
 
-    // ── Configuração (definida no spawn) ───────────────────────
     private final Animation<TextureRegion> animacao;
     private final MotorAnimacao motorAnimacao;
     private final float x, y;
@@ -16,7 +15,6 @@ public class Particula {
     private final float tempoVida;
     private final boolean reverse;
 
-    // ── Estado ─────────────────────────────────────────────────
     private float stateTime = 0f;
     private boolean acabou = false;
 
@@ -35,7 +33,6 @@ public class Particula {
         this.reverse = reverse;
     }
 
-    // ── Update ─────────────────────────────────────────────────
     public void atualizar(float delta) {
         if (acabou) return;
         stateTime += delta;
@@ -44,7 +41,6 @@ public class Particula {
         }
     }
 
-    // ── Render ─────────────────────────────────────────────────
     public void desenhar(Batch batch) {
         if (acabou || animacao == null) return;
         TextureRegion frame = motorAnimacao.executarUmaVez(animacao, stateTime, reverse);
@@ -53,6 +49,5 @@ public class Particula {
         batch.draw(frame, posX, posY, w, h);
     }
 
-    // ── Getters ────────────────────────────────────────────────
     public boolean isAcabou() { return acabou; }
 }

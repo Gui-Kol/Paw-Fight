@@ -26,20 +26,18 @@ public class MotorAnimacao {
         boolean olhandoEsquerda = definirSprite.olhandoEsquerda();
 
 
-        // Divide o spritesheet em regiões
         TextureRegion[][] tmp = TextureRegion.split(
             texture,
             texture.getWidth() / numFrames,
             texture.getHeight()
         );
 
-        // Copia os frames da primeira linha
+        // Usa apenas a primeira linha do spritesheet
         TextureRegion[] frames = new TextureRegion[numFrames];
         for (int i = 0; i < numFrames; i++) {
             frames[i] = tmp[0][i];
         }
 
-        // Cria a animação
         Animation<TextureRegion> animation = new Animation<>(frameDuration, frames);
         animation.setPlayMode(Animation.PlayMode.LOOP);
         if (reverse) {
@@ -104,11 +102,10 @@ public class MotorAnimacao {
             frameFinal = null;
         }
 
-        // Atualiza animação
         if (animation != null) {
             stateTime += Gdx.graphics.getDeltaTime();
 
-            // Se terminou fechamento → desativa fundo
+            // Fechamento terminado: desativa fundo
             if (!abrirMenu && animation.isAnimationFinished(stateTime)) {
                 fundoAtivo = false;
                 animation = null;
@@ -116,13 +113,12 @@ public class MotorAnimacao {
                 return fundoAtivo;
             }
 
-            // Se terminou abertura → fixa último frame
+            // Abertura terminada: fixa o último frame
             if (abrirMenu && animation.isAnimationFinished(stateTime)) {
                 frameFinal = obterFrame(animation, true);
                 animation = null;
             }
 
-            // Desenha frame atual
             if (animation != null) {
                 TextureRegion frameAtual = executarUmaVez(animation, stateTime, !abrirMenu);
                 desenharFrame(batch, frameAtual, x, y, tamanhoFundo);

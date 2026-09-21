@@ -119,7 +119,7 @@ public class CarregarPortas {
             Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
             world.logRoomInfo(sala);
 
-            world.gerarObjetos(); // agora garante que os objetos sejam carregados
+            world.gerarObjetos();
         } catch (Exception e) {
             Gdx.app.error(nomeClasseOrigem, "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
         }

@@ -21,11 +21,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * RoomManager real carrega fontes via Gdx.files no construtor do DesenharMiniMapa,
- * então nos testes usamos um mock capturando o estado relevante (rooms, currentRoom,
- * salasVisitadas) sem envolver gráficos.
- */
+// RoomManager real carrega fontes via Gdx.files (DesenharMiniMapa); o mock captura rooms, currentRoom e salasVisitadas sem gráficos.
 @DisplayName("GeradorSalas")
 class GeradorSalasTest {
 

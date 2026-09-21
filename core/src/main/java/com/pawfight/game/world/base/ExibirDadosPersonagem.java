@@ -31,7 +31,7 @@ public class ExibirDadosPersonagem {
     public ExibirDadosPersonagem() {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/PixelOperator8-Bold.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 24; // tamanho da fonte
+        parameter.size = 24;
         font = generator.generateFont(parameter);
         generator.dispose();
 
@@ -53,7 +53,6 @@ public class ExibirDadosPersonagem {
         float widthFundo = 330 * scale;
         float heightFundo = 250 * scale;
 
-        // Caixa de fundo
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(BG_COLOR);
@@ -65,7 +64,6 @@ public class ExibirDadosPersonagem {
         font.getData().setScale(scale);
         font.setColor(Color.WHITE);
 
-        // Status alinhados à esquerda do player
         layoutStatus.setText(font, "Status");
         float statusX = offsetX + (widthFundo - layoutStatus.width) / 2 - 10 * scale;
         font.draw(batch, "Status", statusX, centerY + 110 * scale);

@@ -34,7 +34,7 @@ public class TilemapHitboxFactory {
         sortedObjectsCache.clear();
     }
 
-    // Cria os retângulos de colisão (cacheado por layerName)
+    // Cacheado por layerName
     public List<Rectangle> createHitboxes(TiledMap map, String layerName) {
         List<Rectangle> cached = cache.get(layerName);
         if (cached != null) {
@@ -80,7 +80,6 @@ public class TilemapHitboxFactory {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // Usa cache para evitar recriar e reordenar a lista a cada frame
         String cacheKey = "draw:" + layerName + ":" + isInvertido;
         List<MapObject> objects = sortedObjectsCache.get(cacheKey);
         if (objects == null) {
@@ -103,7 +102,6 @@ public class TilemapHitboxFactory {
             sortedObjectsCache.put(cacheKey, objects);
         }
 
-        // Desenha na ordem escolhida
         for (MapObject object : objects) {
             if (object instanceof TextureMapObject texObj) {
 
@@ -128,13 +126,11 @@ public class TilemapHitboxFactory {
 
         List<Rectangle> hitboxes = new ArrayList<>();
 
-        // pega apenas a ‘layer’ com o nome especificado
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(layerName);
         if (layer == null) {
             return hitboxes; // se não existir ou não for ‘layer’ de tile, retorna vazio
         }
 
-        // percorre apenas os tiles dessa layer
         for (int x = 0; x < layer.getWidth(); x++) {
             for (int y = 0; y < layer.getHeight(); y++) {
                 TiledMapTileLayer.Cell cell = layer.getCell(x, y);

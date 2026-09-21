@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.ScreenManager;
+import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.input.KeyBindings;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.loading.LoadingScreen;
@@ -23,11 +24,9 @@ public class PawFight extends Game {
     private final PawFight game = this;
     private SpriteBatch batch;
     private Texture image;
-    private boolean telaCheia = true;
     private boolean podeAlterarTelaCheia = true;
     private Music audio;
 
-    // Camera + Viewport
     private OrthographicCamera camera;
     private Viewport viewport;
 
@@ -42,8 +41,8 @@ public class PawFight extends Game {
         // MUITO IMPORTANTE: posicionar a camera no centro do mundo
         camera.position.set(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f, 0);
 
-        toggleFullscreen();
-        toggleFullscreen();
+        GameConfig.getInstance().carregarConfiguracoes();
+        definirTelaCheia(GameConfig.getInstance().isTelaCheia());
 
         ScreenManager.init(this);
 
@@ -61,7 +60,6 @@ public class PawFight extends Game {
 
         image = Assets.get("menu/dark_back_groud.png", Texture.class);
 
-        // Transição direta para Home
         setScreen(null);
         ScreenManager.getInstance().fadeToScreen(new Home(game, camera, viewport), 1f, Color.BLACK, false);
     }
@@ -109,31 +107,36 @@ public class PawFight extends Game {
 
 
     public void toggleFullscreen() {
+        definirTelaCheia(!Gdx.graphics.isFullscreen());
+    }
+
+    public void definirTelaCheia(boolean telaCheia) {
         if (!podeAlterarTelaCheia) {
             return;
         }
         var graphics = Gdx.graphics;
-        Graphics.DisplayMode displayMode = graphics.getDisplayMode();
-
-        if (!telaCheia) {
-            Gdx.app.log("PawFight", "Entrando em modo fullscreen...");
-            graphics.setUndecorated(true);
-            graphics.setWindowedMode(displayMode.width, displayMode.height);
-            telaCheia = true;
-        } else {
-            Gdx.app.log("PawFight", "Entrando em modo janela...");
-            graphics.setUndecorated(false);
-            graphics.setWindowedMode(1280, 720);
-            telaCheia = false;
+        if (graphics.isFullscreen() != telaCheia) {
+            if (telaCheia) {
+                graphics.setFullscreenMode(graphics.getDisplayMode());
+            } else {
+                graphics.setUndecorated(false);
+                graphics.setWindowedMode(1280, 720);
+            }
         }
+        GameConfig config = GameConfig.getInstance();
+        config.setTelaCheia(graphics.isFullscreen());
+        config.salvarConfiguracoes();
     }
 
     @Override
     public void dispose() {
+        if (getScreen() instanceof WorldTemplate world && world.getPlayer() != null) {
+            world.getPlayer().getHudPause().dispose();
+        }
         batch.dispose();
         // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
         ScreenManager.getInstance().dispose();
-        Assets.dispose(); // libera TODOS os assets de uma vez
+        Assets.dispose();
         Gdx.app.log("PawFight", "foi disposed");
     }
 

@@ -18,35 +18,18 @@ import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.List;
 
-/**
- * Sistema de portal reutilizável e abstrato.
- *
- * <p>Cada portal possui um nome único, está associado a um layer específico do
- * {@link TiledMap}, exibe uma mensagem ao jogador entrar na área de ativação e,
- * ao pressionar Enter, transporta o jogador para o {@link WorldTemplate} de
- * destino. Novos portais podem ser adicionados apenas instanciando a classe e
- * definindo a área de ativação, sem reescrever lógica.</p>
- */
+// Portal reutilizável: nome único, layer do TiledMap, mensagem ao entrar na área e transição ao mundo de destino com Enter
 public class Portal {
 
-    // ── Atributos ─────────────────────────────────────────────
     private final String nome;
     private final String layer;
     private final String mensagem;
     private final WorldFactory destino;
 
-    // ── Estado ────────────────────────────────────────────────
     private List<Rectangle> areaAtivacao;
     private boolean ativado = false;
 
-    /**
-     * Cria um portal.
-     *
-     * @param nome     identificação única do portal
-     * @param layer    layer do TiledMap em que o portal atua
-     * @param mensagem texto exibido quando o jogador entra na área do portal
-     * @param destino  fábrica do mundo para o qual o jogador será enviado
-     */
+    // Cria um portal: identificação única, layer do mapa, mensagem exibida na área e fábrica do mundo de destino
     public Portal(String nome, String layer, String mensagem, WorldFactory destino) {
         this.nome = nome;
         this.layer = layer;
@@ -54,54 +37,24 @@ public class Portal {
         this.destino = destino;
     }
 
-    // ── Métodos ───────────────────────────────────────────────
-
-    /**
-     * Interpreta os atributos e define a área de ativação do portal a partir
-     * do layer configurado no TiledMap.
-     *
-     * @param map     mapa carregado do mundo atual
-     * @param factory fábrica de hitboxes do tilemap (com cache)
-     */
+    // Define a área de ativação do portal a partir do layer configurado no TiledMap
     public void definirAreaAtivacao(TiledMap map, TilemapHitboxFactory factory) {
         areaAtivacao = factory.createHitboxes(map, layer);
     }
 
-    /**
-     * Detecta a entrada do jogador na área de ativação do portal.
-     *
-     * @param player jogador a ser verificado
-     * @return {@code true} se o jogador estiver sobre a área do portal
-     */
+    // Retorna true se o jogador estiver sobre a área do portal
     public boolean detectarEntrada(PlayerTemplate player) {
         return areaAtivacao != null && ChecarColisao.houveColisao(player.getHitBox(), areaAtivacao);
     }
 
-    /**
-     * Exibe a mensagem definida no atributo {@code mensagem} na parte inferior
-     * da tela enquanto o jogador estiver na área de ativação.
-     *
-     * @param player       jogador a ser verificado
-     * @param batch        batch de desenho
-     * @param shapeRenderer renderer de formas usado pelo HUD
-     */
+    // Exibe a mensagem do portal na parte inferior da tela enquanto o jogador estiver na área
     public void exibirMensagem(PlayerTemplate player, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (detectarEntrada(player)) {
             player.getHud().mostrarMensagemEmBaixo(batch, shapeRenderer, mensagem);
         }
     }
 
-    /**
-     * Ativa a transição de mundo quando o jogador pressionar a tecla Enter
-     * estando dentro da área de ativação. A transição é gerenciada pelo
-     * {@link ScreenManager} (sem dar dispose na tela atual).
-     *
-     * @param player   jogador que atravessará o portal
-     * @param game     jogo principal
-     * @param camera   câmera do mundo atual
-     * @param viewport viewport do mundo atual
-     * @return {@code true} se a transição foi iniciada
-     */
+    // Ativa a transição de mundo ao pressionar Enter na área; gerenciada pelo ScreenManager (sem dispose da tela atual)
     public boolean ativarTransicao(PlayerTemplate player, PawFight game, OrthographicCamera camera, Viewport viewport) {
         if (ativado) {
             return true;
@@ -116,14 +69,10 @@ public class Portal {
         return false;
     }
 
-    /**
-     * Restaura o estado do portal para permitir novos atravessamentos.
-     */
+    // Restaura o estado do portal para permitir novos atravessamentos
     public void reset() {
         ativado = false;
     }
-
-    // ── Getters ───────────────────────────────────────────────
 
     public String getNome() {
         return nome;
