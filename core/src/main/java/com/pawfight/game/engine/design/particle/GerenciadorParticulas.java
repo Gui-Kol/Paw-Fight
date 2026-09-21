@@ -19,7 +19,7 @@ public class GerenciadorParticulas {
     // ── Parâmetros ajustáveis: Dano ────────────────────────────
     public static final String SPRITE_DANO_PATH = "particles/dano.png";
     public static final int DANO_NUM_FRAME = 6;
-    public static final float DANO_FRAME_DURATION = 0.3f;
+    public static final float DANO_FRAME_DURATION = 0.4f / DANO_NUM_FRAME;
     public static final float DANO_W = 64f;
     public static final float DANO_H = 64f;
     public static final float DANO_OFFSET_X = 0f;
@@ -30,7 +30,7 @@ public class GerenciadorParticulas {
     // ── Parâmetros ajustáveis: Cura ────────────────────────────
     public static final String SPRITE_CURA_PATH = "particles/cura.png";
     public static final int CURA_NUM_FRAME = 6;
-    public static final float CURA_FRAME_DURATION = 0.3f;
+    public static final float CURA_FRAME_DURATION = 0.6f / CURA_NUM_FRAME;
     public static final float CURA_W = 64f;
     public static final float CURA_H = 64f;
     public static final float CURA_OFFSET_X = 0f;
