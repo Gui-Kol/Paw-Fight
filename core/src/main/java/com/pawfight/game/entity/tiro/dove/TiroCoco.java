@@ -7,12 +7,12 @@ import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 
-public class Coco extends TirosTemplate {
+public class TiroCoco extends TirosTemplate {
     private final Texture coco1, coco2, coco3;
 
-    private Pool<Coco> pool;
+    private Pool<TiroCoco> pool;
 
-    public Coco(int tamanho, PlayerTemplate player) {
+    public TiroCoco(int tamanho, PlayerTemplate player) {
         super(player.getDx() - tamanho / 2, player.getDy() - tamanho / 2, player.getForca(), tamanho, player);
         coco1 = Assets.get("entitys/player/dove/coco/2.png", Texture.class);
         coco2 = Assets.get("entitys/player/dove/coco/3.png", Texture.class);
@@ -20,15 +20,15 @@ public class Coco extends TirosTemplate {
         texture = randomTex();
 
         // Cria o pool apenas no modelo
-        pool = new Pool<Coco>(8, 64) {
+        pool = new Pool<TiroCoco>(8, 64) {
             @Override
-            protected Coco newObject() {
-                return new Coco();
+            protected TiroCoco newObject() {
+                return new TiroCoco();
             }
         };
     }
 
-    private Coco() {
+    private TiroCoco() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
         coco1 = Assets.get("entitys/player/dove/coco/2.png", Texture.class);
         coco2 = Assets.get("entitys/player/dove/coco/3.png", Texture.class);
@@ -45,7 +45,7 @@ public class Coco extends TirosTemplate {
 
     @Override
     protected TirosTemplate obterDoPool(PlayerTemplate player) {
-        Coco c = pool.obtain();
+        TiroCoco c = pool.obtain();
 
         // Reinicializa campos-base (posição, dano, tamanho)
         c.reiniciarBase(

@@ -223,6 +223,21 @@ public abstract class TirosTemplate implements Pool.Poolable {
         sincronizarPosicao(centroX, centroY);
     }
 
+    /**
+     * Rotaciona a direção de movimento pelo ângulo em graus (usado pelo leque
+     * multi-tiro). Sem efeito em tiros que não usam dirMovimento. Zero alocação.
+     */
+    public void rotacionarDirecao(float graus) {
+        if (graus == 0f) return;
+        double rad = Math.toRadians(graus);
+        double cos = Math.cos(rad);
+        double sen = Math.sin(rad);
+        float novoX = (float) (dirMovimentoX * cos - dirMovimentoY * sen);
+        float novoY = (float) (dirMovimentoX * sen + dirMovimentoY * cos);
+        dirMovimentoX = novoX;
+        dirMovimentoY = novoY;
+    }
+
     protected abstract Texture randomTex();
 
     protected abstract Rectangle gerarHitBox();
