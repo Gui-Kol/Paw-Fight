@@ -32,6 +32,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final CombateComponent combate = new CombateComponent();
     private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
+    protected final RestricaoMovimentoComponent restricaoMovimento = new RestricaoMovimentoComponent();
     protected final SaveComponent save = new SaveComponent();
     protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
     protected final StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
@@ -117,10 +118,15 @@ public abstract class PlayerTemplate implements Entidade {
             pause = menuAberto;
             Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
         }
-        if (pause) return;
+        if (pause) {
+            restricaoMovimento.limpar();
+            return;
+        }
 
         if (!stats.isMorto()) {
-            movimento.update(hitBox, stats.getVelocidade(), delta, input);
+            restricaoMovimento.atualizar(delta);
+            int velocidadeAtual = Math.round(stats.getVelocidade() * restricaoMovimento.getMultiplicador());
+            movimento.update(hitBox, velocidadeAtual, delta, input);
             moving = movimento.isMoving();
             olhandoEsquerda = movimento.isOlhandoEsquerda();
 
@@ -149,6 +155,8 @@ public abstract class PlayerTemplate implements Entidade {
                 dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
                 dy + hitboxOffsetY
             );
+        } else {
+            restricaoMovimento.limpar();
         }
 
         // Timers rodam mesmo com o player morto
@@ -279,6 +287,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void clearList() {
         colisao.clearColisores();
         combate.clearTiros();
+        restricaoMovimento.limpar();
     }
 
     public void adicionarTiro(TirosTemplate tiro) {
@@ -358,7 +367,16 @@ public abstract class PlayerTemplate implements Entidade {
     public void setPause(boolean pause) {
         this.pause = pause;
         this.menuAberto = pause;
+        if (pause) restricaoMovimento.limpar();
     }
+
+    public void aplicarRestricaoMovimento(float multiplicador, float duracao) {
+        if (!stats.isMorto()) restricaoMovimento.aplicar(multiplicador, duracao);
+    }
+
+    public void removerRestricaoMovimento() { restricaoMovimento.limpar(); }
+    public boolean isMovimentoRestrito() { return restricaoMovimento.isAtiva(); }
+    public float getMultiplicadorMovimento() { return restricaoMovimento.getMultiplicador(); }
 
     // Morte finalizada (esconde o sprite após a animação tocar 1 vez)
     public boolean isMorteFinalizada() { return morteFinalizada; }
