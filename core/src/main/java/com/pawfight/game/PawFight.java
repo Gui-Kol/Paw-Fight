@@ -11,6 +11,10 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.GameConfig;
+import com.pawfight.game.engine.input.GameAction;
+import com.pawfight.game.engine.input.GamepadBindings;
+import com.pawfight.game.engine.input.GerenciadorGamepad;
+import com.pawfight.game.engine.input.GerenciadorInput;
 import com.pawfight.game.engine.input.KeyBindings;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.loading.LoadingScreen;
@@ -33,6 +37,9 @@ public class PawFight extends Game {
     @Override
     public void create() {
         KeyBindings.init();
+        GamepadBindings.init();
+        GerenciadorGamepad.init(); // seguro sem controle: jogo segue só com teclado/mouse
+        GerenciadorInput.init();
         batch = new SpriteBatch();
 
         camera = new OrthographicCamera();
@@ -66,11 +73,15 @@ public class PawFight extends Game {
 
     @Override
     public void render() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
+        float delta = Gdx.graphics.getDeltaTime();
+
+        // Atualiza o estado dos dispositivos (bordas do gamepad, hotplug) antes de qualquer tela
+        GerenciadorInput.getInstance().atualizar(delta);
+
+        // Tela cheia sem tecla hardcoded: qualquer binding (teclado ou controle) dispara a ação
+        if (GerenciadorInput.getInstance().isPressionadaAgora(GameAction.TELA_CHEIA)) {
             toggleFullscreen();
         }
-
-        float delta = Gdx.graphics.getDeltaTime();
         ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
 
         camera.update();
@@ -137,6 +148,7 @@ public class PawFight extends Game {
         // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
         ScreenManager.getInstance().dispose();
         Assets.dispose();
+        GerenciadorGamepad.getInstance().dispose();
         Gdx.app.log("PawFight", "foi disposed");
     }
 

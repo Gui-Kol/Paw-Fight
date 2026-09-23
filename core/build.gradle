@@ -4,6 +4,7 @@ eclipse.project.name = appName + '-core'
 dependencies {
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"
 
   // Testes: JUnit 5 + Mockito + backend headless (Gdx.app para logs)
   testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'

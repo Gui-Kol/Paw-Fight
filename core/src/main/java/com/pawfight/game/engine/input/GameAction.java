@@ -16,12 +16,17 @@ public enum GameAction {
     DEBUG_TOGGLE   (Input.Keys.F3,     "Debug",          true),
     CHEAT_TOGGLE   (Input.Keys.F6,     "Cheat",          true),
 
-    MENU_RIGHT       (Input.Keys.RIGHT, "Menu Direita", true),
+    MENU_UP          (Input.Keys.UP,    "Menu Cima",     true),
+    MENU_DOWN        (Input.Keys.DOWN,  "Menu Baixo",    true),
+    MENU_RIGHT       (Input.Keys.RIGHT, "Menu Direita",  true),
     MENU_LEFT        (Input.Keys.LEFT,  "Menu Esquerda", true),
     MENU_CONFIRM     (Input.Keys.ENTER, "Menu Confirmar", true),
+    MENU_BACK        (Input.Keys.BACKSPACE, "Menu Voltar", true),
 
-    ZOOM_MAIS     (Input.Keys.EQUALS, "Menu Confirmar", true),
-    ZOOM_MENOS     (Input.Keys.MINUS, "Menu Confirmar", true),;
+    TELA_CHEIA       (Input.Keys.F11,   "Tela Cheia",    true),
+
+    ZOOM_MAIS        (Input.Keys.EQUALS, "Zoom +", true),
+    ZOOM_MENOS       (Input.Keys.MINUS,  "Zoom -", true),;
 
 
     private final int defaultKey;
