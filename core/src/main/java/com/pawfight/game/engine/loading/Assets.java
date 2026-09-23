@@ -79,7 +79,8 @@ public class Assets {
         manager.load("entitys/player/dove/coco/3.png", Texture.class);
 
         // Fantasmagórico, Solar e Gelo reutilizam texturas do HUD (raio.png / nuvemChao.png) já carregadas acima
-        manager.load("entitys/player/black_cat/arranhao.png", Texture.class);
+        manager.load("entitys/player/ataques/arranhao.png", Texture.class);
+        manager.load("entitys/player/ataques/TiroSolar.png", Texture.class);
         manager.load("effects/sangue/sangue.png", Texture.class);
 
         manager.load("entitys/enemy/Skeleton/Idle.png", Texture.class);

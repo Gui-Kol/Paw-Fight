@@ -43,6 +43,8 @@ public abstract class PlayerTemplate implements Entidade {
     protected int dx, dy;
     protected final Rectangle hitBox;
     protected int TAMANHO_PX;
+    protected int larguraSprite;
+    protected int alturaSprite;
     protected int hitboxSize;
     protected int hitboxOffsetX;
     protected int hitboxOffsetY;
@@ -64,6 +66,7 @@ public abstract class PlayerTemplate implements Entidade {
     public abstract void ataqueBasico(float delta);
     public abstract void ataqueEspecial();
     public abstract void usarHabilidadeEspecial();
+    protected abstract void definirTamanhoSprite();
     protected abstract void definirAudios();
     protected abstract TirosTemplate modeloTiroExclusivo();
 
@@ -82,16 +85,19 @@ public abstract class PlayerTemplate implements Entidade {
         audio.init(dados);
 
         TAMANHO_PX = dados.tamanho();
+        larguraSprite = TAMANHO_PX;
+        alturaSprite = TAMANHO_PX;
         hitboxSize = dados.hitboxSize();
         hitboxOffsetY = dados.hitboxOffsetY();
         hitboxOffsetX = dados.hitboxOffsetX();
 
         hitBox = new Rectangle(
-            dx + (TAMANHO_PX - hitboxSize) / 2f + hitboxOffsetX,
+            dx + (larguraSprite - hitboxSize) / 2f + hitboxOffsetX,
             dy + hitboxOffsetY,
             hitboxSize,
             hitboxSize
         );
+        definirTamanhoSprite();
 
         cameraComponent = new CameraComponent(dx, dy, zoomCamera, tileWidth, numTilesX, tileHeight, numTilesY);
 
@@ -152,7 +158,7 @@ public abstract class PlayerTemplate implements Entidade {
 
             int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
             hitBox.setPosition(
-                dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+                dx + (larguraSprite - hitboxSize) / 2f + offsetX,
                 dy + hitboxOffsetY
             );
         } else {
@@ -181,7 +187,7 @@ public abstract class PlayerTemplate implements Entidade {
         if (!morteFinalizada) {
             batch.draw(
                 animacao.animaAtual(stats.isMorto(), stats.isHurt(), moving, stats.getHurtTime()),
-                dx, dy, TAMANHO_PX, TAMANHO_PX
+                dx, dy, larguraSprite, alturaSprite
             );
         }
         particulas.desenhar(batch);
@@ -220,6 +226,7 @@ public abstract class PlayerTemplate implements Entidade {
             shapeRenderer.setProjectionMatrix(cam.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             for (TirosTemplate tiro : drawSnapshot) {
+                if (!tiro.isAtivoParaColisao()) continue;
                 renderizar.hitboxRect(shapeRenderer, tiro.getHitBox(), com.badlogic.gdx.graphics.Color.RED);
             }
             shapeRenderer.end();
@@ -239,7 +246,7 @@ public abstract class PlayerTemplate implements Entidade {
             Gdx.app.log(getName(), "morreu — vida zerada (dano: " + forca + ")");
         } else {
             audio.playDano();
-            particulas.spawnDano(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+            particulas.spawnDano(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
             Gdx.app.log(getName(), "Tomou " + forca + " de dano — vida " + stats.getVida() + "/" + stats.getVidaBase());
         }
     }
@@ -247,7 +254,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void curar(int pontos) {
         int vidaAntes = stats.getVida();
         stats.curar(pontos);
-        particulas.spawnCura(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+        particulas.spawnCura(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
         Gdx.app.log(getName(), "Curou " + pontos + " — vida " + vidaAntes + " -> " + stats.getVida() + "/" + stats.getVidaBase());
     }
 
@@ -256,7 +263,7 @@ public abstract class PlayerTemplate implements Entidade {
         int levels = stats.xpUp(xpGanho);
         for (int i = 0; i < levels; i++) {
             audio.playLevelUp();
-            particulas.spawnLevelUp(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+            particulas.spawnLevelUp(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
         }
         Gdx.app.log(getName(), "Ganhou " + xpGanho + " XP — xp " + stats.getXp() + "/" + stats.getXpNecessario()
             + (levels > 0 ? " — level " + levelAntes + " -> " + stats.getLevel() : ""));
@@ -306,7 +313,7 @@ public abstract class PlayerTemplate implements Entidade {
 
         int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
         hitBox.setPosition(
-            dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+            dx + (larguraSprite - hitboxSize) / 2f + offsetX,
             dy + hitboxOffsetY
         );
         cameraComponent.updateCamera(dx, dy);
@@ -323,7 +330,21 @@ public abstract class PlayerTemplate implements Entidade {
     public int getDy() { return dy; }
     public void setDy(int dy) { this.dy = dy; }
     public Rectangle getHitBox() { return hitBox; }
-    public int getTamanho() { return TAMANHO_PX; }
+    public int getTamanho() { return larguraSprite; }
+    public int getLarguraSprite() { return larguraSprite; }
+    public int getAlturaSprite() { return alturaSprite; }
+
+    /** Define as dimensões usadas pelo gancho abstrato. Valores não positivos mantêm o padrão. */
+    protected final void definirTamanhoSprite(int largura, int altura) {
+        larguraSprite = largura > 0 ? largura : TAMANHO_PX;
+        alturaSprite = altura > 0 ? altura : TAMANHO_PX;
+
+        int offsetX = olhandoEsquerda ? -hitboxOffsetX : hitboxOffsetX;
+        hitBox.setPosition(
+            dx + (larguraSprite - hitboxSize) / 2f + offsetX,
+            dy + hitboxOffsetY
+        );
+    }
     public int getHitboxSize() { return hitboxSize; }
     public int getHitboxOffsetX() { return hitboxOffsetX; }
     public int getHitboxOffsetY() { return hitboxOffsetY; }

@@ -74,6 +74,7 @@ public class TiroGelo extends TirosTemplate {
     @Override
     public void update(float delta) {
         super.update(delta);
+        if (!isAtivoParaColisao()) return;
         moverNaDirecao(VELOCIDADE_TIRO, delta); // retilíneo até expirar
     }
 
@@ -93,8 +94,17 @@ public class TiroGelo extends TirosTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected int definirQuantidadeFrames() {
         return 1; // textura estática (frame único)
+    }
+
+    @Override
+    protected int definirFramesPorSegundo() {
+        return 12;
     }
 
     @Override

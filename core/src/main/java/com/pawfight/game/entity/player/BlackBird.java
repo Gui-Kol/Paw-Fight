@@ -37,6 +37,10 @@ public class BlackBird extends PlayerTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new TiroGelo(stats.getTamanhoTiro(), this);
     }

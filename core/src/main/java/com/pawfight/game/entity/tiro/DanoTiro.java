@@ -52,6 +52,7 @@ public class DanoTiro {
         int totalColisoes = 0;
         for (int t = 0, tn = tirosSnapshot.size(); t < tn; t++) {
             TirosTemplate tiro = tirosSnapshot.get(t);
+            if (!tiro.isAtivoParaColisao()) continue;
 
             candidatos.clear();
             quadtree.consultar(tiro.getHitBox(), candidatos);

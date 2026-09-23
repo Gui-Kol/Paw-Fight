@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.HeadlessGdx;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,9 @@ class TirosTemplateTest {
     // Tiro de teste sem contexto gráfico: frames definidos via campo estático ANTES da construção, pois o construtor base lê definirQuantidadeFrames() antes dos campos da subclasse existirem.
     private static class TiroAnimacaoTeste extends TirosTemplate {
         static int framesDoProximoTiro = 1;
+        static int framesPorSegundoDoProximoTiro = 10;
+        static int larguraDoProximoTiro;
+        static int alturaDoProximoTiro;
         private final Texture texturaFixa;
 
         TiroAnimacaoTeste(Texture texturaFixa) {
@@ -40,13 +44,25 @@ class TirosTemplateTest {
         }
 
         @Override protected int definirQuantidadeFrames() { return framesDoProximoTiro; }
+        @Override protected int definirFramesPorSegundo() { return framesPorSegundoDoProximoTiro; }
         @Override protected int definirTamanhoPadrao() { return 0; }
+        @Override protected void definirTamanhoSprite() {
+            definirTamanhoSprite(larguraDoProximoTiro, alturaDoProximoTiro);
+        }
         @Override protected float definirDuracao() { return 1f; }
         @Override protected float definirIntervalo() { return 1f; }
         @Override protected Texture randomTex() { return texturaFixa; }
         @Override protected Texture singleTex() { return texturaFixa; }
         @Override protected Rectangle gerarHitBox() { return new Rectangle(xHitBox, yHitBox, tamanho, tamanho); }
         @Override protected TirosTemplate obterDoPool(PlayerTemplate player) { return null; }
+    }
+
+    @BeforeEach
+    void restaurarConfiguracaoDoTiro() {
+        TiroAnimacaoTeste.framesDoProximoTiro = 1;
+        TiroAnimacaoTeste.framesPorSegundoDoProximoTiro = 10;
+        TiroAnimacaoTeste.larguraDoProximoTiro = 0;
+        TiroAnimacaoTeste.alturaDoProximoTiro = 0;
     }
 
     private static Texture texturaMockada(int largura, int altura) {
@@ -94,32 +110,43 @@ class TirosTemplateTest {
 
         assertEquals(0, tiro.frameAtual().getRegionX());
 
-        // Avanço do tempo acumulado troca o frame (0.08s por frame), sem nenhum controle manual
+        // Avanço do tempo acumulado troca o frame (10 FPS = 0,1s por frame)
         tiro.tempoAnimacao = 0.1f; // frame 1
         assertEquals(64, tiro.frameAtual().getRegionX());
 
-        tiro.tempoAnimacao = 0.25f; // frame 3
-        assertEquals(192, tiro.frameAtual().getRegionX());
+        tiro.tempoAnimacao = 0.25f; // frame 2
+        assertEquals(128, tiro.frameAtual().getRegionX());
 
         // Loop: após todos os 6 frames, o ciclo recomeça no frame 0
-        tiro.tempoAnimacao = 0.5f; // 6.25 ciclos → frame 0
+        tiro.tempoAnimacao = 0.6f; // um ciclo completo → frame 0
         assertEquals(0, tiro.frameAtual().getRegionX());
     }
 
     @Test
-    @DisplayName("O tempo padrão entre frames da animação é 0,08f e está centralizado")
-    void tempoPadraoEntreFrames() {
-        assertEquals(0.08f, TirosTemplate.DURACAO_FRAME_PADRAO);
-
+    @DisplayName("Converte frames por segundo em duração de frame")
+    void converteFramesPorSegundo() {
         TiroAnimacaoTeste.framesDoProximoTiro = 4;
         TiroAnimacaoTeste tiro = new TiroAnimacaoTeste(texturaMockada(128, 32));
         tiro.garantirAnimacao();
 
-        // 4 frames de 32px; apenas após 0.08s o frame troca
+        assertEquals(0.1f, tiro.getDuracaoFrame());
+
+        // 4 frames de 32px; com 10 FPS, cada frame dura 0,1s
         tiro.tempoAnimacao = 0.05f;
         assertEquals(0, tiro.frameAtual().getRegionX());
-        tiro.tempoAnimacao = 0.25f; // 3.125 frames → frame 3
+        tiro.tempoAnimacao = 0.35f; // frame 3
         assertEquals(96, tiro.frameAtual().getRegionX());
+    }
+
+    @Test
+    @DisplayName("Rejeita quantidade de frames por segundo menor ou igual a zero")
+    void rejeitaFramesPorSegundoInvalidos() {
+        TiroAnimacaoTeste.framesPorSegundoDoProximoTiro = 0;
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+            () -> new TiroAnimacaoTeste(texturaMockada(64, 64)));
+
+        assertTrue(ex.getMessage().contains("frames por segundo"));
     }
 
     @Test
@@ -131,6 +158,58 @@ class TirosTemplateTest {
             () -> new TiroAnimacaoTeste(texturaMockada(64, 64)));
 
         assertTrue(ex.getMessage().contains("maior que zero"));
+    }
+
+    @Test
+    @DisplayName("Gancho abstrato usa o padrão vazio e permite largura e altura independentes")
+    void defineDimensoesIndependentes() {
+        PlayerTemplate player = mock(PlayerTemplate.class);
+        when(player.isOlhandoEsquerda()).thenReturn(false);
+
+        TiroAnimacaoTeste padrao = new TiroAnimacaoTeste(0, 0, 1, 24, player, null);
+        assertEquals(24, padrao.getLarguraSprite());
+        assertEquals(24, padrao.getAlturaSprite());
+
+        TiroAnimacaoTeste.larguraDoProximoTiro = 48;
+        TiroAnimacaoTeste.alturaDoProximoTiro = 72;
+        TiroAnimacaoTeste personalizado = new TiroAnimacaoTeste(0, 0, 1, 24, player, null);
+
+        assertEquals(48, personalizado.getLarguraSprite());
+        assertEquals(72, personalizado.getAlturaSprite());
+    }
+
+    @Test
+    @DisplayName("Duração encerra a colisão, mas preserva o tiro até terminar a animação")
+    void preservaAnimacaoAposDuracao() {
+        TiroAnimacaoTeste.framesDoProximoTiro = 8;
+        TiroAnimacaoTeste tiro = new TiroAnimacaoTeste(texturaMockada(256, 32));
+        tiro.setDuracao(0.1f);
+
+        tiro.update(0.1f);
+
+        assertFalse(tiro.isAtivoParaColisao());
+        assertFalse(tiro.isExpirado());
+
+        tiro.update(0.69f);
+        assertFalse(tiro.isExpirado());
+
+        tiro.update(0.01f);
+        assertTrue(tiro.isExpirado());
+    }
+
+    @Test
+    @DisplayName("Tiro gasto perde a hitbox lógica imediatamente e conclui o spritesheet")
+    void tiroGastoConcluiSpritesheet() {
+        TiroAnimacaoTeste.framesDoProximoTiro = 8;
+        TiroAnimacaoTeste tiro = new TiroAnimacaoTeste(texturaMockada(256, 32));
+
+        tiro.expirar();
+
+        assertFalse(tiro.isAtivoParaColisao());
+        assertFalse(tiro.isExpirado());
+
+        tiro.update(0.8f);
+        assertTrue(tiro.isExpirado());
     }
 
     @Test
@@ -230,7 +309,7 @@ class TirosTemplateTest {
         TiroAnimacaoTeste tiro = new TiroAnimacaoTeste(texturaMockada(50, 50));
         tiro.x = 10;
         tiro.y = 20;
-        tiro.tamanhoDraw = 30;
+        tiro.definirTamanhoSprite(30, 30);
 
         tiro.desenhar(batch);
 

@@ -17,21 +17,22 @@ import java.util.List;
 
 public abstract class TirosTemplate implements Pool.Poolable {
 
-    // Duração padrão entre frames da animação do tiro (segundos por frame).
-    public static final float DURACAO_FRAME_PADRAO = 0.08f;
-
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
     protected float duracao, cadencia, intervalo;
     protected float tempoVida = 0f;
+    private boolean ativoParaColisao = true;
+    private float tempoRemocaoVisual = Float.POSITIVE_INFINITY;
     protected Texture texture;
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
+    protected int larguraSprite, alturaSprite;
     protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int xHitBox, yHitBox;
 
     // Quantidade de frames horizontais da spritesheet do tiro (definida na criação).
     protected int quantidadeFrames;
+    private final float duracaoFrame;
     // Animação em loop construída a partir da spritesheet (preparada uma única vez).
     protected Animation<TextureRegion> animacao;
     // Tempo acumulado da animação (avança com delta, independente do movimento).
@@ -58,6 +59,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        duracaoFrame = calcularDuracaoFrame();
         iniciarQuantidadeFrames();
 
         this.dono = player;
@@ -65,6 +67,8 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
         this.tamanho = tamanho + tamanhoPadrao;
         this.tamanhoDraw = tamanho + tamanhoPadrao;
+        this.larguraSprite = tamanhoDraw;
+        this.alturaSprite = tamanhoDraw;
         this.x = x;
         this.y = y;
         this.dano = dano;
@@ -79,6 +83,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
         texture = singleTex();
         hitBox = gerarHitBox();
+        definirTamanhoSprite();
     }
 
     protected TirosTemplate() {
@@ -86,12 +91,31 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        duracaoFrame = calcularDuracaoFrame();
         iniciarQuantidadeFrames();
+        tamanho = tamanhoPadrao;
+        tamanhoDraw = tamanhoPadrao;
+        larguraSprite = tamanhoDraw;
+        alturaSprite = tamanhoDraw;
         hitBox = new Rectangle();
+        definirTamanhoSprite();
     }
 
     // Quantidade de frames horizontais da spritesheet do tiro (deve ser maior que zero).
     protected abstract int definirQuantidadeFrames();
+
+    /** Quantidade de frames exibidos por segundo; deve ser maior que zero. */
+    protected abstract int definirFramesPorSegundo();
+
+    private float calcularDuracaoFrame() {
+        int framesPorSegundo = definirFramesPorSegundo();
+        if (framesPorSegundo <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames por segundo precisa ser maior que zero. Valor recebido: "
+                    + framesPorSegundo);
+        }
+        return 1f / framesPorSegundo;
+    }
 
     // Valida e define a quantidade de frames da spritesheet informada pela subclasse.
     private void iniciarQuantidadeFrames() {
@@ -121,7 +145,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         this.quantidadeFrames = quantidadeFrames;
         this.texturaAnimacao = spritesheet;
         this.animacao = motorAnimacao.animar(
-            new DefinirSprite(spritesheet, quantidadeFrames, DURACAO_FRAME_PADRAO, false, false));
+            new DefinirSprite(spritesheet, quantidadeFrames, duracaoFrame, false, false));
     }
 
     // Constrói a animação uma única vez; reconstrói só se a textura mudar (ex.: textura aleatória por disparo).
@@ -141,10 +165,15 @@ public abstract class TirosTemplate implements Pool.Poolable {
     protected void reiniciarBase(int x, int y, int dano, int tamanho, PlayerTemplate player) {
         this.tempoVida = 0f;
         this.tempoAnimacao = 0f;
+        this.ativoParaColisao = true;
+        this.tempoRemocaoVisual = Float.POSITIVE_INFINITY;
         this.dono = player;
         this.spawnEsquerda = player.isOlhandoEsquerda();
         this.tamanho = tamanho + tamanhoPadrao;
         this.tamanhoDraw = tamanho + tamanhoPadrao;
+        this.larguraSprite = tamanhoDraw;
+        this.alturaSprite = tamanhoDraw;
+        definirTamanhoSprite();
         this.x = x;
         this.y = y;
         this.dano = dano;
@@ -170,9 +199,20 @@ public abstract class TirosTemplate implements Pool.Poolable {
     public void reset() {
         tempoVida = 0f;
         tempoAnimacao = 0f;
+        ativoParaColisao = true;
+        tempoRemocaoVisual = Float.POSITIVE_INFINITY;
     }
 
     protected abstract int definirTamanhoPadrao();
+
+    /** Gancho obrigatório: deixe vazio para usar o tamanho padrão quadrado. */
+    protected abstract void definirTamanhoSprite();
+
+    /** Define dimensões visuais independentes; valores não positivos usam o tamanho padrão atual. */
+    protected final void definirTamanhoSprite(int largura, int altura) {
+        larguraSprite = largura > 0 ? largura : tamanhoDraw;
+        alturaSprite = altura > 0 ? altura : tamanhoDraw;
+    }
 
     protected abstract float definirDuracao();
 
@@ -180,7 +220,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         garantirAnimacao();
         TextureRegion frame = frameAtual();
         if (frame == null) return;
-        batch.draw(frame, x, y, tamanhoDraw, tamanhoDraw);
+        batch.draw(frame, x, y, larguraSprite, alturaSprite);
     }
 
     public void desenharHitbox(ShapeRenderer shapeRenderer) {
@@ -200,21 +240,40 @@ public abstract class TirosTemplate implements Pool.Poolable {
     public void update(float delta) {
         tempoVida += delta;
         tempoAnimacao += delta;
+        if (ativoParaColisao && tempoVida >= duracao) {
+            gastar();
+        }
     }
 
     public boolean isExpirado() {
-        return tempoVida >= duracao;
+        return !ativoParaColisao && tempoAnimacao + 0.0001f >= tempoRemocaoVisual;
     }
 
-    // Força a expiração (usado por tiros de alvo único após o acerto).
+    // Consome a colisão imediatamente, mas preserva o sprite até concluir o ciclo de animação atual.
     public void expirar() {
-        tempoVida = duracao;
+        gastar();
+    }
+
+    private void gastar() {
+        if (!ativoParaColisao) return;
+        ativoParaColisao = false;
+
+        if (quantidadeFrames <= 1) {
+            tempoRemocaoVisual = tempoAnimacao;
+            return;
+        }
+
+        float duracaoCiclo = quantidadeFrames * duracaoFrame;
+        float ciclosAteRemocao = (float) Math.ceil(Math.max(0f, tempoAnimacao - 0.0001f) / duracaoCiclo);
+        tempoRemocaoVisual = Math.max(duracaoCiclo, ciclosAteRemocao * duracaoCiclo);
     }
 
     // true quando o tiro some após atingir um único inimigo (DanoTiro o expira no primeiro acerto).
     public boolean isUnicoAlvo() {
         return false;
     }
+
+    public boolean isAtivoParaColisao() { return ativoParaColisao; }
 
     // Hook chamado por DanoTiro quando o dano é aplicado; subclasses sobrescrevem (queimadura, lentidão, roubo de vida).
     public void aoAcertar(EnemyTemplate inimigo) {
@@ -249,8 +308,8 @@ public abstract class TirosTemplate implements Pool.Poolable {
         xHitBox = Math.round(centroX - hitBox.width / 2f);
         yHitBox = Math.round(centroY - hitBox.height / 2f);
         hitBox.setPosition(xHitBox, yHitBox);
-        x = Math.round(centroX - tamanhoDraw / 2f);
-        y = Math.round(centroY - tamanhoDraw / 2f);
+        x = Math.round(centroX - larguraSprite / 2f);
+        y = Math.round(centroY - alturaSprite / 2f);
     }
 
     // Aponta a direção para o centro do alvo; sem alvo, segue o olhar do player no momento do disparo.
@@ -312,6 +371,10 @@ public abstract class TirosTemplate implements Pool.Poolable {
         return dano;
     }
 
+    public int getLarguraSprite() { return larguraSprite; }
+    public int getAlturaSprite() { return alturaSprite; }
+    public float getDuracaoFrame() { return duracaoFrame; }
+
     public Rectangle getHitBox() {
         return hitBox;
     }
@@ -332,5 +395,3 @@ public abstract class TirosTemplate implements Pool.Poolable {
         // Texturas são gerenciadas pelo AssetManager — NÃO dar dispose aqui
     }
 }
-
-

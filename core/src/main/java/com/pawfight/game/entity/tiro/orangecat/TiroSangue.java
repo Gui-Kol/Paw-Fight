@@ -96,8 +96,9 @@ public class TiroSangue extends TirosTemplate {
         garantirAnimacao();
         TextureRegion frame = frameAtual();
         if (frame == null) return;
-        // Efeito visual cobre exatamente a área do golpe
-        batch.draw(frame, hitBox.x, hitBox.y, hitBox.width, hitBox.height);
+        float drawX = hitBox.x + (hitBox.width - larguraSprite) / 2f;
+        float drawY = hitBox.y + (hitBox.height - alturaSprite) / 2f;
+        batch.draw(frame, drawX, drawY, larguraSprite, alturaSprite);
     }
 
     @Override
@@ -106,8 +107,17 @@ public class TiroSangue extends TirosTemplate {
     }
 
     @Override
+    protected int definirFramesPorSegundo() {
+        return 12;
+    }
+
+    @Override
     protected int definirTamanhoPadrao() {
         return 40;
+    }
+
+    @Override
+    protected void definirTamanhoSprite() {
     }
 
     @Override
