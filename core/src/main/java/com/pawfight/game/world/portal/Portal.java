@@ -12,7 +12,7 @@ import com.pawfight.game.engine.ScreenManager;
 import com.pawfight.game.engine.fisica.ChecarColisao;
 import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.input.GameAction;
-import com.pawfight.game.engine.input.KeyBindings;
+import com.pawfight.game.engine.input.GerenciadorInput;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
 
@@ -59,7 +59,7 @@ public class Portal {
         if (ativado) {
             return true;
         }
-        if (detectarEntrada(player) && KeyBindings.getInstance().isActive(GameAction.MENU_CONFIRM)) {
+        if (detectarEntrada(player) && GerenciadorInput.getInstance().isPressionadaAgora(GameAction.MENU_CONFIRM)) {
             player.clearList();
             WorldTemplate mundo = destino.criar(game, player, camera, viewport);
             ScreenManager.getInstance().fadeToScreen(mundo, 2f, Color.BLACK, false);

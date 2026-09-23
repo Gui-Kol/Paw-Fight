@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.input.GameAction;
-import com.pawfight.game.engine.input.KeyBindings;
+import com.pawfight.game.engine.input.GerenciadorInput;
 import com.pawfight.game.entity.component.SaveComponent;
 import com.pawfight.game.entity.player.BlackBird;
 import com.pawfight.game.entity.player.BlackCat;
@@ -117,10 +117,10 @@ public class EscolherPersonagem {
     public PlayerTemplate update() {
         updateNuvem();
 
-        // Navegação por setas via KeyBindings (respeita remapeamento de teclas)
-        KeyBindings keys = KeyBindings.getInstance();
+        // Navegação por teclado ou controle (remapável); analógico tem repetição controlada ao segurar
+        GerenciadorInput input = GerenciadorInput.getInstance();
 
-        if (keys.isActive(GameAction.MENU_RIGHT)) {
+        if (input.isAtivaComRepeticao(GameAction.MENU_RIGHT)) {
             personagemAtual++;
             if (personagemAtual >= personagens.length) {
                 personagemAtual = 0;
@@ -129,7 +129,7 @@ public class EscolherPersonagem {
             Gdx.app.debug("EscolherPersonagem", "Navegou para: " + personagemPreview.getName() + " [" + personagemAtual + "]");
         }
 
-        if (keys.isActive(GameAction.MENU_LEFT)) {
+        if (input.isAtivaComRepeticao(GameAction.MENU_LEFT)) {
             personagemAtual--;
             if (personagemAtual < 0) {
                 personagemAtual = personagens.length - 1;
@@ -138,7 +138,7 @@ public class EscolherPersonagem {
             Gdx.app.debug("EscolherPersonagem", "Navegou para: " + personagemPreview.getName() + " [" + personagemAtual + "]");
         }
 
-        if (keys.isActive(GameAction.MENU_CONFIRM)) {
+        if (input.isPressionadaAgora(GameAction.MENU_CONFIRM)) {
             Gdx.app.log("EscolherPersonagem", "Personagem confirmado: " + previews[personagemAtual].getName());
             return previews[personagemAtual];
         }
