@@ -131,11 +131,11 @@ public class CarregarPortas {
         List<EnemyTemplate> listaInimigos = world.getEnemyManager().getListaInimigos();
         GerarInimigos gerarInimigos = world.getEnemyManager().getGerarInimigos();
 
-        listaInimigos.clear();
+        world.getEnemyManager().clearInimigos();
         if (!world.getRoomManager().currentRoomFoiVisitada()) {
             List<EnemyTemplate> novos = gerarInimigos.gerarInimigos(world);
             if (novos != null) {
-                listaInimigos.addAll(novos);
+                world.getEnemyManager().adicionarInimigos(novos);
                 java.util.List<Rectangle> paredes = world.getWorldPhysics().getParedes();
                 listaInimigos.forEach(enemy -> {
                     enemy.setEnemiesList(listaInimigos);

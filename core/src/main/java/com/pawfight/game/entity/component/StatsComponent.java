@@ -1,9 +1,10 @@
 package com.pawfight.game.entity.component;
 
+import com.badlogic.ashley.core.Component;
 import com.badlogic.gdx.Gdx;
 import com.pawfight.game.entity.player.DadosPlayer;
 
-public class StatsComponent {
+public class StatsComponent implements Component {
 
     private static final float HURT_DURATION = 0.5f;
     private static final float DANO_COOLDOWN_DURATION = 0.5f;
@@ -176,4 +177,3 @@ public class StatsComponent {
     public void setMoedas(int moedas) { this.moedas = moedas; }
     public void setQuantidadeDeTiros(int quantidadeDeTiros) { this.quantidadeDeTiros = Math.max(1, quantidadeDeTiros); }
 }
-

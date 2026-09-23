@@ -11,6 +11,9 @@ import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.procedural.sala.TipoSala;
 import com.pawfight.game.entity.enemy.Skeleton;
+import com.pawfight.game.entity.bosses.EscorpiaoAreia;
+import com.pawfight.game.entity.bosses.FaraoAreia;
+import com.pawfight.game.entity.bosses.MumiaAreia;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
@@ -105,7 +108,11 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public List<EnemyTemplate> getBossesModelo() {
-        return List.of();
+        return List.of(
+            new EscorpiaoAreia(0, 0, false, player),
+            new MumiaAreia(0, 0, false, player),
+            new FaraoAreia(0, 0, false, player)
+        );
     }
 
     @Override

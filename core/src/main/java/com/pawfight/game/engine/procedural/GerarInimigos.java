@@ -97,6 +97,9 @@ public class GerarInimigos {
             case INIMIGOS_FORTES -> {
                 inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, true, 7, 3, regiaoSpawn));
             }
+            case BOSS -> {
+                inimigosGerados.addAll(gerarInimigos.inimigos(world.getBossesModelo(), false, 1, 1, regiaoSpawn));
+            }
         }
         return inimigosGerados;
     }

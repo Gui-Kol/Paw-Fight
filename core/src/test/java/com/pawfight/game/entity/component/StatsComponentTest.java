@@ -1,6 +1,9 @@
 package com.pawfight.game.entity.component;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.pawfight.game.HeadlessGdx;
+import com.pawfight.game.entity.system.SistemaStats;
 import com.pawfight.game.entity.player.DadosPlayer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,7 +105,7 @@ class StatsComponentTest {
     @DisplayName("Cooldown de dano expira após 0.5s")
     void cooldownExpira() {
         stats.aplicarDano(2);
-        stats.updateTimers(0.5f);
+        atualizarPeloSistema(0.5f);
         assertTrue(stats.aplicarDano(2), "Deveria tomar dano após o cooldown expirar");
         assertEquals(6, stats.getVida());
     }
@@ -112,14 +115,14 @@ class StatsComponentTest {
     void hurtExpira() {
         stats.aplicarDano(1);
         assertTrue(stats.isHurt());
-        stats.updateTimers(0.5f);
+        atualizarPeloSistema(0.5f);
         assertFalse(stats.isHurt());
     }
 
     @Test
     @DisplayName("Timers não avançam quando não há hurt nem cooldown ativo")
     void timersInertes() {
-        stats.updateTimers(10f);
+        atualizarPeloSistema(10f);
         assertFalse(stats.isHurt());
         assertEquals(0f, stats.getHurtTime());
     }
@@ -240,5 +243,12 @@ class StatsComponentTest {
         assertEquals(3, stats.getForca());
         assertEquals(370, stats.getVelocidade());
         assertEquals(0, stats.getPontosDisponiveis());
+    }
+
+    private void atualizarPeloSistema(float delta) {
+        Engine engine = new Engine();
+        engine.addSystem(new SistemaStats());
+        engine.addEntity(new Entity().add(stats));
+        engine.update(delta);
     }
 }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.HeadlessGdx;
 import com.pawfight.game.entity.enemy.DadosInimigo;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.entity.component.StatsComponent;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -117,6 +118,7 @@ class BossTemplateTest {
         assertEquals(0, boss.getFaseAtual());
         assertEquals(2, boss.getFases().size());
         assertFalse(boss.isEmTransicao());
+        assertSame(boss.getStats(), boss.getEntidadeEcs().getComponent(StatsComponent.class));
     }
 
     @Test

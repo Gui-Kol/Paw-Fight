@@ -1,5 +1,6 @@
 package com.pawfight.game.entity.player;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -31,9 +32,11 @@ public abstract class PlayerTemplate implements Entidade {
     protected final CombateComponent combate = new CombateComponent();
     private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
+    protected final RestricaoMovimentoComponent restricaoMovimento = new RestricaoMovimentoComponent();
     protected final SaveComponent save = new SaveComponent();
     protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
-    protected StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
+    protected final StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
+    protected final Entity entidadeEcs = new Entity();
     protected CameraComponent cameraComponent; // inicializado no construtor (precisa de params do mapa)
 
     // Estado espacial (usado por muitos componentes e classes externas)
@@ -72,6 +75,9 @@ public abstract class PlayerTemplate implements Entidade {
         DadosPlayer dados = dadosPlayer();
 
         stats = new StatsComponent(dados);
+        entidadeEcs.add(stats);
+        entidadeEcs.add(combate);
+        entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.init(dados);
 
@@ -112,15 +118,19 @@ public abstract class PlayerTemplate implements Entidade {
             pause = menuAberto;
             Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
         }
-        if (pause) return;
+        if (pause) {
+            restricaoMovimento.limpar();
+            return;
+        }
 
         if (!stats.isMorto()) {
-            movimento.update(hitBox, stats.getVelocidade(), delta, input);
+            restricaoMovimento.atualizar(delta);
+            int velocidadeAtual = Math.round(stats.getVelocidade() * restricaoMovimento.getMultiplicador());
+            movimento.update(hitBox, velocidadeAtual, delta, input);
             moving = movimento.isMoving();
             olhandoEsquerda = movimento.isOlhandoEsquerda();
 
             ataqueBasico(delta);
-            combate.processarTirosAutomaticos(this, delta);
             if (input.isAttackSpecial()) ataqueEspecial();
             if (input.isAbility()) usarHabilidadeEspecial();
 
@@ -145,15 +155,13 @@ public abstract class PlayerTemplate implements Entidade {
                 dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
                 dy + hitboxOffsetY
             );
+        } else {
+            restricaoMovimento.limpar();
         }
 
         // Timers rodam mesmo com o player morto
         animacao.updateStateTime(delta);
-        stats.updateTimers(delta);
-
         particulas.atualizar(delta);
-
-        combate.updateTiros(delta);
 
         audio.updateAudio(moving);
 
@@ -279,6 +287,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void clearList() {
         colisao.clearColisores();
         combate.clearTiros();
+        restricaoMovimento.limpar();
     }
 
     public void adicionarTiro(TirosTemplate tiro) {
@@ -358,13 +367,30 @@ public abstract class PlayerTemplate implements Entidade {
     public void setPause(boolean pause) {
         this.pause = pause;
         this.menuAberto = pause;
+        if (pause) restricaoMovimento.limpar();
     }
+
+    public void aplicarRestricaoMovimento(float multiplicador, float duracao) {
+        if (!stats.isMorto()) restricaoMovimento.aplicar(multiplicador, duracao);
+    }
+
+    public void removerRestricaoMovimento() { restricaoMovimento.limpar(); }
+    public boolean isMovimentoRestrito() { return restricaoMovimento.isAtiva(); }
+    public float getMultiplicadorMovimento() { return restricaoMovimento.getMultiplicador(); }
 
     // Morte finalizada (esconde o sprite após a animação tocar 1 vez)
     public boolean isMorteFinalizada() { return morteFinalizada; }
     public void setMorteFinalizada(boolean morteFinalizada) { this.morteFinalizada = morteFinalizada; }
 
     public StatsComponent getStats() {
-        return stats;
+        return entidadeEcs.getComponent(StatsComponent.class);
+    }
+
+    public CombateComponent getCombate() {
+        return entidadeEcs.getComponent(CombateComponent.class);
+    }
+
+    public Entity getEntidadeEcs() {
+        return entidadeEcs;
     }
 }
