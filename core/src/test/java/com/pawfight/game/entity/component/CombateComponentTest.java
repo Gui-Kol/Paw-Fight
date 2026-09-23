@@ -1,9 +1,12 @@
 package com.pawfight.game.entity.component;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.entity.system.SistemaCombate;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,7 @@ class CombateComponentTest {
     // Modelo de tiro mínimo: cadência alta para nunca disparar nos testes.
     private static class TiroStub extends TirosTemplate {
         List<EnemyTemplate> inimigosRecebidos;
+        boolean liberado;
 
         TiroStub() {
             super();
@@ -41,11 +45,18 @@ class CombateComponentTest {
         @Override protected Texture singleTex() { return null; }
         @Override protected Rectangle gerarHitBox() { return new Rectangle(); }
         @Override protected TirosTemplate obterDoPool(PlayerTemplate player) { return null; }
+
+        @Override
+        public void liberar() {
+            liberado = true;
+            super.liberar();
+        }
     }
 
     private CombateComponent combate;
     private TiroStub modelo;
     private PlayerTemplate player;
+    private Engine engine;
 
     @BeforeEach
     void setUp() {
@@ -57,6 +68,14 @@ class CombateComponentTest {
         player = mock(PlayerTemplate.class);
         when(player.getCadenciaTiro()).thenReturn(1f);
         when(player.getDuracaoTiro()).thenReturn(1f);
+        when(player.getQuantidadeDeTiros()).thenReturn(1);
+
+        engine = new Engine();
+        engine.addSystem(new SistemaCombate());
+        engine.addEntity(new Entity()
+            .add(combate)
+            .add(new StatsComponent(10, 1, 1))
+            .add(new ReferenciaEntidadeComponent(player)));
     }
 
     @Test
@@ -64,7 +83,7 @@ class CombateComponentTest {
     void naoDisparaSemInimigos() {
         combate.setFonteInimigos(new ArrayList<EnemyTemplate>());
 
-        combate.processarTirosAutomaticos(player, 0.5f);
+        engine.update(0.5f);
 
         assertEquals(0f, modelo.getIntervalo(), "Intervalo não deveria avançar sem inimigos");
         assertNull(modelo.inimigosRecebidos, "A lista de inimigos não deveria ser propagada ao modelo");
@@ -73,7 +92,7 @@ class CombateComponentTest {
     @Test
     @DisplayName("Não processa disparo quando a fonte de inimigos nunca foi injetada")
     void naoDisparaSemFonteInjetada() {
-        combate.processarTirosAutomaticos(player, 0.5f);
+        engine.update(0.5f);
 
         assertEquals(0f, modelo.getIntervalo(), "Intervalo não deveria avançar sem fonte de inimigos");
     }
@@ -87,7 +106,7 @@ class CombateComponentTest {
         inimigos.add(inimigo);
         combate.setFonteInimigos(inimigos);
 
-        combate.processarTirosAutomaticos(player, 0.5f);
+        engine.update(0.5f);
 
         assertTrue(modelo.getIntervalo() > 0f, "Intervalo deveria avançar com inimigos na sala");
         assertSame(inimigos, modelo.inimigosRecebidos, "O modelo deve receber a lista de inimigos da sala");
@@ -101,8 +120,20 @@ class CombateComponentTest {
         inimigos.add(mock(EnemyTemplate.class));
         combate.setFonteInimigos(inimigos);
 
-        combate.processarTirosAutomaticos(player, 0.5f);
+        engine.update(0.5f);
 
         assertEquals(0f, modelo.getIntervalo());
+    }
+
+    @Test
+    @DisplayName("Atualiza e remove tiro expirado pelo sistema")
+    void removeTiroExpiradoPeloSistema() {
+        TiroStub tiro = new TiroStub();
+        combate.adicionarTiro(tiro);
+
+        engine.update(1f);
+
+        assertTrue(combate.getTiros().isEmpty());
+        assertTrue(tiro.liberado, "O tiro removido deve ser devolvido ao pool");
     }
 }

@@ -16,12 +16,6 @@ import com.pawfight.game.engine.GameConfig;
 public class Renderizar {
     public static final Renderizar INSTANCE = new Renderizar();
 
-    public void atualizarListaInimigos(float delta, List<EnemyTemplate> listaInimigos) {
-        for (EnemyTemplate enemy : listaInimigos) {
-            enemy.update(delta);
-        }
-        listaInimigos.removeIf(EnemyTemplate::isMorto);
-    }
     public void renderizarInimigos(WorldTemplate world) {
         List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         if (inimigos.isEmpty()) return;

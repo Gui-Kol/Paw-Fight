@@ -1,5 +1,6 @@
 package com.pawfight.game.entity.player;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -33,7 +34,8 @@ public abstract class PlayerTemplate implements Entidade {
     protected final ColisaoComponent colisao = new ColisaoComponent();
     protected final SaveComponent save = new SaveComponent();
     protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
-    protected StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
+    protected final StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
+    protected final Entity entidadeEcs = new Entity();
     protected CameraComponent cameraComponent; // inicializado no construtor (precisa de params do mapa)
 
     // Estado espacial (usado por muitos componentes e classes externas)
@@ -72,6 +74,9 @@ public abstract class PlayerTemplate implements Entidade {
         DadosPlayer dados = dadosPlayer();
 
         stats = new StatsComponent(dados);
+        entidadeEcs.add(stats);
+        entidadeEcs.add(combate);
+        entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.init(dados);
 
@@ -120,7 +125,6 @@ public abstract class PlayerTemplate implements Entidade {
             olhandoEsquerda = movimento.isOlhandoEsquerda();
 
             ataqueBasico(delta);
-            combate.processarTirosAutomaticos(this, delta);
             if (input.isAttackSpecial()) ataqueEspecial();
             if (input.isAbility()) usarHabilidadeEspecial();
 
@@ -149,11 +153,7 @@ public abstract class PlayerTemplate implements Entidade {
 
         // Timers rodam mesmo com o player morto
         animacao.updateStateTime(delta);
-        stats.updateTimers(delta);
-
         particulas.atualizar(delta);
-
-        combate.updateTiros(delta);
 
         audio.updateAudio(moving);
 
@@ -365,6 +365,14 @@ public abstract class PlayerTemplate implements Entidade {
     public void setMorteFinalizada(boolean morteFinalizada) { this.morteFinalizada = morteFinalizada; }
 
     public StatsComponent getStats() {
-        return stats;
+        return entidadeEcs.getComponent(StatsComponent.class);
+    }
+
+    public CombateComponent getCombate() {
+        return entidadeEcs.getComponent(CombateComponent.class);
+    }
+
+    public Entity getEntidadeEcs() {
+        return entidadeEcs;
     }
 }

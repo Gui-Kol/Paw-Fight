@@ -1,5 +1,6 @@
 package com.pawfight.game.entity.enemy;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,6 +10,7 @@ import com.pawfight.game.entity.Entidade;
 import com.pawfight.game.entity.component.AnimacaoComponent;
 import com.pawfight.game.entity.component.AudioComponent;
 import com.pawfight.game.entity.component.StatsComponent;
+import com.pawfight.game.entity.component.ReferenciaEntidadeComponent;
 import com.pawfight.game.entity.component.StatusComponent;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
@@ -19,7 +21,8 @@ public abstract class EnemyTemplate implements Entidade {
     protected final AnimacaoComponent animacao = new AnimacaoComponent();
     protected final AudioComponent audio = new AudioComponent();
     protected final StatusComponent status = new StatusComponent();
-    protected StatsComponent stats;
+    protected final StatsComponent stats;
+    protected final Entity entidadeEcs = new Entity();
 
     protected PlayerTemplate player;
     protected List<EnemyTemplate> enemiesList;
@@ -59,6 +62,8 @@ public abstract class EnemyTemplate implements Entidade {
             dadosInimigo.forca() * (int) multiplicador,
             dadosInimigo.velocidade() * (int) multiplicador
         );
+        entidadeEcs.add(stats);
+        entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.initEnemy(dadosInimigo.audioDano(), dadosInimigo.audioMorte());
 
@@ -151,8 +156,6 @@ public abstract class EnemyTemplate implements Entidade {
 
         // Timers (sempre rodam, mesmo morto — para animação de morte e cooldowns)
         animacao.updateStateTime(delta);
-        stats.updateTimers(delta);
-
         // Efeitos de status: queimadura aplica dano por tick apenas em vida
         int danoStatus = status.update(delta);
         if (danoStatus > 0 && !stats.isMorto()) {
@@ -270,4 +273,6 @@ public abstract class EnemyTemplate implements Entidade {
     public StatusComponent getStatus() { return status; }
     public boolean isMorto()        { return stats.isMorto(); }
     public boolean isOlhandoEsquerda() { return olhandoEsquerda; }
+    public StatsComponent getStats() { return entidadeEcs.getComponent(StatsComponent.class); }
+    public Entity getEntidadeEcs() { return entidadeEcs; }
 }

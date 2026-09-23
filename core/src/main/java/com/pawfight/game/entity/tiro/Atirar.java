@@ -38,7 +38,7 @@ public class Atirar {
                     tiroNovo.setDuracao(duracao);
                     tiroNovo.rotacionarDirecao(anguloLeque(i, quantidade));
                     player.adicionarTiro(tiroNovo);
-                    // Remoção agora é feita pelo game loop em PlayerTemplate.updateTiros()
+                    // Remoção e devolução ao pool são feitas pelo SistemaCombate.
                 }
             }
             tiroModelo.setIntervalo(intervalo);

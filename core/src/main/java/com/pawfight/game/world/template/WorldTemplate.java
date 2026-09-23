@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.ScreenManager;
+import com.pawfight.game.engine.ecs.GerenciadorEcs;
 import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.world.Home;
@@ -34,6 +35,7 @@ public abstract class WorldTemplate implements Screen {
     protected final WorldPhysics worldPhysics;
     protected final RoomManager roomManager;
     protected final EnemyManager enemyManager;
+    protected final GerenciadorEcs gerenciadorEcs;
 
     private final Stage stage;
     protected RenderizadorCamada renderizadorCamada;
@@ -64,7 +66,8 @@ public abstract class WorldTemplate implements Screen {
         worldRenderer = new WorldRenderer(backgroundPath);
         worldPhysics = new WorldPhysics();
         roomManager = new RoomManager();
-        enemyManager = new EnemyManager();
+        gerenciadorEcs = new GerenciadorEcs();
+        enemyManager = new EnemyManager(gerenciadorEcs);
 
         backMusic = Assets.get(musicPath, Music.class);
         stage = new Stage(new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE), batch);
@@ -72,10 +75,14 @@ public abstract class WorldTemplate implements Screen {
 
 
     public void setPlayer(PlayerTemplate player) {
+        if (this.player != null) {
+            gerenciadorEcs.removerEntidade(this.player.getEntidadeEcs());
+        }
         this.player = player;
         if (player != null) {
             // Compartilha a lista viva de inimigos da sala — tiros só nascem com inimigos presentes e miram neles
             player.setFonteInimigos(enemyManager.getListaInimigos());
+            gerenciadorEcs.adicionarEntidade(player.getEntidadeEcs());
         }
     }
 
@@ -125,6 +132,9 @@ public abstract class WorldTemplate implements Screen {
         renderLayers();
         if (player != null) {
             updatePlayer(delta);
+            if (!player.isPause()) {
+                gerenciadorEcs.atualizar(delta);
+            }
             if (player.isPause()) {
                 pause();
             }
@@ -273,6 +283,11 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void dispose() {
+        enemyManager.clearInimigos();
+        if (player != null) {
+            gerenciadorEcs.removerEntidade(player.getEntidadeEcs());
+        }
+        gerenciadorEcs.limpar();
         worldRenderer.dispose();
         roomManager.dispose();
         // background e backMusic são gerenciados pelo AssetManager — NÃO dar dispose aqui
@@ -297,6 +312,10 @@ public abstract class WorldTemplate implements Screen {
 
     public EnemyManager getEnemyManager() {
         return enemyManager;
+    }
+
+    public GerenciadorEcs getGerenciadorEcs() {
+        return gerenciadorEcs;
     }
 
     public PlayerTemplate getPlayer() {
