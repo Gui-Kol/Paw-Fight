@@ -9,6 +9,10 @@ public class MoverDirecaoPlayer {
     private final Rectangle tempHitBox = new Rectangle();
 
     public void mover(EnemyTemplate enemy) {
+        mover(enemy, com.badlogic.gdx.Gdx.graphics.getDeltaTime());
+    }
+
+    public void mover(EnemyTemplate enemy, float delta) {
         PlayerTemplate player = enemy.player;
         if (player == null) return;
 
@@ -16,8 +20,6 @@ public class MoverDirecaoPlayer {
         int TAMANHO_PX = enemy.getTamanho();
         int HITBOX_OFFSET_X = enemy.HITBOX_OFFSET_X;
         int HITBOX_OFFSET_Y = enemy.HITBOX_OFFSET_Y;
-        float delta = com.badlogic.gdx.Gdx.graphics.getDeltaTime();
-
         float playerX = player.getDx();
         float playerY = player.getDy();
 

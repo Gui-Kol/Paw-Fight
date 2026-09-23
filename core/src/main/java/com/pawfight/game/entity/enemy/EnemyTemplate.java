@@ -27,6 +27,7 @@ public abstract class EnemyTemplate implements Entidade {
     protected PlayerTemplate player;
     protected List<EnemyTemplate> enemiesList;
     protected List<Rectangle> paredesColisores;
+    private EnemyTemplate invocador;
 
     protected float dx, dy;
     protected Rectangle hitBox;
@@ -126,6 +127,18 @@ public abstract class EnemyTemplate implements Entidade {
 
     public List<Rectangle> getParedesColisores() {
         return paredesColisores;
+    }
+
+    public void setInvocador(EnemyTemplate invocador) {
+        this.invocador = invocador;
+    }
+
+    public EnemyTemplate getInvocador() {
+        return invocador;
+    }
+
+    public void drenarInvocacoes(List<EnemyTemplate> destino) {
+        // Apenas inimigos capazes de invocar sobrescrevem este gancho.
     }
 
     public void update(float delta) {
