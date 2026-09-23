@@ -112,6 +112,11 @@ public class TiroSangue extends TirosTemplate {
     }
 
     @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 1;
+    }
+
+    @Override
     protected int definirTamanhoPadrao() {
         return 40;
     }

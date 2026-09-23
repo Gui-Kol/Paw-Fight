@@ -105,6 +105,11 @@ public class TiroSolar extends TirosTemplate {
     }
 
     @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 2;
+    }
+
+    @Override
     protected float definirDuracao() {
         return 1f;
     }

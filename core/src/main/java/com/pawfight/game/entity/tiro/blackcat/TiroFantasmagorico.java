@@ -117,6 +117,11 @@ public class TiroFantasmagorico extends TirosTemplate {
     }
 
     @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 1;
+    }
+
+    @Override
     protected float definirDuracao() {
         return 2f;
     }

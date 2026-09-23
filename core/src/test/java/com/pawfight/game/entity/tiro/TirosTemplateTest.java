@@ -45,6 +45,7 @@ class TirosTemplateTest {
 
         @Override protected int definirQuantidadeFrames() { return framesDoProximoTiro; }
         @Override protected int definirFramesPorSegundo() { return framesPorSegundoDoProximoTiro; }
+        @Override protected int definirQuantidadeTirosPadrao() { return 1; }
         @Override protected int definirTamanhoPadrao() { return 0; }
         @Override protected void definirTamanhoSprite() {
             definirTamanhoSprite(larguraDoProximoTiro, alturaDoProximoTiro);
@@ -209,6 +210,30 @@ class TirosTemplateTest {
         assertFalse(tiro.isExpirado());
 
         tiro.update(0.8f);
+        assertTrue(tiro.isExpirado());
+    }
+
+    @Test
+    @DisplayName("Troca de spritesheet reinicia a animação e usa a nova quantidade de frames")
+    void trocaSpritesheetDuranteImpacto() {
+        TiroAnimacaoTeste.framesDoProximoTiro = 6;
+        TiroAnimacaoTeste tiro = new TiroAnimacaoTeste(texturaMockada(384, 64));
+        tiro.garantirAnimacao();
+        tiro.update(0.3f);
+
+        Texture explosao = texturaMockada(128, 64);
+        tiro.trocarAnimacao(explosao, 2);
+        tiro.garantirAnimacao();
+
+        assertEquals(0f, tiro.tempoAnimacao);
+        assertEquals(2, tiro.quantidadeFrames);
+        assertEquals(64, tiro.frameAtual().getRegionWidth());
+        assertEquals(0, tiro.frameAtual().getRegionX());
+
+        tiro.expirar();
+        tiro.update(0.19f);
+        assertFalse(tiro.isExpirado());
+        tiro.update(0.01f);
         assertTrue(tiro.isExpirado());
     }
 

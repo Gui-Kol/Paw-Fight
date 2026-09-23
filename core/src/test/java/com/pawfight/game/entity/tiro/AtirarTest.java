@@ -54,12 +54,17 @@ class AtirarTest {
         @Override protected void definirTamanhoSprite() { }
         @Override protected int definirQuantidadeFrames() { return 1; }
         @Override protected int definirFramesPorSegundo() { return 12; }
+        @Override protected int definirQuantidadeTirosPadrao() { return 1; }
         @Override protected float definirDuracao() { return 1f; }
         @Override protected float definirIntervalo() { return 1f; }
         @Override protected Texture randomTex() { return null; }
         @Override protected Texture singleTex() { return null; }
         @Override protected Rectangle gerarHitBox() { return new Rectangle(); }
         @Override protected TirosTemplate obterDoPool(PlayerTemplate player) { return null; }
+    }
+
+    private static class TiroDuploStub extends TiroStub {
+        @Override protected int definirQuantidadeTirosPadrao() { return 2; }
     }
 
     @Test
@@ -97,11 +102,7 @@ class AtirarTest {
     }
 
     private TirosTemplate modeloProntoParaDisparo() {
-        TirosTemplate modelo = mock(TirosTemplate.class);
-        when(modelo.getCadencia()).thenReturn(1f);
-        when(modelo.getDuracao()).thenReturn(1f);
-        when(modelo.getIntervalo()).thenReturn(0f);
-        return modelo;
+        return spy(new TiroStub());
     }
 
     @Test
@@ -111,7 +112,7 @@ class AtirarTest {
         PlayerTemplate player = playerCom(1);
         TirosTemplate modelo = modeloProntoParaDisparo();
         TirosTemplate tiro = mock(TirosTemplate.class);
-        when(modelo.obterDoPool(player)).thenReturn(tiro);
+        doReturn(tiro).when(modelo).obterDoPool(player);
 
         atirar.atira(List.of(modelo), player, 1f, new ArrayList<EnemyTemplate>());
 
@@ -120,7 +121,7 @@ class AtirarTest {
     }
 
     @Test
-    @DisplayName("Rajada de 3: três projéteis do pool, em leque -15°/0°/+15°")
+    @DisplayName("Rajada de 3 sai sequencialmente em leque -15°/0°/+15°")
     void rajadaDeTresEmLeque() {
         Atirar atirar = new Atirar();
         PlayerTemplate player = playerCom(3);
@@ -128,14 +129,41 @@ class AtirarTest {
         TirosTemplate tiro1 = mock(TirosTemplate.class);
         TirosTemplate tiro2 = mock(TirosTemplate.class);
         TirosTemplate tiro3 = mock(TirosTemplate.class);
-        when(modelo.obterDoPool(player)).thenReturn(tiro1, tiro2, tiro3);
+        doReturn(tiro1, tiro2, tiro3).when(modelo).obterDoPool(player);
 
         atirar.atira(List.of(modelo), player, 1f, new ArrayList<EnemyTemplate>());
+        verify(player, times(1)).adicionarTiro(any(TirosTemplate.class));
+        verify(tiro1).rotacionarDirecao(-15f);
+
+        atirar.atira(List.of(modelo), player, 0.05f, new ArrayList<EnemyTemplate>());
+        verify(player, times(1)).adicionarTiro(any(TirosTemplate.class));
+
+        atirar.atira(List.of(modelo), player, 0.05f, new ArrayList<EnemyTemplate>());
+        verify(player, times(2)).adicionarTiro(any(TirosTemplate.class));
+        verify(tiro2).rotacionarDirecao(0f);
+
+        atirar.atira(List.of(modelo), player, 0.1f, new ArrayList<EnemyTemplate>());
 
         verify(modelo, times(3)).obterDoPool(player);
-        verify(tiro1).rotacionarDirecao(-15f);
-        verify(tiro2).rotacionarDirecao(0f);
         verify(tiro3).rotacionarDirecao(15f);
         verify(player, times(3)).adicionarTiro(any(TirosTemplate.class));
+    }
+
+    @Test
+    @DisplayName("Quantidade padrão 2 também sai em dois frames separados")
+    void quantidadePadraoDoisSaiSeparada() {
+        Atirar atirar = new Atirar();
+        PlayerTemplate player = playerCom(1);
+        TirosTemplate modelo = spy(new TiroDuploStub());
+        TirosTemplate tiro1 = mock(TirosTemplate.class);
+        TirosTemplate tiro2 = mock(TirosTemplate.class);
+        doReturn(tiro1, tiro2).when(modelo).obterDoPool(player);
+
+        atirar.atira(List.of(modelo), player, 1f, new ArrayList<EnemyTemplate>());
+        verify(player, times(1)).adicionarTiro(tiro1);
+        verify(player, never()).adicionarTiro(tiro2);
+
+        atirar.atira(List.of(modelo), player, 0.1f, new ArrayList<EnemyTemplate>());
+        verify(player).adicionarTiro(tiro2);
     }
 }

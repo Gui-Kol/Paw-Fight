@@ -17,6 +17,8 @@ import java.util.List;
 
 public abstract class TirosTemplate implements Pool.Poolable {
 
+    public static final float INTERVALO_ENTRE_TIROS_RAJADA = 0.1f;
+
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
@@ -33,6 +35,10 @@ public abstract class TirosTemplate implements Pool.Poolable {
     // Quantidade de frames horizontais da spritesheet do tiro (definida na criação).
     protected int quantidadeFrames;
     private final float duracaoFrame;
+    private final int quantidadeTirosPadrao;
+    private int totalTirosRajada;
+    private int indiceProximoTiro;
+    private float tempoAteProximoTiro;
     // Animação em loop construída a partir da spritesheet (preparada uma única vez).
     protected Animation<TextureRegion> animacao;
     // Tempo acumulado da animação (avança com delta, independente do movimento).
@@ -60,6 +66,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
         duracaoFrame = calcularDuracaoFrame();
+        quantidadeTirosPadrao = validarQuantidadeTirosPadrao();
         iniciarQuantidadeFrames();
 
         this.dono = player;
@@ -92,6 +99,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
         duracaoFrame = calcularDuracaoFrame();
+        quantidadeTirosPadrao = validarQuantidadeTirosPadrao();
         iniciarQuantidadeFrames();
         tamanho = tamanhoPadrao;
         tamanhoDraw = tamanhoPadrao;
@@ -107,6 +115,9 @@ public abstract class TirosTemplate implements Pool.Poolable {
     /** Quantidade de frames exibidos por segundo; deve ser maior que zero. */
     protected abstract int definirFramesPorSegundo();
 
+    /** Quantidade base de projéteis criada a cada disparo; deve ser maior que zero. */
+    protected abstract int definirQuantidadeTirosPadrao();
+
     private float calcularDuracaoFrame() {
         int framesPorSegundo = definirFramesPorSegundo();
         if (framesPorSegundo <= 0) {
@@ -115,6 +126,15 @@ public abstract class TirosTemplate implements Pool.Poolable {
                     + framesPorSegundo);
         }
         return 1f / framesPorSegundo;
+    }
+
+    private int validarQuantidadeTirosPadrao() {
+        int quantidade = definirQuantidadeTirosPadrao();
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade padrão de tiros precisa ser maior que zero. Valor recebido: " + quantidade);
+        }
+        return quantidade;
     }
 
     // Valida e define a quantidade de frames da spritesheet informada pela subclasse.
@@ -154,6 +174,19 @@ public abstract class TirosTemplate implements Pool.Poolable {
         if (animacao == null || texturaAnimacao != texture) {
             prepararAnimacao(texture, quantidadeFrames);
         }
+    }
+
+    /** Troca spritesheet e contagem de quadros, reiniciando a nova animação no primeiro frame. */
+    protected final void trocarAnimacao(Texture novaTextura, int novosFrames) {
+        if (novosFrames <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames do tiro precisa ser maior que zero. Valor recebido: " + novosFrames);
+        }
+        texture = novaTextura;
+        quantidadeFrames = novosFrames;
+        animacao = null;
+        texturaAnimacao = null;
+        tempoAnimacao = 0f;
     }
 
     // Frame atual da animação do tiro (loop contínuo enquanto o tiro existir).
@@ -374,6 +407,31 @@ public abstract class TirosTemplate implements Pool.Poolable {
     public int getLarguraSprite() { return larguraSprite; }
     public int getAlturaSprite() { return alturaSprite; }
     public float getDuracaoFrame() { return duracaoFrame; }
+    public int getQuantidadeTirosPadrao() { return quantidadeTirosPadrao; }
+
+    void iniciarRajada(int quantidade) {
+        totalTirosRajada = Math.max(1, quantidade);
+        indiceProximoTiro = 0;
+        tempoAteProximoTiro = 0f;
+    }
+
+    boolean temTirosPendentesNaRajada() {
+        return indiceProximoTiro < totalTirosRajada;
+    }
+
+    boolean atualizarEsperaDaRajada(float delta) {
+        if (!temTirosPendentesNaRajada()) return false;
+        tempoAteProximoTiro = Math.max(0f, tempoAteProximoTiro - delta);
+        return tempoAteProximoTiro <= 0f;
+    }
+
+    int consumirProximoTiroDaRajada() {
+        int indice = indiceProximoTiro++;
+        tempoAteProximoTiro = INTERVALO_ENTRE_TIROS_RAJADA;
+        return indice;
+    }
+
+    int getTotalTirosRajada() { return totalTirosRajada; }
 
     public Rectangle getHitBox() {
         return hitBox;

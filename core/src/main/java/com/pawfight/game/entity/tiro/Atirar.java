@@ -24,24 +24,35 @@ public class Atirar {
             tiroModelo.setInimigos(inimigos);
             float cadencia = tiroModelo.getCadencia() * player.getCadenciaTiro();
             float duracao = tiroModelo.getDuracao() * player.getDuracaoTiro();
+
+            if (tiroModelo.temTirosPendentesNaRajada()) {
+                if (tiroModelo.atualizarEsperaDaRajada(delta)) {
+                    dispararProximoDaRajada(tiroModelo, player, duracao);
+                }
+                continue;
+            }
+
             float intervalo = tiroModelo.getIntervalo();
 
             intervalo += delta;
 
             if (intervalo >= cadencia) {
                 intervalo = 0f;
-
-                // Rajada em leque: cada projétil sai do pool com um desvio angular
-                int quantidade = player.getQuantidadeDeTiros();
-                for (int i = 0; i < quantidade; i++) {
-                    TirosTemplate tiroNovo = tiroModelo.obterDoPool(player);
-                    tiroNovo.setDuracao(duracao);
-                    tiroNovo.rotacionarDirecao(anguloLeque(i, quantidade));
-                    player.adicionarTiro(tiroNovo);
-                    // Remoção e devolução ao pool são feitas pelo SistemaCombate.
-                }
+                int quantidade = tiroModelo.getQuantidadeTirosPadrao() * player.getQuantidadeDeTiros();
+                tiroModelo.iniciarRajada(quantidade);
+                dispararProximoDaRajada(tiroModelo, player, duracao);
             }
             tiroModelo.setIntervalo(intervalo);
         }
+    }
+
+    private void dispararProximoDaRajada(TirosTemplate modelo, PlayerTemplate player, float duracao) {
+        int indice = modelo.consumirProximoTiroDaRajada();
+        int total = modelo.getTotalTirosRajada();
+        TirosTemplate tiroNovo = modelo.obterDoPool(player);
+        tiroNovo.setDuracao(duracao);
+        tiroNovo.rotacionarDirecao(anguloLeque(indice, total));
+        player.adicionarTiro(tiroNovo);
+        // Remoção e devolução ao pool são feitas pelo SistemaCombate.
     }
 }
