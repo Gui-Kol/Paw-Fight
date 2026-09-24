@@ -7,6 +7,11 @@ import com.pawfight.game.entity.system.SistemaCombate;
 import com.pawfight.game.entity.system.SistemaStats;
 import com.pawfight.game.entity.system.SistemaStatus;
 
+// Ordem dos sistemas é intencional (mesma prioridade → ordem de registro):
+//   1) SistemaStats   — timers de hurt/cooldown de dano do frame;
+//   2) SistemaStatus  — DoT de status resolve aqui; quem morre por DoT já morre antes do combate;
+//   3) SistemaCombate — tiros automáticos só disparam para alvos vivos (stats.isMorto já considera o DoT).
+// Sistemas novos entram depois do SistemaStats e antes do SistemaCombate, preservando essa regra.
 public class GerenciadorEcs {
     private final Engine engine = new Engine();
     private final ObjectSet<Entity> entidadesRegistradas = new ObjectSet<>();

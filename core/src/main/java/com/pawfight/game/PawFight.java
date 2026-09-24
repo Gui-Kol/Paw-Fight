@@ -55,6 +55,8 @@ public class PawFight extends Game {
 
         ScreenManager.init(this);
         gameSession = new GameSession(System.nanoTime());
+        // Seed registrada para permitir reproduzir uma run ao investigar bugs
+        Gdx.app.log("PawFight", "Seed da sessão: " + gameSession.getSeed());
 
         setScreen(new LoadingScreen(this, camera, viewport));
 
