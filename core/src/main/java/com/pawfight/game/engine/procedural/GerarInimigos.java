@@ -61,6 +61,9 @@ public class GerarInimigos {
             ContextoSpawn contexto = new ContextoSpawn(world.getPlayer(), x, y, forte, 1,
                 world.getWorldPhysics().getParedes(), world.getEnemyManager().getListaInimigos(), random);
             EnemyTemplate novoInimigo = definicao.criar(contexto);
+            if (novoInimigo instanceof BossTemplate) {
+                Gdx.app.log(world.getWorldName(), "Boss escolhido: " + definicao.nomeExibido());
+            }
             if (forte) {
                 listaInimigosFortes.add(novoInimigo);
             }
