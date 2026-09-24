@@ -5,6 +5,7 @@ import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.entity.tiro.TirosTemplate;
 import com.pawfight.game.entity.tiro.dove.TiroCoco;
+import com.pawfight.game.entity.tiro.dove.TiroSolar;
 
 public class Dove extends PlayerTemplate {
 
@@ -38,8 +39,12 @@ public class Dove extends PlayerTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected TirosTemplate modeloTiroExclusivo() {
-        return new TiroCoco(stats.getTamanhoTiro(), this);
+        return new TiroSolar(stats.getTamanhoTiro(), this);
     }
 
     @Override
@@ -56,6 +61,8 @@ public class Dove extends PlayerTemplate {
     public String getName() {
         return "Dove";
     }
+
+    @Override public String getId() { return "dove"; }
 
     @Override
     public void ataqueBasico(float delta) {

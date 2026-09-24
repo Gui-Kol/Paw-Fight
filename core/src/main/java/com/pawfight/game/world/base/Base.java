@@ -8,7 +8,10 @@ import com.pawfight.game.PawFight;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.content.enemy.DefinicaoInimigo;
+import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.MundoAreia;
+import com.pawfight.game.content.world.RegistroMundos;
 import com.pawfight.game.world.portal.Portal;
 import com.pawfight.game.world.template.WorldTemplate;
 
@@ -42,9 +45,10 @@ public class Base extends WorldTemplate {
     public void render(float delta) {
         if (player == null) {
             escolherPersonagem.draw();
-            player = escolherPersonagem.update();
-            if (player != null) {
-                Gdx.app.log("Base", "Personagem escolhido: " + player.getName());
+            PlayerTemplate playerEscolhido = escolherPersonagem.update();
+            if (playerEscolhido != null) {
+                setPlayer(playerEscolhido);
+                Gdx.app.log("Base", "Personagem escolhido: " + playerEscolhido.getName());
             }
             return;
         }
@@ -60,7 +64,7 @@ public class Base extends WorldTemplate {
                 "PortalAreia",
                 "EntradaPortalAreia",
                 "Aperte ENTER para entrar",
-                MundoAreia::new
+                RegistroMundos.obter("mundo_areia").fabrica()
             );
             portalAreia.definirAreaAtivacao(map, tilemapHitboxFactory);
 
@@ -124,12 +128,12 @@ public class Base extends WorldTemplate {
     }
 
     @Override
-    public List<EnemyTemplate> getInimigosModelo() {
+    public List<DefinicaoInimigo> getDefinicoesInimigos() {
         return List.of();
     }
 
     @Override
-    public List<EnemyTemplate> getBossesModelo() {
+    public List<DefinicaoInimigo> getDefinicoesBosses() {
         return List.of();
     }
 

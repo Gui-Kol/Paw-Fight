@@ -24,9 +24,10 @@ public class TiroFantasmagorico extends TirosTemplate {
 
     public TiroFantasmagorico(int tamanho, PlayerTemplate player) {
         super(player.getDx(), player.getDy(), calcularDano(player), tamanho, player);
-        fantasma = Assets.get("entitys/player/black_cat/arranhao.png", Texture.class);
+        fantasma = Assets.get("entitys/player/ataques/arranhao.png", Texture.class);
         texture = fantasma;
         posicionarNoAlvo();
+        configurarMovimento(this::atualizarAlvo);
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroFantasmagorico>(8, 64) {
@@ -39,7 +40,8 @@ public class TiroFantasmagorico extends TirosTemplate {
 
     private TiroFantasmagorico() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
-        fantasma = Assets.get("entitys/player/black_cat/arranhao.png", Texture.class);
+        fantasma = Assets.get("entitys/player/ataques/arranhao.png", Texture.class);
+        configurarMovimento(this::atualizarAlvo);
     }
 
     private static int calcularDano(PlayerTemplate player) {
@@ -78,10 +80,7 @@ public class TiroFantasmagorico extends TirosTemplate {
         return t;
     }
 
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-
+    private void atualizarAlvo(float delta) {
         // Alvo morreu antes do fim: re-mira no vivo mais próximo
         if (alvo == null || alvo.isMorto()) {
             alvo = inimigoMaisProximo();
@@ -102,8 +101,22 @@ public class TiroFantasmagorico extends TirosTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected int definirQuantidadeFrames() {
         return 13; // spritesheet com 13 frames
+    }
+
+    @Override
+    protected int definirFramesPorSegundo() {
+        return 12;
+    }
+
+    @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 1;
     }
 
     @Override

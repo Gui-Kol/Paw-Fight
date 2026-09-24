@@ -11,8 +11,11 @@ import com.pawfight.game.entity.tiro.TirosTemplate;
 // Disparo do Black Bird: mira no inimigo mais próximo, segue retilíneo em alta velocidade; alvo único com chance de lentidão.
 public class TiroGelo extends TirosTemplate {
 
+    private static final int FRAMES_VOO = 6;
+    private static final int FRAMES_EXPLOSAO = 2;
+
     // Velocidade de deslocamento do projétil (px/segundo).
-    private static final float VELOCIDADE_TIRO = 900f;
+    private static final float VELOCIDADE_TIRO = 300f;
 
     // Lentidão — chance e valores configuráveis
     private static final float CHANCE_LENTIDAO = 0.5f;
@@ -20,15 +23,18 @@ public class TiroGelo extends TirosTemplate {
     private static final float DURACAO_LENTIDAO = 2.5f;
 
     private final Texture gelo;
+    private final Texture explosao;
 
     private Pool<TiroGelo> pool;
 
     public TiroGelo(int tamanho, PlayerTemplate player) {
         super(player.getDx(), player.getDy(), player.getForca(), tamanho, player);
-        gelo = Assets.get("Hud/nuvemChao.png", Texture.class);
-        texture = gelo;
+        gelo = Assets.get("entitys/player/ataques/TiroGelo.png", Texture.class);
+        explosao = Assets.get("entitys/player/ataques/TiroGeloExplodindo.png", Texture.class);
+        trocarAnimacao(gelo, FRAMES_VOO);
         posicionarNoPlayer();
         definirDirecaoPara(inimigoMaisProximo());
+        configurarComportamentos();
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroGelo>(8, 64) {
@@ -41,7 +47,17 @@ public class TiroGelo extends TirosTemplate {
 
     private TiroGelo() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
-        gelo = Assets.get("Hud/nuvemChao.png", Texture.class);
+        gelo = Assets.get("entitys/player/ataques/TiroGelo.png", Texture.class);
+        explosao = Assets.get("entitys/player/ataques/TiroGeloExplodindo.png", Texture.class);
+        configurarComportamentos();
+    }
+
+    private void configurarComportamentos() {
+        configurarMovimento(delta -> moverNaDirecao(VELOCIDADE_TIRO, delta));
+        configurarEfeitoImpacto(inimigo -> {
+            inimigo.aplicarLentidao(MULTIPLICADOR_LENTIDAO, DURACAO_LENTIDAO, CHANCE_LENTIDAO);
+            trocarAnimacao(explosao, FRAMES_EXPLOSAO);
+        });
     }
 
     @Override
@@ -65,16 +81,10 @@ public class TiroGelo extends TirosTemplate {
         t.hitBox.setSize(t.tamanho, t.tamanho);
         t.posicionarNoPlayer();
         t.definirDirecaoPara(t.inimigoMaisProximo());
-        t.texture = t.gelo;
+        t.trocarAnimacao(t.gelo, FRAMES_VOO);
         t.ownerPool = pool;
 
         return t;
-    }
-
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-        moverNaDirecao(VELOCIDADE_TIRO, delta); // retilíneo até expirar
     }
 
     @Override
@@ -83,23 +93,32 @@ public class TiroGelo extends TirosTemplate {
     }
 
     @Override
-    public void aoAcertar(EnemyTemplate inimigo) {
-        inimigo.aplicarLentidao(MULTIPLICADOR_LENTIDAO, DURACAO_LENTIDAO, CHANCE_LENTIDAO);
-    }
-
-    @Override
     protected int definirTamanhoPadrao() {
         return 20;
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected int definirQuantidadeFrames() {
-        return 1; // textura estática (frame único)
+        return FRAMES_VOO;
+    }
+
+    @Override
+    protected int definirFramesPorSegundo() {
+        return 10;
+    }
+
+    @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 2;
     }
 
     @Override
     protected float definirDuracao() {
-        return 2.5f; // alcance longo (distância = velocidade x duração)
+        return 2f; // alcance longo (distância = velocidade x duração)
     }
 
     @Override

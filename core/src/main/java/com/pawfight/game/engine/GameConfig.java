@@ -5,6 +5,7 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.MathUtils;
 
 public final class GameConfig {
+    private static final float ESCALA_MINIMA_UI = 0.01f;
 
     private static final GameConfig INSTANCE = new GameConfig();
 
@@ -99,8 +100,16 @@ public final class GameConfig {
     }
 
     public float getScale() {
-        float screenW = Gdx.graphics.getWidth();
-        float screenH = Gdx.graphics.getHeight();
-        return Math.min(screenW / LARGURA_TELA_BASE, screenH / ALTURA_TELA_BASE);
+        return calcularEscala(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    }
+
+    public float calcularEscala(int largura, int altura) {
+        if (largura <= 0 || altura <= 0) return ESCALA_MINIMA_UI;
+        float escala = Math.min((float) largura / LARGURA_TELA_BASE, (float) altura / ALTURA_TELA_BASE);
+        return Math.max(ESCALA_MINIMA_UI, escala);
+    }
+
+    public boolean podeRenderizarUi() {
+        return Gdx.graphics.getWidth() > 0 && Gdx.graphics.getHeight() > 0;
     }
 }

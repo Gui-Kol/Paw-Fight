@@ -21,9 +21,10 @@ public class TiroSolar extends TirosTemplate {
 
     public TiroSolar(int tamanho, PlayerTemplate player) {
         super(player.getDx(), player.getDy(), calcularDano(player), tamanho, player);
-        raio = Assets.get("Hud/raio.png", Texture.class);
+        raio = Assets.get("entitys/player/ataques/TiroSolar.png", Texture.class);
         texture = raio;
         posicionarNoAlvo();
+        configurarEfeitoImpacto(this::aplicarQueimadura);
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroSolar>(8, 64) {
@@ -36,7 +37,8 @@ public class TiroSolar extends TirosTemplate {
 
     private TiroSolar() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
-        raio = Assets.get("Hud/raio.png", Texture.class);
+        raio = Assets.get("entitys/player/ataques/TiroSolar.png", Texture.class);
+        configurarEfeitoImpacto(this::aplicarQueimadura);
     }
 
     private static int calcularDano(PlayerTemplate player) {
@@ -62,7 +64,6 @@ public class TiroSolar extends TirosTemplate {
     protected TirosTemplate obterDoPool(PlayerTemplate player) {
         TiroSolar t = pool.obtain();
 
-        // Reinicializa campos-base (tamanho menos o padrão, já somado pelo modelo)
         t.reiniciarBase(player.getDx(), player.getDy(), calcularDano(player), tamanho - tamanhoPadrao, player);
         t.inimigos = inimigos;
         t.hitBox.set(t.xHitBox, t.yHitBox, t.tamanho, t.tamanho);
@@ -78,30 +79,45 @@ public class TiroSolar extends TirosTemplate {
         return true;
     }
 
-    @Override
-    public void aoAcertar(EnemyTemplate inimigo) {
+    private void aplicarQueimadura(EnemyTemplate inimigo) {
         int danoPorTick = Math.max(1, dano / 4);
         inimigo.aplicarQueimadura(danoPorTick, DURACAO_QUEIMADURA, CHANCE_QUEIMADURA);
     }
 
     @Override
     protected int definirTamanhoPadrao() {
-        return 20;
+        return 0;
+    }
+
+    @Override
+    protected void definirTamanhoSprite() {
+        alturaSprite = 128;
+        larguraSprite = 64;
     }
 
     @Override
     protected int definirQuantidadeFrames() {
-        return 1; // textura estática (frame único)
+        return 8;
+    }
+
+    @Override
+    protected int definirFramesPorSegundo() {
+        return 25;
+    }
+
+    @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 2;
     }
 
     @Override
     protected float definirDuracao() {
-        return 0.5f; // raio rápido
+        return 1f;
     }
 
     @Override
     protected float definirIntervalo() {
-        return 1.8f;
+        return 1f;
     }
 
     @Override

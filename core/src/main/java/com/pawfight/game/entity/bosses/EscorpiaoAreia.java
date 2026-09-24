@@ -8,14 +8,18 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.loading.Assets;
+import com.pawfight.game.entity.bosses.infra.ControladorCooldown;
+import com.pawfight.game.entity.bosses.infra.ControladorInvocacoes;
+import com.pawfight.game.entity.bosses.infra.JanelaDeContato;
+import com.pawfight.game.entity.bosses.infra.MaquinaEstadosBoss;
+import com.pawfight.game.entity.bosses.infra.SequenciaAtaques;
+import com.pawfight.game.entity.bosses.infra.ZonaTelegrafada;
 import com.pawfight.game.entity.enemy.DadosInimigo;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.enemy.MoverDirecaoPlayer;
 import com.pawfight.game.entity.enemy.Skeleton;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class EscorpiaoAreia extends BossTemplate {
@@ -37,7 +41,7 @@ public class EscorpiaoAreia extends BossTemplate {
     private static final int VELOCIDADE = 180;
     private static final int TAMANHO = 128;
     private static final int HITBOX = 54;
-    // O Player ainda não possui StatusComponent; o veneno é representado por dano direto adicional.
+    // O Player ainda não possui StatusComponent genérico; o veneno é representado por dano direto adicional.
     private static final int DANO_VENENO_DIRETO = 1;
 
     private static final float LIMIAR_FASE_2 = 0.65f;
@@ -58,18 +62,17 @@ public class EscorpiaoAreia extends BossTemplate {
     private static final int MAX_INVOCACOES = 3;
 
     private final MoverDirecaoPlayer mover = new MoverDirecaoPlayer();
-    private final List<EnemyTemplate> invocacoesAtivas = new ArrayList<>(MAX_INVOCACOES);
-    private final List<EnemyTemplate> invocacoesPendentes = new ArrayList<>(MAX_INVOCACOES);
+    private final MaquinaEstadosBoss<Estado> maquina = new MaquinaEstadosBoss<>(Estado.APROXIMACAO);
+    private final ControladorCooldown cooldownAtaque = new ControladorCooldown(COOLDOWN_ATAQUE, false);
+    private final ControladorCooldown cooldownSalto = new ControladorCooldown(COOLDOWN_SALTO, true);
+    private final ControladorCooldown cooldownInvocacao = new ControladorCooldown(COOLDOWN_INVOCACAO, true);
+    private final ControladorInvocacoes invocacoes = new ControladorInvocacoes(MAX_INVOCACOES);
+    private final JanelaDeContato janelaFerrao = new JanelaDeContato();
+    private final JanelaDeContato janelaSalto = new JanelaDeContato();
+    private final SequenciaAtaques sequenciaGolpes = new SequenciaAtaques(INTERVALO_GOLPE_DUPLO);
+    private final ZonaTelegrafada zonaSalto = new ZonaTelegrafada();
 
-    private Estado estado = Estado.APROXIMACAO;
-    private float timerEstado;
-    private float cooldownAtaque;
-    private float cooldownSalto = COOLDOWN_SALTO;
-    private float cooldownInvocacao = COOLDOWN_INVOCACAO;
-    private float destinoSaltoX;
-    private float destinoSaltoY;
-    private int golpeAtual;
-    private boolean danoAplicadoNaJanela;
+    private boolean golpeDuplo;
 
     public EscorpiaoAreia(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
@@ -126,31 +129,20 @@ public class EscorpiaoAreia extends BossTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        if (player != null && player.isPause()) return;
-        if (!stats.isMorto()) sincronizarFaseComVida();
-        super.update(delta);
-        if (stats.isMorto()) {
-            cancelarAtaque(Estado.MORTE);
-            invocacoesPendentes.clear();
-        }
-    }
-
-    @Override
     public void executarIA(float delta) {
         if (stats.isMorto() || player == null || player.isMorto()) {
             moving = false;
             return;
         }
-        if (estado == Estado.TRANSICAO && !emTransicao) estado = Estado.APROXIMACAO;
-        if (emTransicao || estado == Estado.TRANSICAO) return;
+        if (maquina.is(Estado.TRANSICAO) && !emTransicao) maquina.mudar(Estado.APROXIMACAO);
+        if (emTransicao || maquina.is(Estado.TRANSICAO)) return;
 
-        cooldownAtaque = Math.max(0f, cooldownAtaque - delta);
-        cooldownSalto = Math.max(0f, cooldownSalto - delta);
-        cooldownInvocacao = Math.max(0f, cooldownInvocacao - delta);
-        limparInvocacoesMortas();
+        cooldownAtaque.atualizar(delta);
+        cooldownSalto.atualizar(delta);
+        cooldownInvocacao.atualizar(delta);
+        invocacoes.removerMortas();
 
-        switch (estado) {
+        switch (maquina.getEstado()) {
             case APROXIMACAO -> processarAproximacao(delta);
             case AVISO -> processarAviso(delta);
             case ATAQUE -> processarAtaque(delta);
@@ -164,105 +156,95 @@ public class EscorpiaoAreia extends BossTemplate {
 
     private void processarAproximacao(float delta) {
         executarAtaqueEspecial();
-        if (estado != Estado.APROXIMACAO) return;
+        if (!maquina.is(Estado.APROXIMACAO)) return;
 
         if (calcularDistanciaAoPlayer() > ALCANCE_FERRAO) {
             mover.mover(this, delta);
         } else {
             moving = false;
-            if (cooldownAtaque <= 0f) executarAtaqueNormal();
+            if (cooldownAtaque.pronto()) executarAtaqueNormal();
         }
     }
 
     private void iniciarAtaqueNormal(boolean duplo) {
-        if (estado != Estado.APROXIMACAO) return;
-        golpeAtual = duplo ? 0 : -1;
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
-        estado = Estado.AVISO;
+        if (!maquina.is(Estado.APROXIMACAO)) return;
+        golpeDuplo = duplo;
+        janelaFerrao.abrir();
+        maquina.mudar(Estado.AVISO);
         moving = false;
     }
 
     private void processarAviso(float delta) {
-        timerEstado += delta;
-        float antecipacao = golpeAtual < 0 ? ANTECIPACAO_FERRAO : ANTECIPACAO_DUPLO;
-        if (timerEstado < antecipacao) return;
-        estado = Estado.ATAQUE;
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
-        aplicarContato();
+        maquina.avancar(delta);
+        float antecipacao = golpeDuplo ? ANTECIPACAO_DUPLO : ANTECIPACAO_FERRAO;
+        if (maquina.getTimer() < antecipacao) return;
+        // Fim do telegraph: abre a sequência de contatos; o primeiro sai no mesmo frame.
+        maquina.mudar(Estado.ATAQUE);
+        sequenciaGolpes.iniciar(golpeDuplo ? 2 : 1);
+        sequenciaGolpes.atualizar(0f, this::aplicarContato);
     }
 
     private void processarAtaque(float delta) {
-        if (golpeAtual < 0) {
+        if (sequenciaGolpes.concluida()) {
             iniciarRecuperacao();
             return;
         }
-        timerEstado += delta;
-        if (timerEstado >= INTERVALO_GOLPE_DUPLO) {
-            golpeAtual++;
-            timerEstado = 0f;
-            danoAplicadoNaJanela = false;
-            aplicarContato();
-            if (golpeAtual >= 1) iniciarRecuperacao();
-        }
+        sequenciaGolpes.atualizar(delta, this::aplicarContato);
+        if (sequenciaGolpes.concluida()) iniciarRecuperacao();
     }
 
+    // Contato do ferrão: um dano por janela aberta, somente dentro do alcance.
     private void aplicarContato() {
-        if (danoAplicadoNaJanela || calcularDistanciaAoPlayer() > ALCANCE_FERRAO) return;
-        int dano = stats.getForca();
-        if (golpeAtual < 0) dano += DANO_VENENO_DIRETO;
-        player.dano(dano);
-        danoAplicadoNaJanela = true;
-        atacando = true;
-        animacao.resetStateTime();
+        janelaFerrao.abrir();
+        janelaFerrao.aplicarUmaVez(() -> {
+            if (calcularDistanciaAoPlayer() > ALCANCE_FERRAO) return;
+            int dano = stats.getForca();
+            if (!golpeDuplo) dano += DANO_VENENO_DIRETO;
+            player.dano(dano);
+            atacando = true;
+            animacao.resetStateTime();
+        });
     }
 
     private void iniciarSalto() {
-        if (estado != Estado.APROXIMACAO || cooldownSalto > 0f) return;
-        destinoSaltoX = player.getDx();
-        destinoSaltoY = player.getDy();
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
-        estado = Estado.SALTO_AVISO;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownSalto.pronto()) return;
+        zonaSalto.marcar(player.getDx(), player.getDy());
+        janelaSalto.abrir();
+        maquina.mudar(Estado.SALTO_AVISO);
         moving = false;
-        cooldownSalto = COOLDOWN_SALTO;
+        cooldownSalto.disparar();
     }
 
     private void processarAvisoSalto(float delta) {
-        timerEstado += delta;
-        if (timerEstado >= ANTECIPACAO_SALTO) estado = Estado.SALTO;
+        maquina.avancar(delta);
+        if (maquina.getTimer() >= ANTECIPACAO_SALTO) maquina.mudar(Estado.SALTO);
     }
 
     private void aterrissar() {
-        setLocation(Math.round(destinoSaltoX), Math.round(destinoSaltoY));
-        if (!danoAplicadoNaJanela && calcularDistanciaAoPlayer() <= ALCANCE_ATERRISSAGEM) {
-            player.dano(stats.getForca() + 2);
-            danoAplicadoNaJanela = true;
-        }
+        setLocation(Math.round(zonaSalto.getX()), Math.round(zonaSalto.getY()));
+        janelaSalto.aplicarUmaVez(() -> {
+            if (calcularDistanciaAoPlayer() <= ALCANCE_ATERRISSAGEM) {
+                player.dano(stats.getForca() + 2);
+            }
+        });
         atacandoEspecial = true;
         iniciarRecuperacao();
     }
 
     private void iniciarInvocacao() {
-        if (estado != Estado.APROXIMACAO || cooldownInvocacao > 0f || quantidadeInvocacoesVivas() >= MAX_INVOCACOES) return;
-        estado = Estado.ENTERRADO;
-        timerEstado = 0f;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownInvocacao.pronto()
+            || invocacoes.quantidadeVivas() >= MAX_INVOCACOES) return;
+        maquina.mudar(Estado.ENTERRADO);
         moving = false;
-        cooldownInvocacao = COOLDOWN_INVOCACAO;
+        cooldownInvocacao.disparar();
     }
 
     private void processarEnterrado(float delta) {
-        timerEstado += delta;
-        if (timerEstado < DURACAO_ENTERRADO) return;
-        int faltantes = MAX_INVOCACOES - quantidadeInvocacoesVivas();
+        maquina.avancar(delta);
+        if (maquina.getTimer() < DURACAO_ENTERRADO) return;
+        int faltantes = MAX_INVOCACOES - invocacoes.quantidadeVivas();
         for (int i = 0; i < faltantes; i++) {
-            EnemyTemplate invocacao = criarInvocacao(i);
-            invocacao.setInvocador(this);
-            invocacao.setEnemiesList(enemiesList);
-            invocacao.setParedesColisores(paredesColisores);
-            invocacoesAtivas.add(invocacao);
-            invocacoesPendentes.add(invocacao);
+            invocacoes.registrar(this, criarInvocacao(i));
         }
         iniciarRecuperacao();
     }
@@ -273,79 +255,49 @@ public class EscorpiaoAreia extends BossTemplate {
     }
 
     private void processarRecuperacao(float delta) {
-        timerEstado += delta;
-        if (timerEstado < RECUPERACAO) return;
-        estado = Estado.APROXIMACAO;
+        maquina.avancar(delta);
+        if (maquina.getTimer() < RECUPERACAO) return;
+        maquina.mudar(Estado.APROXIMACAO);
         atacando = false;
         atacandoEspecial = false;
         float cadencia = faseAtual >= 2 ? COOLDOWN_ATAQUE_FASE_3 : COOLDOWN_ATAQUE;
-        cooldownAtaque = Math.max(COOLDOWN_MINIMO, cadencia);
+        cooldownAtaque.disparar(Math.max(COOLDOWN_MINIMO, cadencia));
     }
 
     private void iniciarRecuperacao() {
-        estado = Estado.RECUPERACAO;
-        timerEstado = 0f;
+        maquina.mudar(Estado.RECUPERACAO);
     }
 
+    // Cancela o ataque em andamento: nenhuma janela aplica dano tardio após o cancelamento.
     private void cancelarAtaque(Estado novoEstado) {
-        estado = novoEstado;
-        timerEstado = 0f;
-        golpeAtual = 0;
-        danoAplicadoNaJanela = false;
+        maquina.mudar(novoEstado);
+        sequenciaGolpes.cancelar();
+        janelaFerrao.fechar();
+        janelaSalto.fechar();
         atacando = false;
         atacandoEspecial = false;
         moving = false;
     }
 
-    private void sincronizarFaseComVida() {
-        while (faseAtual < fases.size() - 1 && faseVigente().deveTransicionar(stats.getVida(), stats.getVidaBase())) {
-            mudarFase(faseAtual + 1);
-        }
+    @Override
+    protected void aoTransicionarFase(int novaFase) {
+        cancelarAtaque(Estado.TRANSICAO);
     }
 
-    private void limparInvocacoesMortas() {
-        Iterator<EnemyTemplate> iterator = invocacoesAtivas.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().isMorto()) iterator.remove();
-        }
+    @Override
+    protected void aposTransicionarFase(int novaFase) {
+        if (!emTransicao) maquina.mudar(Estado.APROXIMACAO);
     }
 
-    private int quantidadeInvocacoesVivas() {
-        limparInvocacoesMortas();
-        return invocacoesAtivas.size();
+    @Override
+    protected void aoMorrer() {
+        cancelarAtaque(Estado.MORTE);
+        invocacoes.cancelarPendentes();
     }
 
     @Override
     public void drenarInvocacoes(List<EnemyTemplate> destino) {
-        destino.addAll(invocacoesPendentes);
-        invocacoesPendentes.clear();
-    }
-
-    @Override
-    public void executarAtaqueNormal() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueNormal(this);
-    }
-
-    @Override
-    public void executarAtaqueEspecial() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueEspecial(this);
-    }
-
-    @Override
-    public void mudarFase(int novaFase) {
-        if (novaFase <= faseAtual || novaFase >= fases.size()) return;
-        faseAtual = novaFase;
-        cancelarAtaque(Estado.TRANSICAO);
-        aplicarAnimacoesFase(fases.get(novaFase));
-        iniciarTransicao();
-        if (!emTransicao) estado = Estado.APROXIMACAO;
-    }
-
-    @Override
-    public void atualizarEstado() {
-        sincronizarFaseComVida();
+        invocacoes.drenar(destino);
     }
 
     @Override
@@ -370,7 +322,7 @@ public class EscorpiaoAreia extends BossTemplate {
 
     @Override
     public void drawSprite(SpriteBatch batch) {
-        if (estado != Estado.ENTERRADO) {
+        if (!maquina.is(Estado.ENTERRADO)) {
             super.drawSprite(batch);
             return;
         }
@@ -383,17 +335,17 @@ public class EscorpiaoAreia extends BossTemplate {
 
     @Override
     public void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        if (estado != Estado.SALTO_AVISO || shapeRenderer.isDrawing()) return;
+        if (!maquina.is(Estado.SALTO_AVISO) || shapeRenderer.isDrawing()) return;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.ORANGE);
-        shapeRenderer.circle(destinoSaltoX + HITBOX / 2f, destinoSaltoY + HITBOX / 2f, ALCANCE_ATERRISSAGEM);
+        shapeRenderer.circle(zonaSalto.getX() + HITBOX / 2f, zonaSalto.getY() + HITBOX / 2f, ALCANCE_ATERRISSAGEM);
         shapeRenderer.end();
     }
 
-    public Estado getEstado() { return estado; }
-    public int getQuantidadeInvocacoesAtivas() { return quantidadeInvocacoesVivas(); }
-    public float getDestinoSaltoX() { return destinoSaltoX; }
-    public float getDestinoSaltoY() { return destinoSaltoY; }
+    public Estado getEstado() { return maquina.getEstado(); }
+    public int getQuantidadeInvocacoesAtivas() { return invocacoes.quantidadeVivas(); }
+    public float getDestinoSaltoX() { return zonaSalto.getX(); }
+    public float getDestinoSaltoY() { return zonaSalto.getY(); }
 
     private static class FaseCacador extends FaseBoss {
         FaseCacador(Animation<TextureRegion> ataque) {
@@ -428,7 +380,7 @@ public class EscorpiaoAreia extends BossTemplate {
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
             EscorpiaoAreia escorpiao = (EscorpiaoAreia) boss;
-            if (escorpiao.cooldownInvocacao <= 0f && escorpiao.quantidadeInvocacoesVivas() < MAX_INVOCACOES) {
+            if (escorpiao.cooldownInvocacao.pronto() && escorpiao.invocacoes.quantidadeVivas() < MAX_INVOCACOES) {
                 escorpiao.iniciarInvocacao();
             } else {
                 escorpiao.iniciarSalto();

@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +25,10 @@ import com.pawfight.game.engine.GameConfig;
 public class TilemapHitboxFactory {
 
     // Cache: evita recriar listas de Rectangle a cada frame para o mesmo mapa/layer
-    private final Map<String, List<Rectangle>> cache = new HashMap<>();
+    private final Map<TiledMap, Map<String, List<Rectangle>>> cache = new IdentityHashMap<>();
 
     // Cache: evita recriar e reordenar lista de MapObject a cada frame em drawObjects
-    private final Map<String, List<MapObject>> sortedObjectsCache = new HashMap<>();
+    private final Map<TiledMap, Map<String, List<MapObject>>> sortedObjectsCache = new IdentityHashMap<>();
 
     public void clearCache() {
         cache.clear();
@@ -36,7 +37,8 @@ public class TilemapHitboxFactory {
 
     // Cacheado por layerName
     public List<Rectangle> createHitboxes(TiledMap map, String layerName) {
-        List<Rectangle> cached = cache.get(layerName);
+        Map<String, List<Rectangle>> cacheMapa = cache.computeIfAbsent(map, ignorado -> new HashMap<>());
+        List<Rectangle> cached = cacheMapa.get(layerName);
         if (cached != null) {
             return cached;
         }
@@ -45,7 +47,7 @@ public class TilemapHitboxFactory {
 
         var layer = map.getLayers().get(layerName);
         if (layer == null) {
-            cache.put(layerName, hitboxes);
+            cacheMapa.put(layerName, hitboxes);
             return hitboxes;
         }
 
@@ -66,7 +68,7 @@ public class TilemapHitboxFactory {
             }
         }
 
-        cache.put(layerName, hitboxes);
+        cacheMapa.put(layerName, hitboxes);
         return hitboxes;
     }
 
@@ -81,7 +83,8 @@ public class TilemapHitboxFactory {
         batch.begin();
 
         String cacheKey = "draw:" + layerName + ":" + isInvertido;
-        List<MapObject> objects = sortedObjectsCache.get(cacheKey);
+        Map<String, List<MapObject>> cacheMapa = sortedObjectsCache.computeIfAbsent(map, ignorado -> new HashMap<>());
+        List<MapObject> objects = cacheMapa.get(cacheKey);
         if (objects == null) {
             objects = new ArrayList<>();
             for (MapObject obj : layer.getObjects()) {
@@ -99,7 +102,7 @@ public class TilemapHitboxFactory {
                 }
             });
 
-            sortedObjectsCache.put(cacheKey, objects);
+            cacheMapa.put(cacheKey, objects);
         }
 
         for (MapObject object : objects) {
@@ -119,7 +122,8 @@ public class TilemapHitboxFactory {
     public List<Rectangle> createTileLayerHitboxes(TiledMap map, String layerName, int tileWidth, int tileHeight) {
         // Chave de cache com prefixo "tile:" para não colidir com createHitboxes
         String cacheKey = "tile:" + layerName;
-        List<Rectangle> cached = cache.get(cacheKey);
+        Map<String, List<Rectangle>> cacheMapa = cache.computeIfAbsent(map, ignorado -> new HashMap<>());
+        List<Rectangle> cached = cacheMapa.get(cacheKey);
         if (cached != null) {
             return cached;
         }
@@ -146,8 +150,13 @@ public class TilemapHitboxFactory {
             }
         }
 
-        cache.put(cacheKey, hitboxes);
+        cacheMapa.put(cacheKey, hitboxes);
         return hitboxes;
+    }
+
+    public void removerMapa(TiledMap map) {
+        cache.remove(map);
+        sortedObjectsCache.remove(map);
     }
 
 

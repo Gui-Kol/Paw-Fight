@@ -9,6 +9,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.loading.Assets;
+import com.pawfight.game.entity.bosses.infra.AtaqueComAviso;
+import com.pawfight.game.entity.bosses.infra.ControladorCooldown;
+import com.pawfight.game.entity.bosses.infra.ControladorInvocacoes;
+import com.pawfight.game.entity.bosses.infra.MaquinaEstadosBoss;
+import com.pawfight.game.entity.bosses.infra.SequenciaAtaques;
+import com.pawfight.game.entity.bosses.infra.ZonaTelegrafada;
 import com.pawfight.game.entity.enemy.DadosInimigo;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.enemy.MoverDirecaoPlayer;
@@ -70,24 +76,21 @@ public class FaraoAreia extends BossTemplate {
     private static final float COOLDOWN_ATAQUE_FINAL = 10f;
 
     private final MoverDirecaoPlayer mover = new MoverDirecaoPlayer();
+    private final MaquinaEstadosBoss<Estado> maquina = new MaquinaEstadosBoss<>(Estado.APROXIMACAO);
+    private final ControladorCooldown cooldownSalva = new ControladorCooldown(COOLDOWN_SALVA, false);
+    private final ControladorCooldown cooldownTempestade = new ControladorCooldown(COOLDOWN_TEMPESTADE, false);
+    private final ControladorCooldown cooldownEscudo = new ControladorCooldown(COOLDOWN_ESCUDO, false);
+    private final ControladorCooldown cooldownInvocacao = new ControladorCooldown(COOLDOWN_INVOCACAO, true);
+    private final ControladorCooldown cooldownAtaqueFinal = new ControladorCooldown(COOLDOWN_ATAQUE_FINAL, false);
+    private final ControladorInvocacoes invocacoes = new ControladorInvocacoes(MAX_INVOCACOES);
+    private final SequenciaAtaques sequenciaSalva = new SequenciaAtaques(INTERVALO_PROJETEIS);
+    private final AtaqueComAviso tempestade = new AtaqueComAviso(ANTECIPACAO_TEMPESTADE);
+    private final AtaqueComAviso ataqueFinal = new AtaqueComAviso(ANTECIPACAO_ATAQUE_FINAL);
+    private final ZonaTelegrafada zona = new ZonaTelegrafada();
     private final List<ProjetilFarao> projeteis = new ArrayList<>(QUANTIDADE_PROJETEIS * 2);
-    private final List<EnemyTemplate> invocacoesAtivas = new ArrayList<>(MAX_INVOCACOES);
-    private final List<EnemyTemplate> invocacoesPendentes = new ArrayList<>(MAX_INVOCACOES);
 
-    private Estado estado = Estado.APROXIMACAO;
-    private float timerEstado;
-    private float cooldownSalva;
-    private float cooldownTempestade;
-    private float cooldownEscudo;
-    private float cooldownInvocacao = COOLDOWN_INVOCACAO;
-    private float cooldownAtaqueFinal;
-    private float intervaloProximoProjetil;
-    private int projeteisRestantes;
     private float direcaoSalvaX = 1f;
     private float direcaoSalvaY;
-    private float zonaX;
-    private float zonaY;
-    private boolean danoFinalAplicado;
 
     public FaraoAreia(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
@@ -144,14 +147,6 @@ public class FaraoAreia extends BossTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        if (player != null && player.isPause()) return;
-        if (!stats.isMorto()) sincronizarFaseComVida();
-        super.update(delta);
-        if (stats.isMorto()) encerrarCombate();
-    }
-
-    @Override
     public void executarIA(float delta) {
         if (stats.isMorto() || player == null || player.isMorto()) {
             moving = false;
@@ -159,17 +154,17 @@ public class FaraoAreia extends BossTemplate {
             return;
         }
         atualizarProjeteis(delta);
-        if (estado == Estado.TRANSICAO && !emTransicao) estado = Estado.APROXIMACAO;
-        if (emTransicao || estado == Estado.TRANSICAO) return;
+        if (maquina.is(Estado.TRANSICAO) && !emTransicao) maquina.mudar(Estado.APROXIMACAO);
+        if (emTransicao || maquina.is(Estado.TRANSICAO)) return;
 
-        cooldownSalva = Math.max(0f, cooldownSalva - delta);
-        cooldownTempestade = Math.max(0f, cooldownTempestade - delta);
-        cooldownEscudo = Math.max(0f, cooldownEscudo - delta);
-        cooldownInvocacao = Math.max(0f, cooldownInvocacao - delta);
-        cooldownAtaqueFinal = Math.max(0f, cooldownAtaqueFinal - delta);
-        limparInvocacoesMortas();
+        cooldownSalva.atualizar(delta);
+        cooldownTempestade.atualizar(delta);
+        cooldownEscudo.atualizar(delta);
+        cooldownInvocacao.atualizar(delta);
+        cooldownAtaqueFinal.atualizar(delta);
+        invocacoes.removerMortas();
 
-        switch (estado) {
+        switch (maquina.getEstado()) {
             case APROXIMACAO -> processarAproximacao(delta);
             case SALVA_PROJETEIS -> processarSalva(delta);
             case AVISO_TEMPESTADE -> processarAvisoTempestade(delta);
@@ -184,8 +179,8 @@ public class FaraoAreia extends BossTemplate {
 
     private void processarAproximacao(float delta) {
         executarAtaqueEspecial();
-        if (estado != Estado.APROXIMACAO) return;
-        if (cooldownSalva <= 0f) {
+        if (!maquina.is(Estado.APROXIMACAO)) return;
+        if (cooldownSalva.pronto()) {
             executarAtaqueNormal();
             return;
         }
@@ -193,10 +188,9 @@ public class FaraoAreia extends BossTemplate {
     }
 
     private void iniciarSalva() {
-        if (estado != Estado.APROXIMACAO || cooldownSalva > 0f) return;
-        estado = Estado.SALVA_PROJETEIS;
-        projeteisRestantes = QUANTIDADE_PROJETEIS;
-        intervaloProximoProjetil = 0f;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownSalva.pronto()) return;
+        maquina.mudar(Estado.SALVA_PROJETEIS);
+        sequenciaSalva.iniciar(QUANTIDADE_PROJETEIS);
         capturarDirecaoSalva();
         moving = false;
         atacando = true;
@@ -219,96 +213,89 @@ public class FaraoAreia extends BossTemplate {
     }
 
     private void processarSalva(float delta) {
-        intervaloProximoProjetil -= delta;
-        while (projeteisRestantes > 0 && intervaloProximoProjetil <= 0f) {
-            projeteis.add(new ProjetilFarao(centroX(), centroY(), direcaoSalvaX, direcaoSalvaY));
-            projeteisRestantes--;
-            intervaloProximoProjetil += INTERVALO_PROJETEIS;
-        }
-        if (projeteisRestantes == 0) {
-            cooldownSalva = COOLDOWN_SALVA;
+        sequenciaSalva.atualizar(delta, this::dispararProjetil);
+        if (sequenciaSalva.concluida()) {
+            cooldownSalva.disparar();
             iniciarRecuperacao();
         }
     }
 
+    private void dispararProjetil() {
+        projeteis.add(new ProjetilFarao(centroX(), centroY(), direcaoSalvaX, direcaoSalvaY));
+    }
+
     private void iniciarTempestade() {
-        if (estado != Estado.APROXIMACAO || cooldownTempestade > 0f) return;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownTempestade.pronto()) return;
         capturarZonaDoPlayer();
-        estado = Estado.AVISO_TEMPESTADE;
-        timerEstado = 0f;
+        maquina.mudar(Estado.AVISO_TEMPESTADE);
+        tempestade.iniciarAviso();
         moving = false;
     }
 
     private void processarAvisoTempestade(float delta) {
-        timerEstado += delta;
-        if (timerEstado < ANTECIPACAO_TEMPESTADE) return;
-        estado = Estado.TEMPESTADE;
-        timerEstado = 0f;
-        cooldownTempestade = COOLDOWN_TEMPESTADE;
+        maquina.avancar(delta);
+        if (!tempestade.avisoConcluido(maquina.getTimer())) return;
+        maquina.mudar(Estado.TEMPESTADE);
+        cooldownTempestade.disparar();
         atacandoEspecial = true;
     }
 
+    // A tempestade aplica a restrição continuamente enquanto o alvo permanece na zona telegrafada.
     private void processarTempestade(float delta) {
-        timerEstado += delta;
+        maquina.avancar(delta);
         if (playerNaZona(RAIO_TEMPESTADE)) {
             player.aplicarRestricaoMovimento(MULTIPLICADOR_TEMPESTADE, 0.2f);
         } else {
             player.removerRestricaoMovimento();
         }
-        if (timerEstado < DURACAO_TEMPESTADE) return;
+        if (maquina.getTimer() < DURACAO_TEMPESTADE) return;
         player.removerRestricaoMovimento();
         iniciarRecuperacao();
     }
 
     private void iniciarEscudo() {
-        if (estado != Estado.APROXIMACAO || cooldownEscudo > 0f) return;
-        estado = Estado.ESCUDO;
-        timerEstado = 0f;
-        cooldownEscudo = COOLDOWN_ESCUDO;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownEscudo.pronto()) return;
+        maquina.mudar(Estado.ESCUDO);
+        cooldownEscudo.disparar();
         moving = false;
         atacandoEspecial = true;
     }
 
     private void processarEscudo(float delta) {
-        timerEstado += delta;
-        if (timerEstado >= DURACAO_ESCUDO) iniciarRecuperacao();
+        maquina.avancar(delta);
+        if (maquina.getTimer() >= DURACAO_ESCUDO) iniciarRecuperacao();
     }
 
     private void iniciarAtaqueFinal() {
-        if (estado != Estado.APROXIMACAO || cooldownAtaqueFinal > 0f) return;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownAtaqueFinal.pronto()) return;
         capturarZonaDoPlayer();
-        estado = Estado.AVISO_ATAQUE_FINAL;
-        timerEstado = 0f;
-        danoFinalAplicado = false;
+        maquina.mudar(Estado.AVISO_ATAQUE_FINAL);
+        ataqueFinal.iniciarAviso();
         moving = false;
     }
 
     private void processarAvisoAtaqueFinal(float delta) {
-        timerEstado += delta;
-        if (timerEstado < ANTECIPACAO_ATAQUE_FINAL) return;
-        estado = Estado.ATAQUE_FINAL;
-        if (!danoFinalAplicado && playerNaZona(RAIO_ATAQUE_FINAL)) {
-            player.dano(DANO_ATAQUE_FINAL);
-            danoFinalAplicado = true;
-        }
-        cooldownAtaqueFinal = COOLDOWN_ATAQUE_FINAL;
+        maquina.avancar(delta);
+        if (!ataqueFinal.avisoConcluido(maquina.getTimer())) return;
+        maquina.mudar(Estado.ATAQUE_FINAL);
+        ataqueFinal.aplicarUmaVez(() -> {
+            if (playerNaZona(RAIO_ATAQUE_FINAL)) {
+                player.dano(DANO_ATAQUE_FINAL);
+            }
+        });
+        cooldownAtaqueFinal.disparar();
         atacandoEspecial = true;
     }
 
     private void invocarGuardioes() {
-        if (estado != Estado.APROXIMACAO || cooldownInvocacao > 0f
-            || quantidadeInvocacoesVivas() >= MAX_INVOCACOES) return;
-        int faltantes = MAX_INVOCACOES - quantidadeInvocacoesVivas();
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownInvocacao.pronto()
+            || invocacoes.quantidadeVivas() >= MAX_INVOCACOES) return;
+        int faltantes = MAX_INVOCACOES - invocacoes.quantidadeVivas();
         for (int i = 0; i < faltantes; i++) {
-            EnemyTemplate invocacao = criarInvocacao(i);
-            invocacao.setInvocador(this);
-            invocacao.setEnemiesList(enemiesList);
-            invocacao.setParedesColisores(paredesColisores);
-            invocacoesAtivas.add(invocacao);
-            invocacoesPendentes.add(invocacao);
+            invocacoes.registrar(this, criarInvocacao(i));
         }
-        cooldownInvocacao = COOLDOWN_INVOCACAO;
-        estado = Estado.INVOCACAO;
+        cooldownInvocacao.disparar();
+        maquina.mudar(Estado.INVOCACAO);
         moving = false;
         atacandoEspecial = true;
     }
@@ -334,109 +321,74 @@ public class FaraoAreia extends BossTemplate {
 
     private void capturarZonaDoPlayer() {
         Rectangle alvo = player.getHitBox();
-        zonaX = alvo.x + alvo.width / 2f;
-        zonaY = alvo.y + alvo.height / 2f;
+        zona.marcar(alvo.x + alvo.width / 2f, alvo.y + alvo.height / 2f);
     }
 
     private boolean playerNaZona(float raio) {
-        Rectangle alvo = player.getHitBox();
-        float deltaX = alvo.x + alvo.width / 2f - zonaX;
-        float deltaY = alvo.y + alvo.height / 2f - zonaY;
-        return deltaX * deltaX + deltaY * deltaY <= raio * raio;
+        return zona.contemCentro(player.getHitBox(), raio);
     }
 
     private float centroX() { return hitBox.x + hitBox.width / 2f; }
     private float centroY() { return hitBox.y + hitBox.height / 2f; }
 
     private void processarRecuperacao(float delta) {
-        timerEstado += delta;
-        if (timerEstado < RECUPERACAO) return;
-        estado = Estado.APROXIMACAO;
+        maquina.avancar(delta);
+        if (maquina.getTimer() < RECUPERACAO) return;
+        maquina.mudar(Estado.APROXIMACAO);
         atacando = false;
         atacandoEspecial = false;
     }
 
     private void iniciarRecuperacao() {
-        estado = Estado.RECUPERACAO;
-        timerEstado = 0f;
+        maquina.mudar(Estado.RECUPERACAO);
     }
 
+    // Cancela o ataque em andamento: sequência e janelas fecham, sem dano tardio.
     private void cancelarAtaque(Estado novoEstado) {
-        estado = novoEstado;
-        timerEstado = 0f;
-        projeteisRestantes = 0;
-        danoFinalAplicado = false;
+        maquina.mudar(novoEstado);
+        sequenciaSalva.cancelar();
+        tempestade.cancelar();
+        ataqueFinal.cancelar();
         atacando = false;
         atacandoEspecial = false;
         moving = false;
-    }
-
-    private void sincronizarFaseComVida() {
-        while (faseAtual < fases.size() - 1 && faseVigente().deveTransicionar(stats.getVida(), stats.getVidaBase())) {
-            mudarFase(faseAtual + 1);
-        }
     }
 
     private void limparEfeitos() {
         if (player != null) player.removerRestricaoMovimento();
     }
 
-    private void encerrarCombate() {
+    @Override
+    protected void aoTransicionarFase(int novaFase) {
+        limparEfeitos();
+        projeteis.clear();
+        cancelarAtaque(Estado.TRANSICAO);
+    }
+
+    @Override
+    protected void aposTransicionarFase(int novaFase) {
+        if (!emTransicao) maquina.mudar(Estado.APROXIMACAO);
+    }
+
+    @Override
+    protected void aoMorrer() {
         cancelarAtaque(Estado.MORTE);
         limparEfeitos();
         projeteis.clear();
-        invocacoesPendentes.clear();
-    }
-
-    private void limparInvocacoesMortas() {
-        Iterator<EnemyTemplate> iterator = invocacoesAtivas.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().isMorto()) iterator.remove();
-        }
-    }
-
-    private int quantidadeInvocacoesVivas() {
-        limparInvocacoesMortas();
-        return invocacoesAtivas.size();
+        invocacoes.cancelarPendentes();
     }
 
     @Override
     public boolean receberDano(int forca) {
-        if (estado == Estado.ESCUDO) return false;
+        if (maquina.is(Estado.ESCUDO)) return false;
         return super.receberDano(forca);
     }
 
     @Override
     public void drenarInvocacoes(List<EnemyTemplate> destino) {
-        destino.addAll(invocacoesPendentes);
-        invocacoesPendentes.clear();
+        invocacoes.drenar(destino);
     }
 
-    @Override
-    public void executarAtaqueNormal() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueNormal(this);
-    }
-
-    @Override
-    public void executarAtaqueEspecial() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueEspecial(this);
-    }
-
-    @Override
-    public void mudarFase(int novaFase) {
-        if (novaFase <= faseAtual || novaFase >= fases.size()) return;
-        faseAtual = novaFase;
-        limparEfeitos();
-        projeteis.clear();
-        cancelarAtaque(Estado.TRANSICAO);
-        aplicarAnimacoesFase(fases.get(novaFase));
-        iniciarTransicao();
-        if (!emTransicao) estado = Estado.APROXIMACAO;
-    }
-
-    @Override public void atualizarEstado() { sincronizarFaseComVida(); }
     @Override public void andarIA(float delta) { mover.mover(this, delta); }
     @Override public int getTamanho() { return TAMANHO; }
     @Override public EnemyTemplate cloneEnemy() { return new FaraoAreia(Math.round(dx), Math.round(dy), forte, player); }
@@ -446,13 +398,13 @@ public class FaraoAreia extends BossTemplate {
     public void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (shapeRenderer.isDrawing()) return;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        if (estado == Estado.AVISO_TEMPESTADE || estado == Estado.TEMPESTADE) {
-            shapeRenderer.setColor(estado == Estado.TEMPESTADE ? Color.TAN : Color.ORANGE);
-            shapeRenderer.circle(zonaX, zonaY, RAIO_TEMPESTADE);
-        } else if (estado == Estado.AVISO_ATAQUE_FINAL || estado == Estado.ATAQUE_FINAL) {
+        if (maquina.is(Estado.AVISO_TEMPESTADE) || maquina.is(Estado.TEMPESTADE)) {
+            shapeRenderer.setColor(maquina.is(Estado.TEMPESTADE) ? Color.TAN : Color.ORANGE);
+            shapeRenderer.circle(zona.getX(), zona.getY(), RAIO_TEMPESTADE);
+        } else if (maquina.is(Estado.AVISO_ATAQUE_FINAL) || maquina.is(Estado.ATAQUE_FINAL)) {
             shapeRenderer.setColor(Color.RED);
-            shapeRenderer.circle(zonaX, zonaY, RAIO_ATAQUE_FINAL);
-        } else if (estado == Estado.ESCUDO) {
+            shapeRenderer.circle(zona.getX(), zona.getY(), RAIO_ATAQUE_FINAL);
+        } else if (maquina.is(Estado.ESCUDO)) {
             shapeRenderer.setColor(Color.CYAN);
             shapeRenderer.circle(centroX(), centroY(), HITBOX * 0.8f);
         }
@@ -464,12 +416,12 @@ public class FaraoAreia extends BossTemplate {
         shapeRenderer.end();
     }
 
-    public Estado getEstado() { return estado; }
+    public Estado getEstado() { return maquina.getEstado(); }
     public int getQuantidadeProjeteisAtivos() { return projeteis.size(); }
-    public int getQuantidadeInvocacoesAtivas() { return quantidadeInvocacoesVivas(); }
-    public boolean isEscudoAtivo() { return estado == Estado.ESCUDO; }
-    public float getZonaX() { return zonaX; }
-    public float getZonaY() { return zonaY; }
+    public int getQuantidadeInvocacoesAtivas() { return invocacoes.quantidadeVivas(); }
+    public boolean isEscudoAtivo() { return maquina.is(Estado.ESCUDO); }
+    public float getZonaX() { return zona.getX(); }
+    public float getZonaY() { return zona.getY(); }
 
     private static class ProjetilFarao {
         private final Rectangle hitbox;
@@ -514,8 +466,8 @@ public class FaraoAreia extends BossTemplate {
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
             FaraoAreia farao = (FaraoAreia) boss;
-            if (farao.cooldownTempestade <= 0f) farao.iniciarTempestade();
-            if (farao.estado == Estado.APROXIMACAO && farao.cooldownEscudo <= 0f) farao.iniciarEscudo();
+            if (farao.cooldownTempestade.pronto()) farao.iniciarTempestade();
+            if (farao.maquina.is(Estado.APROXIMACAO) && farao.cooldownEscudo.pronto()) farao.iniciarEscudo();
         }
     }
 
@@ -531,11 +483,11 @@ public class FaraoAreia extends BossTemplate {
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
             FaraoAreia farao = (FaraoAreia) boss;
-            if (farao.cooldownInvocacao <= 0f && farao.quantidadeInvocacoesVivas() < MAX_INVOCACOES) {
+            if (farao.cooldownInvocacao.pronto() && farao.invocacoes.quantidadeVivas() < MAX_INVOCACOES) {
                 farao.invocarGuardioes();
                 return;
             }
-            if (farao.cooldownAtaqueFinal <= 0f) farao.iniciarAtaqueFinal();
+            if (farao.cooldownAtaqueFinal.pronto()) farao.iniciarAtaqueFinal();
         }
     }
 }

@@ -70,8 +70,22 @@ public class TiroCoco extends TirosTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected int definirQuantidadeFrames() {
         return 1; // cada textura aleatória é estática (frame único)
+    }
+
+    @Override
+    protected int definirFramesPorSegundo() {
+        return 12;
+    }
+
+    @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 1;
     }
 
     @Override

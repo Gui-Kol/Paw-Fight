@@ -64,6 +64,8 @@ public abstract class EnemyTemplate implements Entidade {
             dadosInimigo.velocidade() * (int) multiplicador
         );
         entidadeEcs.add(stats);
+        status.setAlvo(this);
+        entidadeEcs.add(status);
         entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.initEnemy(dadosInimigo.audioDano(), dadosInimigo.audioMorte());
@@ -129,6 +131,8 @@ public abstract class EnemyTemplate implements Entidade {
         return paredesColisores;
     }
 
+    public List<EnemyTemplate> getEnemiesList() { return enemiesList; }
+
     public void setInvocador(EnemyTemplate invocador) {
         this.invocador = invocador;
     }
@@ -169,11 +173,6 @@ public abstract class EnemyTemplate implements Entidade {
 
         // Timers (sempre rodam, mesmo morto — para animação de morte e cooldowns)
         animacao.updateStateTime(delta);
-        // Efeitos de status: queimadura aplica dano por tick apenas em vida
-        int danoStatus = status.update(delta);
-        if (danoStatus > 0 && !stats.isMorto()) {
-            danoPorStatus(danoStatus);
-        }
     }
 
 

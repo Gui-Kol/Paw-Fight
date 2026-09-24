@@ -32,6 +32,7 @@ public class TiroSangue extends TirosTemplate {
         super(player.getDx(), player.getDy(), player.getForca(), tamanho, player);
         sangue = Assets.get("effects/sangue/sangue.png", Texture.class);
         texture = sangue;
+        configurarComportamentos();
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroSangue>(8, 64) {
@@ -45,6 +46,12 @@ public class TiroSangue extends TirosTemplate {
     private TiroSangue() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
         sangue = Assets.get("effects/sangue/sangue.png", Texture.class);
+        configurarComportamentos();
+    }
+
+    private void configurarComportamentos() {
+        configurarEfeitoImpacto(this::aplicarRouboVida);
+        configurarApresentacao(this::desenharCentralizado);
     }
 
     @Override
@@ -82,8 +89,7 @@ public class TiroSangue extends TirosTemplate {
         return t;
     }
 
-    @Override
-    public void aoAcertar(EnemyTemplate inimigo) {
+    private void aplicarRouboVida(EnemyTemplate inimigo) {
         // Roubo de vida: cura proporcional ao dano efetivamente aplicado
         if (dono == null) return;
         int cura = Math.max(CURA_MINIMA, Math.round(dano * PROPORCAO_ROUBO_VIDA));
@@ -91,13 +97,13 @@ public class TiroSangue extends TirosTemplate {
         Gdx.app.debug("TiroSangue", "Roubo de vida: +" + cura + " HP");
     }
 
-    @Override
-    public void desenhar(Batch batch) {
+    private void desenharCentralizado(Batch batch) {
         garantirAnimacao();
         TextureRegion frame = frameAtual();
         if (frame == null) return;
-        // Efeito visual cobre exatamente a área do golpe
-        batch.draw(frame, hitBox.x, hitBox.y, hitBox.width, hitBox.height);
+        float drawX = hitBox.x + (hitBox.width - larguraSprite) / 2f;
+        float drawY = hitBox.y + (hitBox.height - alturaSprite) / 2f;
+        batch.draw(frame, drawX, drawY, larguraSprite, alturaSprite);
     }
 
     @Override
@@ -106,8 +112,22 @@ public class TiroSangue extends TirosTemplate {
     }
 
     @Override
+    protected int definirFramesPorSegundo() {
+        return 12;
+    }
+
+    @Override
+    protected int definirQuantidadeTirosPadrao() {
+        return 1;
+    }
+
+    @Override
     protected int definirTamanhoPadrao() {
         return 40;
+    }
+
+    @Override
+    protected void definirTamanhoSprite() {
     }
 
     @Override

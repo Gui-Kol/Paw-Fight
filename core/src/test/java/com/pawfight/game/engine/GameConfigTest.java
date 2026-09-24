@@ -162,4 +162,18 @@ class GameConfigTest {
         assertEquals(1920, GameConfig.LARGURA_TELA_BASE);
         assertEquals(1080, GameConfig.ALTURA_TELA_BASE);
     }
+
+    @Test
+    @DisplayName("Escala de UI permanece positiva com janela minimizada")
+    void escalaPositivaComDimensaoZero() {
+        assertTrue(config.calcularEscala(0, 720) > 0f);
+        assertTrue(config.calcularEscala(1280, 0) > 0f);
+        assertTrue(config.calcularEscala(0, 0) > 0f);
+    }
+
+    @Test
+    @DisplayName("Escala usa a menor proporção da janela")
+    void escalaRespeitaProporcao() {
+        assertEquals(0.5f, config.calcularEscala(960, 540), 0.0001f);
+    }
 }

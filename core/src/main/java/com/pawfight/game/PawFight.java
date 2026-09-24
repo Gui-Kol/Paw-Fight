@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.pawfight.game.engine.ScreenManager;
+import com.pawfight.game.engine.GameSession;
 import com.pawfight.game.engine.GameConfig;
 import com.pawfight.game.engine.input.GameAction;
 import com.pawfight.game.engine.input.GamepadBindings;
@@ -33,6 +34,7 @@ public class PawFight extends Game {
 
     private OrthographicCamera camera;
     private Viewport viewport;
+    private GameSession gameSession;
 
     @Override
     public void create() {
@@ -52,6 +54,9 @@ public class PawFight extends Game {
         definirTelaCheia(GameConfig.getInstance().isTelaCheia());
 
         ScreenManager.init(this);
+        gameSession = new GameSession(System.nanoTime());
+        // Seed registrada para permitir reproduzir uma run ao investigar bugs
+        Gdx.app.log("PawFight", "Seed da sessão: " + gameSession.getSeed());
 
         setScreen(new LoadingScreen(this, camera, viewport));
 
@@ -141,12 +146,10 @@ public class PawFight extends Game {
 
     @Override
     public void dispose() {
-        if (getScreen() instanceof WorldTemplate world && world.getPlayer() != null) {
-            world.getPlayer().getHudPause().dispose();
-        }
+        ScreenManager.getInstance().dispose();
+        gameSession.encerrar();
         batch.dispose();
         // image e audio são gerenciados pelo AssetManager — NÃO dar dispose aqui
-        ScreenManager.getInstance().dispose();
         Assets.dispose();
         GerenciadorGamepad.getInstance().dispose();
         Gdx.app.log("PawFight", "foi disposed");
@@ -158,5 +161,9 @@ public class PawFight extends Game {
 
     public SpriteBatch getBatch() {
         return batch;
+    }
+
+    public GameSession getGameSession() {
+        return gameSession;
     }
 }

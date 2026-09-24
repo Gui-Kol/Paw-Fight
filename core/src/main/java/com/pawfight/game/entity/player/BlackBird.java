@@ -37,6 +37,10 @@ public class BlackBird extends PlayerTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new TiroGelo(stats.getTamanhoTiro(), this);
     }
@@ -55,6 +59,8 @@ public class BlackBird extends PlayerTemplate {
     public String getName() {
         return "Black Bird";
     }
+
+    @Override public String getId() { return "black_bird"; }
 
     @Override
     public void ataqueBasico(float delta) {

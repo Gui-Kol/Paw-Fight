@@ -3,6 +3,7 @@ package com.pawfight.game.world.template;
 import com.pawfight.game.engine.hud.DesenharMiniMapa;
 import com.pawfight.game.engine.procedural.CarregarPortas;
 import com.pawfight.game.engine.procedural.sala.GeradorSalas;
+import com.pawfight.game.engine.procedural.sala.CoordenadaSala;
 import com.pawfight.game.engine.procedural.sala.Sala;
 
 import java.util.HashSet;
@@ -17,7 +18,7 @@ public class RoomManager {
     private List<Sala> rooms;
     private Sala currentRoom;
     private boolean podeEntrarPorta;
-    private final Set<String> salasVisitadas;
+    private final Set<CoordenadaSala> salasVisitadas;
 
     public RoomManager() {
         this.geradorSalas = new GeradorSalas();
@@ -29,8 +30,7 @@ public class RoomManager {
 
     public boolean currentRoomFoiVisitada() {
         if (currentRoom == null) return false;
-        String key = currentRoom.getX() + "," + currentRoom.getY();
-        return salasVisitadas.contains(key);
+        return salasVisitadas.contains(CoordenadaSala.de(currentRoom));
     }
 
     public GeradorSalas getRoomGenerator() {
@@ -69,12 +69,16 @@ public class RoomManager {
         this.podeEntrarPorta = podeEntrarPorta;
     }
 
-    public Set<String> getSalasVisitadas() {
+    public Set<CoordenadaSala> getSalasVisitadas() {
         return salasVisitadas;
     }
 
-    public void addSalasVisitadas(String newRoom) {
-        salasVisitadas.add(newRoom);
+    public void addSalaVisitada(CoordenadaSala coordenada) {
+        salasVisitadas.add(coordenada);
+    }
+
+    public Sala buscarSala(int x, int y) {
+        return geradorSalas.buscarSala(x, y);
     }
 
     public void dispose() {
@@ -83,4 +87,3 @@ public class RoomManager {
         }
     }
 }
-

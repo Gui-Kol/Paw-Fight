@@ -72,38 +72,16 @@ public class ReiEsqueleto extends BossTemplate {
         fases.add(new FaseFuria(ataqueRapido));
     }
 
-    // Ciclo do boss: delega tudo à fase vigente
+    // Ataques, sincronização de fases e transição ficam com o BossTemplate; aqui só o log da troca.
 
     @Override
-    public void executarAtaqueNormal() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueNormal(this);
-    }
-
-    @Override
-    public void executarAtaqueEspecial() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueEspecial(this);
-    }
-
-    @Override
-    public void atualizarEstado() {
-        verificarTransicaoFase();
-    }
-
-    @Override
-    public void mudarFase(int novaFase) {
-        if (novaFase < 0 || novaFase >= fases.size()) return;
-        this.faseAtual = novaFase;
-        FaseBoss fase = fases.get(novaFase);
-        aplicarAnimacoesFase(fase);
-        iniciarTransicao();
-        Gdx.app.log(TAG, nome + " entrou na fase " + (novaFase + 1) + "/" + fases.size() + " — " + fase.getNome());
+    protected void aposTransicionarFase(int novaFase) {
+        Gdx.app.log(TAG, nome + " entrou na fase " + (novaFase + 1) + "/" + fases.size() + " — " + fases.get(novaFase).getNome());
     }
 
     @Override
     public void andarIA(float delta) {
-        mover.mover(this);
+        mover.mover(this, delta);
     }
 
     @Override
@@ -173,7 +151,7 @@ public class ReiEsqueleto extends BossTemplate {
 
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
-            timerFuria += Gdx.graphics.getDeltaTime();
+            timerFuria += boss.getDeltaAtual();
             if (timerFuria < COOLDOWN_FURIA) return;
 
             PlayerTemplate player = boss.getPlayer();

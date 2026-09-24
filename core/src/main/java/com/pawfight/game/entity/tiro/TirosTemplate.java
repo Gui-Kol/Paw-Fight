@@ -12,30 +12,40 @@ import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.entity.tiro.comportamento.ApresentacaoProjetil;
+import com.pawfight.game.entity.tiro.comportamento.EfeitoImpacto;
+import com.pawfight.game.entity.tiro.comportamento.MovimentoProjetil;
 
 import java.util.List;
 
 public abstract class TirosTemplate implements Pool.Poolable {
 
-    // Duração padrão entre frames da animação do tiro (segundos por frame).
-    public static final float DURACAO_FRAME_PADRAO = 0.08f;
+    public static final float INTERVALO_ENTRE_TIROS_RAJADA = 0.1f;
 
     protected int x, y;
     protected Rectangle hitBox;
     protected int dano;
     protected float duracao, cadencia, intervalo;
-    protected float tempoVida = 0f;
+    private final EstadoProjetil estado = new EstadoProjetil();
+    private MovimentoProjetil movimentoProjetil = MovimentoProjetil.PARADO;
+    private EfeitoImpacto efeitoImpacto = EfeitoImpacto.NENHUM;
+    private ApresentacaoProjetil apresentacaoProjetil;
     protected Texture texture;
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
+    protected int larguraSprite, alturaSprite;
     protected Renderizar renderizar = Renderizar.INSTANCE;
     protected int xHitBox, yHitBox;
 
     // Quantidade de frames horizontais da spritesheet do tiro (definida na criação).
     protected int quantidadeFrames;
+    private final float duracaoFrame;
+    private final int quantidadeTirosPadrao;
+    private int totalTirosRajada;
+    private int indiceProximoTiro;
+    private float tempoAteProximoTiro;
     // Animação em loop construída a partir da spritesheet (preparada uma única vez).
     protected Animation<TextureRegion> animacao;
     // Tempo acumulado da animação (avança com delta, independente do movimento).
-    protected float tempoAnimacao = 0f;
     // Textura a partir da qual a animação atual foi construída.
     private Texture texturaAnimacao;
     // Utilitário de animação reutilizado (divide a spritesheet e monta o loop).
@@ -58,6 +68,8 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        duracaoFrame = calcularDuracaoFrame();
+        quantidadeTirosPadrao = validarQuantidadeTirosPadrao();
         iniciarQuantidadeFrames();
 
         this.dono = player;
@@ -65,6 +77,8 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
         this.tamanho = tamanho + tamanhoPadrao;
         this.tamanhoDraw = tamanho + tamanhoPadrao;
+        this.larguraSprite = tamanhoDraw;
+        this.alturaSprite = tamanhoDraw;
         this.x = x;
         this.y = y;
         this.dano = dano;
@@ -79,6 +93,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
         texture = singleTex();
         hitBox = gerarHitBox();
+        definirTamanhoSprite();
     }
 
     protected TirosTemplate() {
@@ -86,12 +101,44 @@ public abstract class TirosTemplate implements Pool.Poolable {
         cadencia = definirIntervalo();
         tamanhoPadrao = definirTamanhoPadrao();
         intervalo = 0;
+        duracaoFrame = calcularDuracaoFrame();
+        quantidadeTirosPadrao = validarQuantidadeTirosPadrao();
         iniciarQuantidadeFrames();
+        tamanho = tamanhoPadrao;
+        tamanhoDraw = tamanhoPadrao;
+        larguraSprite = tamanhoDraw;
+        alturaSprite = tamanhoDraw;
         hitBox = new Rectangle();
+        definirTamanhoSprite();
     }
 
     // Quantidade de frames horizontais da spritesheet do tiro (deve ser maior que zero).
     protected abstract int definirQuantidadeFrames();
+
+    /** Quantidade de frames exibidos por segundo; deve ser maior que zero. */
+    protected abstract int definirFramesPorSegundo();
+
+    /** Quantidade base de projéteis criada a cada disparo; deve ser maior que zero. */
+    protected abstract int definirQuantidadeTirosPadrao();
+
+    private float calcularDuracaoFrame() {
+        int framesPorSegundo = definirFramesPorSegundo();
+        if (framesPorSegundo <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames por segundo precisa ser maior que zero. Valor recebido: "
+                    + framesPorSegundo);
+        }
+        return 1f / framesPorSegundo;
+    }
+
+    private int validarQuantidadeTirosPadrao() {
+        int quantidade = definirQuantidadeTirosPadrao();
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade padrão de tiros precisa ser maior que zero. Valor recebido: " + quantidade);
+        }
+        return quantidade;
+    }
 
     // Valida e define a quantidade de frames da spritesheet informada pela subclasse.
     private void iniciarQuantidadeFrames() {
@@ -121,7 +168,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
         this.quantidadeFrames = quantidadeFrames;
         this.texturaAnimacao = spritesheet;
         this.animacao = motorAnimacao.animar(
-            new DefinirSprite(spritesheet, quantidadeFrames, DURACAO_FRAME_PADRAO, false, false));
+            new DefinirSprite(spritesheet, quantidadeFrames, duracaoFrame, false, false));
     }
 
     // Constrói a animação uma única vez; reconstrói só se a textura mudar (ex.: textura aleatória por disparo).
@@ -132,19 +179,34 @@ public abstract class TirosTemplate implements Pool.Poolable {
         }
     }
 
+    /** Troca spritesheet e contagem de quadros, reiniciando a nova animação no primeiro frame. */
+    protected final void trocarAnimacao(Texture novaTextura, int novosFrames) {
+        if (novosFrames <= 0) {
+            throw new IllegalArgumentException(
+                "A quantidade de frames do tiro precisa ser maior que zero. Valor recebido: " + novosFrames);
+        }
+        texture = novaTextura;
+        quantidadeFrames = novosFrames;
+        animacao = null;
+        texturaAnimacao = null;
+        estado.reiniciarAnimacao();
+    }
+
     // Frame atual da animação do tiro (loop contínuo enquanto o tiro existir).
     public TextureRegion frameAtual() {
         if (animacao == null) return null;
-        return animacao.getKeyFrame(tempoAnimacao, true);
+        return animacao.getKeyFrame(estado.getTempoAnimacao(), true);
     }
 
     protected void reiniciarBase(int x, int y, int dano, int tamanho, PlayerTemplate player) {
-        this.tempoVida = 0f;
-        this.tempoAnimacao = 0f;
+        estado.reiniciar();
         this.dono = player;
         this.spawnEsquerda = player.isOlhandoEsquerda();
         this.tamanho = tamanho + tamanhoPadrao;
         this.tamanhoDraw = tamanho + tamanhoPadrao;
+        this.larguraSprite = tamanhoDraw;
+        this.alturaSprite = tamanhoDraw;
+        definirTamanhoSprite();
         this.x = x;
         this.y = y;
         this.dano = dano;
@@ -168,19 +230,35 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
     @Override
     public void reset() {
-        tempoVida = 0f;
-        tempoAnimacao = 0f;
+        estado.reiniciar();
     }
 
     protected abstract int definirTamanhoPadrao();
 
+    /** Gancho obrigatório: deixe vazio para usar o tamanho padrão quadrado. */
+    protected abstract void definirTamanhoSprite();
+
+    /** Define dimensões visuais independentes; valores não positivos usam o tamanho padrão atual. */
+    protected final void definirTamanhoSprite(int largura, int altura) {
+        larguraSprite = largura > 0 ? largura : tamanhoDraw;
+        alturaSprite = altura > 0 ? altura : tamanhoDraw;
+    }
+
     protected abstract float definirDuracao();
 
     public void desenhar(Batch batch) {
+        if (apresentacaoProjetil != null) {
+            apresentacaoProjetil.desenhar(batch);
+            return;
+        }
+        desenharPadrao(batch);
+    }
+
+    protected final void desenharPadrao(Batch batch) {
         garantirAnimacao();
         TextureRegion frame = frameAtual();
         if (frame == null) return;
-        batch.draw(frame, x, y, tamanhoDraw, tamanhoDraw);
+        batch.draw(frame, x, y, larguraSprite, alturaSprite);
     }
 
     public void desenharHitbox(ShapeRenderer shapeRenderer) {
@@ -198,17 +276,24 @@ public abstract class TirosTemplate implements Pool.Poolable {
     }
 
     public void update(float delta) {
-        tempoVida += delta;
-        tempoAnimacao += delta;
+        estado.atualizar(delta);
+        if (estado.isAtivoParaColisao() && estado.getTempoVida() >= duracao) {
+            gastar();
+        }
+        if (estado.isAtivoParaColisao()) movimentoProjetil.atualizar(delta);
     }
 
     public boolean isExpirado() {
-        return tempoVida >= duracao;
+        return estado.isExpirado();
     }
 
-    // Força a expiração (usado por tiros de alvo único após o acerto).
+    // Consome a colisão imediatamente, mas preserva o sprite até concluir o ciclo de animação atual.
     public void expirar() {
-        tempoVida = duracao;
+        gastar();
+    }
+
+    private void gastar() {
+        estado.desativar(quantidadeFrames, duracaoFrame);
     }
 
     // true quando o tiro some após atingir um único inimigo (DanoTiro o expira no primeiro acerto).
@@ -216,9 +301,23 @@ public abstract class TirosTemplate implements Pool.Poolable {
         return false;
     }
 
+    public boolean isAtivoParaColisao() { return estado.isAtivoParaColisao(); }
+
     // Hook chamado por DanoTiro quando o dano é aplicado; subclasses sobrescrevem (queimadura, lentidão, roubo de vida).
     public void aoAcertar(EnemyTemplate inimigo) {
-        // padrão: sem efeito adicional
+        efeitoImpacto.aplicar(inimigo);
+    }
+
+    protected final void configurarMovimento(MovimentoProjetil movimento) {
+        movimentoProjetil = movimento == null ? MovimentoProjetil.PARADO : movimento;
+    }
+
+    protected final void configurarEfeitoImpacto(EfeitoImpacto efeito) {
+        efeitoImpacto = efeito == null ? EfeitoImpacto.NENHUM : efeito;
+    }
+
+    protected final void configurarApresentacao(ApresentacaoProjetil apresentacao) {
+        apresentacaoProjetil = apresentacao;
     }
 
     // Injeta a lista de inimigos vivos da sala (referência compartilhada — nunca copiar nem modificar).
@@ -249,8 +348,8 @@ public abstract class TirosTemplate implements Pool.Poolable {
         xHitBox = Math.round(centroX - hitBox.width / 2f);
         yHitBox = Math.round(centroY - hitBox.height / 2f);
         hitBox.setPosition(xHitBox, yHitBox);
-        x = Math.round(centroX - tamanhoDraw / 2f);
-        y = Math.round(centroY - tamanhoDraw / 2f);
+        x = Math.round(centroX - larguraSprite / 2f);
+        y = Math.round(centroY - alturaSprite / 2f);
     }
 
     // Aponta a direção para o centro do alvo; sem alvo, segue o olhar do player no momento do disparo.
@@ -312,6 +411,38 @@ public abstract class TirosTemplate implements Pool.Poolable {
         return dano;
     }
 
+    public int getLarguraSprite() { return larguraSprite; }
+    public int getAlturaSprite() { return alturaSprite; }
+    public float getDuracaoFrame() { return duracaoFrame; }
+    public int getQuantidadeTirosPadrao() { return quantidadeTirosPadrao; }
+    float getTempoAnimacao() { return estado.getTempoAnimacao(); }
+    float getTempoVida() { return estado.getTempoVida(); }
+    void setTempoAnimacao(float tempo) { estado.definirTempoAnimacao(tempo); }
+
+    void iniciarRajada(int quantidade) {
+        totalTirosRajada = Math.max(1, quantidade);
+        indiceProximoTiro = 0;
+        tempoAteProximoTiro = 0f;
+    }
+
+    boolean temTirosPendentesNaRajada() {
+        return indiceProximoTiro < totalTirosRajada;
+    }
+
+    boolean atualizarEsperaDaRajada(float delta) {
+        if (!temTirosPendentesNaRajada()) return false;
+        tempoAteProximoTiro = Math.max(0f, tempoAteProximoTiro - delta);
+        return tempoAteProximoTiro <= 0f;
+    }
+
+    int consumirProximoTiroDaRajada() {
+        int indice = indiceProximoTiro++;
+        tempoAteProximoTiro = INTERVALO_ENTRE_TIROS_RAJADA;
+        return indice;
+    }
+
+    int getTotalTirosRajada() { return totalTirosRajada; }
+
     public Rectangle getHitBox() {
         return hitBox;
     }
@@ -332,5 +463,3 @@ public abstract class TirosTemplate implements Pool.Poolable {
         // Texturas são gerenciadas pelo AssetManager — NÃO dar dispose aqui
     }
 }
-
-

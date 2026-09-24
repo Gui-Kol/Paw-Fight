@@ -32,7 +32,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final CombateComponent combate = new CombateComponent();
     private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
-    protected final RestricaoMovimentoComponent restricaoMovimento = new RestricaoMovimentoComponent();
+    protected final StatusComponent status = new StatusComponent();
     protected final SaveComponent save = new SaveComponent();
     protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
     protected final StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
@@ -43,6 +43,8 @@ public abstract class PlayerTemplate implements Entidade {
     protected int dx, dy;
     protected final Rectangle hitBox;
     protected int TAMANHO_PX;
+    protected int larguraSprite;
+    protected int alturaSprite;
     protected int hitboxSize;
     protected int hitboxOffsetX;
     protected int hitboxOffsetY;
@@ -61,9 +63,11 @@ public abstract class PlayerTemplate implements Entidade {
     public abstract DadosPlayer dadosPlayer();
     public abstract void updateSpriteDefinitions();
     public abstract String getName();
+    public abstract String getId();
     public abstract void ataqueBasico(float delta);
     public abstract void ataqueEspecial();
     public abstract void usarHabilidadeEspecial();
+    protected abstract void definirTamanhoSprite();
     protected abstract void definirAudios();
     protected abstract TirosTemplate modeloTiroExclusivo();
 
@@ -77,21 +81,26 @@ public abstract class PlayerTemplate implements Entidade {
         stats = new StatsComponent(dados);
         entidadeEcs.add(stats);
         entidadeEcs.add(combate);
+        status.setAlvo(this);
+        entidadeEcs.add(status);
         entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.init(dados);
 
         TAMANHO_PX = dados.tamanho();
+        larguraSprite = TAMANHO_PX;
+        alturaSprite = TAMANHO_PX;
         hitboxSize = dados.hitboxSize();
         hitboxOffsetY = dados.hitboxOffsetY();
         hitboxOffsetX = dados.hitboxOffsetX();
 
         hitBox = new Rectangle(
-            dx + (TAMANHO_PX - hitboxSize) / 2f + hitboxOffsetX,
+            dx + (larguraSprite - hitboxSize) / 2f + hitboxOffsetX,
             dy + hitboxOffsetY,
             hitboxSize,
             hitboxSize
         );
+        definirTamanhoSprite();
 
         cameraComponent = new CameraComponent(dx, dy, zoomCamera, tileWidth, numTilesX, tileHeight, numTilesY);
 
@@ -119,13 +128,11 @@ public abstract class PlayerTemplate implements Entidade {
             Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
         }
         if (pause) {
-            restricaoMovimento.limpar();
             return;
         }
 
         if (!stats.isMorto()) {
-            restricaoMovimento.atualizar(delta);
-            int velocidadeAtual = Math.round(stats.getVelocidade() * restricaoMovimento.getMultiplicador());
+            int velocidadeAtual = Math.round(stats.getVelocidade() * status.getMultiplicadorVelocidade());
             movimento.update(hitBox, velocidadeAtual, delta, input);
             moving = movimento.isMoving();
             olhandoEsquerda = movimento.isOlhandoEsquerda();
@@ -152,11 +159,11 @@ public abstract class PlayerTemplate implements Entidade {
 
             int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
             hitBox.setPosition(
-                dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+                dx + (larguraSprite - hitboxSize) / 2f + offsetX,
                 dy + hitboxOffsetY
             );
         } else {
-            restricaoMovimento.limpar();
+            status.limparNaoPersistentes();
         }
 
         // Timers rodam mesmo com o player morto
@@ -168,6 +175,9 @@ public abstract class PlayerTemplate implements Entidade {
         // Ajusta dx e dy conforme colisão
         colisao.checarColisao(this);
 
+    }
+
+    public void atualizarCamera() {
         cameraComponent.updateCamera(dx, dy);
     }
 
@@ -181,7 +191,7 @@ public abstract class PlayerTemplate implements Entidade {
         if (!morteFinalizada) {
             batch.draw(
                 animacao.animaAtual(stats.isMorto(), stats.isHurt(), moving, stats.getHurtTime()),
-                dx, dy, TAMANHO_PX, TAMANHO_PX
+                dx, dy, larguraSprite, alturaSprite
             );
         }
         particulas.desenhar(batch);
@@ -220,6 +230,7 @@ public abstract class PlayerTemplate implements Entidade {
             shapeRenderer.setProjectionMatrix(cam.combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             for (TirosTemplate tiro : drawSnapshot) {
+                if (!tiro.isAtivoParaColisao()) continue;
                 renderizar.hitboxRect(shapeRenderer, tiro.getHitBox(), com.badlogic.gdx.graphics.Color.RED);
             }
             shapeRenderer.end();
@@ -239,7 +250,7 @@ public abstract class PlayerTemplate implements Entidade {
             Gdx.app.log(getName(), "morreu — vida zerada (dano: " + forca + ")");
         } else {
             audio.playDano();
-            particulas.spawnDano(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+            particulas.spawnDano(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
             Gdx.app.log(getName(), "Tomou " + forca + " de dano — vida " + stats.getVida() + "/" + stats.getVidaBase());
         }
     }
@@ -247,7 +258,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void curar(int pontos) {
         int vidaAntes = stats.getVida();
         stats.curar(pontos);
-        particulas.spawnCura(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+        particulas.spawnCura(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
         Gdx.app.log(getName(), "Curou " + pontos + " — vida " + vidaAntes + " -> " + stats.getVida() + "/" + stats.getVidaBase());
     }
 
@@ -256,7 +267,7 @@ public abstract class PlayerTemplate implements Entidade {
         int levels = stats.xpUp(xpGanho);
         for (int i = 0; i < levels; i++) {
             audio.playLevelUp();
-            particulas.spawnLevelUp(dx + TAMANHO_PX / 2f, dy + TAMANHO_PX / 2f);
+            particulas.spawnLevelUp(dx + larguraSprite / 2f, dy + alturaSprite / 2f);
         }
         Gdx.app.log(getName(), "Ganhou " + xpGanho + " XP — xp " + stats.getXp() + "/" + stats.getXpNecessario()
             + (levels > 0 ? " — level " + levelAntes + " -> " + stats.getLevel() : ""));
@@ -287,7 +298,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void clearList() {
         colisao.clearColisores();
         combate.clearTiros();
-        restricaoMovimento.limpar();
+        status.limparNaoPersistentes();
     }
 
     public void adicionarTiro(TirosTemplate tiro) {
@@ -306,7 +317,7 @@ public abstract class PlayerTemplate implements Entidade {
 
         int offsetX = olhandoEsquerda ? -(hitboxOffsetX) : hitboxOffsetX;
         hitBox.setPosition(
-            dx + (TAMANHO_PX - hitboxSize) / 2f + offsetX,
+            dx + (larguraSprite - hitboxSize) / 2f + offsetX,
             dy + hitboxOffsetY
         );
         cameraComponent.updateCamera(dx, dy);
@@ -323,7 +334,21 @@ public abstract class PlayerTemplate implements Entidade {
     public int getDy() { return dy; }
     public void setDy(int dy) { this.dy = dy; }
     public Rectangle getHitBox() { return hitBox; }
-    public int getTamanho() { return TAMANHO_PX; }
+    public int getTamanho() { return larguraSprite; }
+    public int getLarguraSprite() { return larguraSprite; }
+    public int getAlturaSprite() { return alturaSprite; }
+
+    /** Define as dimensões usadas pelo gancho abstrato. Valores não positivos mantêm o padrão. */
+    protected final void definirTamanhoSprite(int largura, int altura) {
+        larguraSprite = largura > 0 ? largura : TAMANHO_PX;
+        alturaSprite = altura > 0 ? altura : TAMANHO_PX;
+
+        int offsetX = olhandoEsquerda ? -hitboxOffsetX : hitboxOffsetX;
+        hitBox.setPosition(
+            dx + (larguraSprite - hitboxSize) / 2f + offsetX,
+            dy + hitboxOffsetY
+        );
+    }
     public int getHitboxSize() { return hitboxSize; }
     public int getHitboxOffsetX() { return hitboxOffsetX; }
     public int getHitboxOffsetY() { return hitboxOffsetY; }
@@ -367,16 +392,16 @@ public abstract class PlayerTemplate implements Entidade {
     public void setPause(boolean pause) {
         this.pause = pause;
         this.menuAberto = pause;
-        if (pause) restricaoMovimento.limpar();
     }
 
     public void aplicarRestricaoMovimento(float multiplicador, float duracao) {
-        if (!stats.isMorto()) restricaoMovimento.aplicar(multiplicador, duracao);
+        if (!stats.isMorto()) status.aplicarLentidao(multiplicador, duracao, 1f);
     }
 
-    public void removerRestricaoMovimento() { restricaoMovimento.limpar(); }
-    public boolean isMovimentoRestrito() { return restricaoMovimento.isAtiva(); }
-    public float getMultiplicadorMovimento() { return restricaoMovimento.getMultiplicador(); }
+    public void removerRestricaoMovimento() { status.remover("lentidao"); }
+    public boolean isMovimentoRestrito() { return status.isLento(); }
+    public float getMultiplicadorMovimento() { return status.getMultiplicadorVelocidade(); }
+    public StatusComponent getStatus() { return status; }
 
     // Morte finalizada (esconde o sprite após a animação tocar 1 vez)
     public boolean isMorteFinalizada() { return morteFinalizada; }

@@ -10,10 +10,9 @@ import com.pawfight.game.engine.procedural.ObjetoGerado;
 import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.procedural.sala.TipoSala;
-import com.pawfight.game.entity.enemy.Skeleton;
-import com.pawfight.game.entity.bosses.EscorpiaoAreia;
-import com.pawfight.game.entity.bosses.FaraoAreia;
-import com.pawfight.game.entity.bosses.MumiaAreia;
+import com.pawfight.game.content.enemy.DefinicaoInimigo;
+import com.pawfight.game.content.enemy.RegistroInimigos;
+import com.pawfight.game.content.boss.RegistroBosses;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
@@ -101,17 +100,16 @@ public class MundoAreia extends WorldTemplate {
     }
 
     @Override
-    public List<EnemyTemplate> getInimigosModelo() {
-        EnemyTemplate enemySkeleton = new Skeleton(0, 0, false, player);
-        return List.of(enemySkeleton);
+    public List<DefinicaoInimigo> getDefinicoesInimigos() {
+        return List.of(RegistroInimigos.obter("skeleton"));
     }
 
     @Override
-    public List<EnemyTemplate> getBossesModelo() {
+    public List<DefinicaoInimigo> getDefinicoesBosses() {
         return List.of(
-            new EscorpiaoAreia(0, 0, false, player),
-            new MumiaAreia(0, 0, false, player),
-            new FaraoAreia(0, 0, false, player)
+            RegistroBosses.obter("escorpiao_areia"),
+            RegistroBosses.obter("mumia_areia"),
+            RegistroBosses.obter("farao_areia")
         );
     }
 
@@ -122,40 +120,26 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public void render(float delta) {
-        try {
-            if (errorFinal) {
-                // Transição gerenciada pelo ScreenManager — renderizada em PawFight.render()
-                return;
-            }
-
-            Sala currentRoom = roomManager.getCurrentRoom();
-            if (currentRoom == null || map == null || renderizadorCamada == null) {
-                Gdx.app.error("MundoAreia", "render() - objeto null: currentRoom=" + (currentRoom == null) +
-                    ", map=" + (map == null) + ", RenderizadorCamada=" + (renderizadorCamada == null));
-                return;
-            }
-
-            if (player != null) {
-                super.render(delta);
-
-                if (!player.isMorto()) {
-                    cactoDano();
-                    roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
-                }
-            }
-        } catch (Exception e) {
-            // Log original PRIMEIRO — para não perder o erro real
-            Gdx.app.error("MundoAreia", "Erro em render: " + e.getMessage(), e);
-
-            // Cleanup seguro — não pode lançar exceção, senão esconde o erro original
-            try {
-                if (batch != null && batch.isDrawing()) batch.end();
-            } catch (Exception ignored) { }
-            try {
-                var shapeRenderer = worldRenderer.getShapeRenderer();
-                if (shapeRenderer != null && shapeRenderer.isDrawing()) shapeRenderer.end();
-            } catch (Exception ignored) { }
+        if (errorFinal) {
+            return;
         }
+
+        Sala currentRoom = roomManager.getCurrentRoom();
+        if (currentRoom == null || map == null || renderizadorCamada == null) {
+            Gdx.app.error("MundoAreia", "render() interrompido: estado obrigatório ausente.");
+            errorFinal = true;
+            return;
+        }
+
+        if (player != null) {
+            super.render(delta);
+        }
+    }
+
+    @Override
+    protected void atualizarGameplayEspecifico(float delta) {
+        cactoDano();
+        roomManager.setPodeEntrarPorta(!validarLista(enemyManager.getListaInimigos()));
     }
 
     @Override
@@ -226,13 +210,17 @@ public class MundoAreia extends WorldTemplate {
 
     @Override
     public String getMapPath() {
-        Sala currentRoom = roomManager.getCurrentRoom();
-        if (currentRoom == null) {
+        return getMapPath(roomManager.getCurrentRoom());
+    }
+
+    @Override
+    public String getMapPath(Sala sala) {
+        if (sala == null) {
             Gdx.app.error("MundoAreia", "getMapPath() - currentRoom é null!");
             return "world/mundo_areia/SPAWN.tmx";
         }
 
-        return switch (currentRoom.getType()) {
+        return switch (sala.getType()) {
             case BOSS -> "world/mundo_areia/BOSS.tmx";
             case INIMIGOS -> "world/mundo_areia/INIMIGOS.tmx";
             case INIMIGOS_FORTES -> "world/mundo_areia/INIMIGOS_FORTES.tmx";

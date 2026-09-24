@@ -116,4 +116,84 @@ class StatusComponentTest {
         assertFalse(status.isQueimando());
         assertFalse(status.isLento());
     }
+
+    @Test
+    @DisplayName("Delta grande processa todos os ticks vencidos")
+    void deltaGrandeProcessaMultiplosTicks() {
+        status.aplicarQueimadura(3, 3f, 1f);
+        assertEquals(9, status.update(1.5f));
+    }
+
+    @Test
+    @DisplayName("Efeito mais forte de lentidão prevalece")
+    void lentidaoMaisFortePrevalece() {
+        status.aplicarLentidao(0.7f, 2f, 1f);
+        status.aplicarLentidao(0.4f, 1f, 1f);
+        assertEquals(0.4f, status.getMultiplicadorVelocidade());
+        status.aplicarLentidao(0.8f, 4f, 1f);
+        assertEquals(0.4f, status.getMultiplicadorVelocidade());
+    }
+
+    @Test
+    @DisplayName("Política único por fonte mantém fontes independentes")
+    void fontesIndependentes() {
+        Object fonteA = new Object();
+        Object fonteB = new Object();
+        status.aplicar(new EfeitoStatus("marca", fonteA, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.UNICO_POR_FONTE, false));
+        status.aplicar(new EfeitoStatus("marca", fonteB, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.UNICO_POR_FONTE, false));
+        assertEquals(2, status.getEfeitos().size());
+    }
+
+    @Test
+    @DisplayName("Limpeza de troca de sala preserva apenas efeitos persistentes")
+    void limpaNaoPersistentes() {
+        status.aplicar(new EfeitoStatus("temporario", this, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.SUBSTITUIR, false));
+        status.aplicar(new EfeitoStatus("persistente", this, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.SUBSTITUIR, true));
+        status.limparNaoPersistentes();
+        assertFalse(status.possui("temporario"));
+        assertTrue(status.possui("persistente"));
+    }
+
+    @Test
+    @DisplayName("Tick vencido no mesmo frame da expiração ainda é processado antes de remover")
+    void tickNoFrameDaExpiracao() {
+        status.aplicarQueimadura(4, 0.5f, 1f);
+
+        assertEquals(4, status.update(0.5f),
+            "O tick devido no instante da expiração precisa ser contado");
+        assertFalse(status.isQueimando(), "O efeito expira logo após o último tick devido");
+        assertEquals(0, status.update(0.5f), "Nenhum tick após a expiração");
+    }
+
+    @Test
+    @DisplayName("Ticks além da morte do efeito não são cobrados")
+    void tickAposVidaUtilNaoOcorre() {
+        // Duração de 0,3s morre antes do primeiro tick de 0,5s: delta grande não pode criar tick
+        status.aplicarQueimadura(4, 0.3f, 1f);
+
+        assertEquals(0, status.update(1f), "O efeito morreu aos 0,3s — nenhum tick foi devido");
+        assertFalse(status.isQueimando());
+    }
+
+    @Test
+    @DisplayName("Delta grande conta os ticks vencidos somente dentro da vida restante")
+    void deltaGrandeRespeitaVidaRestante() {
+        // Vida restante 1,2s com tick de 0,5s: vencem 0,5s e 1,0s (o de 1,5s seria póstumo)
+        status.aplicarQueimadura(2, 1.2f, 1f);
+
+        assertEquals(4, status.update(10f), "Dois ticks dentro da vida útil (0,5s e 1,0s)");
+        assertFalse(status.isQueimando());
+    }
+
+    @Test
+    @DisplayName("UNICO_POR_FONTE rejeita fonte nula")
+    void unicoPorFonteRejeitaFonteNula() {
+        assertThrows(IllegalArgumentException.class, () ->
+            new EfeitoStatus("marca", null, 2f, 1f, 1, 0f,
+                PoliticaAcumuloStatus.UNICO_POR_FONTE, false));
+    }
 }

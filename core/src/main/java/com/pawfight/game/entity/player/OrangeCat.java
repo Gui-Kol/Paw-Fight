@@ -37,6 +37,10 @@ public class OrangeCat extends PlayerTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new TiroSangue(stats.getTamanhoTiro(), this);
     }
@@ -55,6 +59,8 @@ public class OrangeCat extends PlayerTemplate {
     public String getName() {
         return "Orange Cat";
     }
+
+    @Override public String getId() { return "orange_cat"; }
 
     @Override
     public void ataqueBasico(float delta) {

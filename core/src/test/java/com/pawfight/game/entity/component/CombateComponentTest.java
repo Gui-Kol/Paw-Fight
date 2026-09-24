@@ -38,7 +38,10 @@ class CombateComponentTest {
         }
 
         @Override protected int definirTamanhoPadrao() { return 0; }
+        @Override protected void definirTamanhoSprite() { }
         @Override protected int definirQuantidadeFrames() { return 1; }
+        @Override protected int definirFramesPorSegundo() { return 12; }
+        @Override protected int definirQuantidadeTirosPadrao() { return 1; }
         @Override protected float definirDuracao() { return 1f; }
         @Override protected float definirIntervalo() { return 10f; }
         @Override protected Texture randomTex() { return null; }

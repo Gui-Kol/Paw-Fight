@@ -74,7 +74,7 @@ public class Hud {
     }
 
     public void draw(Batch batch, PlayerTemplate playerTemplate, ShapeRenderer shapeRenderer) {
-        if (playerTemplate.isPause()) {
+        if (playerTemplate.isPause() || !GameConfig.getInstance().podeRenderizarUi()) {
             return;
         }
         float delta = Gdx.graphics.getDeltaTime();

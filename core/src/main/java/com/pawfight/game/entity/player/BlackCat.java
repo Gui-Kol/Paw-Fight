@@ -37,6 +37,10 @@ public class BlackCat extends PlayerTemplate {
     }
 
     @Override
+    protected void definirTamanhoSprite() {
+    }
+
+    @Override
     protected TirosTemplate modeloTiroExclusivo() {
         return new TiroFantasmagorico(stats.getTamanhoTiro(), this);
     }
@@ -55,6 +59,8 @@ public class BlackCat extends PlayerTemplate {
     public String getName() {
         return "Black Cat";
     }
+
+    @Override public String getId() { return "black_cat"; }
 
     @Override
     public void ataqueBasico(float delta) {

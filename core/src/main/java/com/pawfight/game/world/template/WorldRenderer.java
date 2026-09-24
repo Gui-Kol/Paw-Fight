@@ -1,6 +1,5 @@
 package com.pawfight.game.world.template;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -16,7 +15,7 @@ import java.util.List;
 
 public class WorldRenderer {
 
-    private final Renderizar renderizar = Renderizar.INSTANCE;
+    private final Renderizar renderizar;
     private final ShapeRenderer shapeRenderer;
     private final Texture background;
     private final GerarObjetos gerarObjetos;
@@ -24,8 +23,13 @@ public class WorldRenderer {
     private final List<Rectangle> listaObjetosHitbox;
 
     public WorldRenderer(String backgroundPath) {
-        this.shapeRenderer = new ShapeRenderer();
-        this.background = Assets.get(backgroundPath, Texture.class);
+        this(new ShapeRenderer(), Assets.get(backgroundPath, Texture.class), Renderizar.INSTANCE);
+    }
+
+    WorldRenderer(ShapeRenderer shapeRenderer, Texture background, Renderizar renderizar) {
+        this.shapeRenderer = shapeRenderer;
+        this.background = background;
+        this.renderizar = renderizar;
         this.gerarObjetos = new GerarObjetos();
         this.listaObjetos = new ArrayList<>();
         this.listaObjetosHitbox = new ArrayList<>();
@@ -34,11 +38,6 @@ public class WorldRenderer {
     public void renderizarInimigos(WorldTemplate world) {
         List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         if (inimigos != null && !inimigos.isEmpty()) {
-            world.getEnemyManager().atualizarInimigos(Gdx.graphics.getDeltaTime());
-
-            // Resolve colisões entre inimigos e entre inimigos e paredes (MTV)
-            world.getWorldPhysics().resolverColisoes(inimigos);
-
             renderizar.renderizarInimigos(world);
         }
     }

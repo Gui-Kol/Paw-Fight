@@ -30,7 +30,14 @@ public class WorldPhysics {
     }
 
     public void carregarParede(TiledMap map, PlayerTemplate player) {
-        List<Rectangle> paredes = tilemapHitboxFactory.createHitboxes(map, "Parede");
+        aplicarParedes(player, prepararParedes(map));
+    }
+
+    public List<Rectangle> prepararParedes(TiledMap map) {
+        return tilemapHitboxFactory.createHitboxes(map, "Parede");
+    }
+
+    public void aplicarParedes(PlayerTemplate player, List<Rectangle> paredes) {
         this.paredes = paredes;
         player.adicionarColisao(paredes);
     }
@@ -39,8 +46,8 @@ public class WorldPhysics {
         colisaoResolver.resolver(enemies, paredes);
     }
 
-    public void processarDanoTiro(WorldTemplate world) {
-        danoTiro.darDanoListaInimigos(world);
+    public void processarDanoTiro(WorldTemplate world, float delta) {
+        danoTiro.darDanoListaInimigos(world, delta);
     }
 
     public void drawDebugQuadtree(ShapeRenderer shapeRenderer, Matrix4 cameraMatrix) {
@@ -59,4 +66,3 @@ public class WorldPhysics {
         return paredes;
     }
 }
-

@@ -31,7 +31,7 @@ public class DanoTiro {
     private int acumColisoes = 0;
     private int acumFramesProcessados = 0;
 
-    public void darDanoListaInimigos(WorldTemplate world) {
+    public void darDanoListaInimigos(WorldTemplate world, float delta) {
         List<EnemyTemplate> inimigos = world.getEnemyManager().getListaInimigos();
         List<TirosTemplate> tiros = world.getPlayer().getTiros();
 
@@ -52,6 +52,7 @@ public class DanoTiro {
         int totalColisoes = 0;
         for (int t = 0, tn = tirosSnapshot.size(); t < tn; t++) {
             TirosTemplate tiro = tirosSnapshot.get(t);
+            if (!tiro.isAtivoParaColisao()) continue;
 
             candidatos.clear();
             quadtree.consultar(tiro.getHitBox(), candidatos);
@@ -78,7 +79,7 @@ public class DanoTiro {
         if (GameConfig.getInstance().isDebugMode()) {
             acumColisoes += totalColisoes;
             acumFramesProcessados++;
-            logTimer += Gdx.graphics.getDeltaTime();
+            logTimer += delta;
 
             if (logTimer >= LOG_INTERVALO) {
                 Gdx.app.log(TAG, "Resumo (" + LOG_INTERVALO + "s): "
