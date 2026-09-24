@@ -61,7 +61,7 @@ public class Skeleton extends EnemyTemplate {
 
     @Override
     public void andarIA(float delta) {
-        moverDirecaoPlayer.mover(this);
+        moverDirecaoPlayer.mover(this, delta);
     }
 
     @Override

@@ -24,6 +24,7 @@ public class TiroSolar extends TirosTemplate {
         raio = Assets.get("entitys/player/ataques/TiroSolar.png", Texture.class);
         texture = raio;
         posicionarNoAlvo();
+        configurarEfeitoImpacto(this::aplicarQueimadura);
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroSolar>(8, 64) {
@@ -37,6 +38,7 @@ public class TiroSolar extends TirosTemplate {
     private TiroSolar() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
         raio = Assets.get("entitys/player/ataques/TiroSolar.png", Texture.class);
+        configurarEfeitoImpacto(this::aplicarQueimadura);
     }
 
     private static int calcularDano(PlayerTemplate player) {
@@ -77,8 +79,7 @@ public class TiroSolar extends TirosTemplate {
         return true;
     }
 
-    @Override
-    public void aoAcertar(EnemyTemplate inimigo) {
+    private void aplicarQueimadura(EnemyTemplate inimigo) {
         int danoPorTick = Math.max(1, dano / 4);
         inimigo.aplicarQueimadura(danoPorTick, DURACAO_QUEIMADURA, CHANCE_QUEIMADURA);
     }

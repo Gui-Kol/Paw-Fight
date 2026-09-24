@@ -112,14 +112,14 @@ class TirosTemplateTest {
         assertEquals(0, tiro.frameAtual().getRegionX());
 
         // Avanço do tempo acumulado troca o frame (10 FPS = 0,1s por frame)
-        tiro.tempoAnimacao = 0.1f; // frame 1
+        tiro.setTempoAnimacao(0.1f); // frame 1
         assertEquals(64, tiro.frameAtual().getRegionX());
 
-        tiro.tempoAnimacao = 0.25f; // frame 2
+        tiro.setTempoAnimacao(0.25f); // frame 2
         assertEquals(128, tiro.frameAtual().getRegionX());
 
         // Loop: após todos os 6 frames, o ciclo recomeça no frame 0
-        tiro.tempoAnimacao = 0.6f; // um ciclo completo → frame 0
+        tiro.setTempoAnimacao(0.6f); // um ciclo completo → frame 0
         assertEquals(0, tiro.frameAtual().getRegionX());
     }
 
@@ -133,9 +133,9 @@ class TirosTemplateTest {
         assertEquals(0.1f, tiro.getDuracaoFrame());
 
         // 4 frames de 32px; com 10 FPS, cada frame dura 0,1s
-        tiro.tempoAnimacao = 0.05f;
+        tiro.setTempoAnimacao(0.05f);
         assertEquals(0, tiro.frameAtual().getRegionX());
-        tiro.tempoAnimacao = 0.35f; // frame 3
+        tiro.setTempoAnimacao(0.35f); // frame 3
         assertEquals(96, tiro.frameAtual().getRegionX());
     }
 
@@ -225,7 +225,7 @@ class TirosTemplateTest {
         tiro.trocarAnimacao(explosao, 2);
         tiro.garantirAnimacao();
 
-        assertEquals(0f, tiro.tempoAnimacao);
+        assertEquals(0f, tiro.getTempoAnimacao());
         assertEquals(2, tiro.quantidadeFrames);
         assertEquals(64, tiro.frameAtual().getRegionWidth());
         assertEquals(0, tiro.frameAtual().getRegionX());
@@ -286,8 +286,8 @@ class TirosTemplateTest {
         tiro.garantirAnimacao();
 
         tiro.update(0.1f);
-        assertEquals(0.1f, tiro.tempoAnimacao, 0.0001f);
-        assertEquals(0.1f, tiro.tempoVida, 0.0001f);
+        assertEquals(0.1f, tiro.getTempoAnimacao(), 0.0001f);
+        assertEquals(0.1f, tiro.getTempoVida(), 0.0001f);
         assertEquals(100, tiro.x);
         assertEquals(50, tiro.y);
         assertEquals(100f, tiro.getHitBox().x);
@@ -297,7 +297,7 @@ class TirosTemplateTest {
         tiro.moverNaDirecao(100f, 0.1f);
         assertEquals(110, tiro.x); // 10px para a direita (direção padrão)
         assertEquals(110f, tiro.getHitBox().x);
-        assertEquals(0.1f, tiro.tempoAnimacao, 0.0001f);
+        assertEquals(0.1f, tiro.getTempoAnimacao(), 0.0001f);
     }
 
     @Test

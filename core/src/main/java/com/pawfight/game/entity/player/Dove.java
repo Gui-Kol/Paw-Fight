@@ -62,6 +62,8 @@ public class Dove extends PlayerTemplate {
         return "Dove";
     }
 
+    @Override public String getId() { return "dove"; }
+
     @Override
     public void ataqueBasico(float delta) {
     }

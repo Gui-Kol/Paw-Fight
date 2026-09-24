@@ -27,6 +27,7 @@ public class TiroFantasmagorico extends TirosTemplate {
         fantasma = Assets.get("entitys/player/ataques/arranhao.png", Texture.class);
         texture = fantasma;
         posicionarNoAlvo();
+        configurarMovimento(this::atualizarAlvo);
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroFantasmagorico>(8, 64) {
@@ -40,6 +41,7 @@ public class TiroFantasmagorico extends TirosTemplate {
     private TiroFantasmagorico() {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
         fantasma = Assets.get("entitys/player/ataques/arranhao.png", Texture.class);
+        configurarMovimento(this::atualizarAlvo);
     }
 
     private static int calcularDano(PlayerTemplate player) {
@@ -78,11 +80,7 @@ public class TiroFantasmagorico extends TirosTemplate {
         return t;
     }
 
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-        if (!isAtivoParaColisao()) return;
-
+    private void atualizarAlvo(float delta) {
         // Alvo morreu antes do fim: re-mira no vivo mais próximo
         if (alvo == null || alvo.isMorto()) {
             alvo = inimigoMaisProximo();

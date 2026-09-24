@@ -3,19 +3,23 @@ package com.pawfight.game.entity.bosses;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.pawfight.game.entity.bosses.infra.ControladorFases;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-// Base para bosses multi-fase: fases registradas em definirFases; update() cuida do ciclo e das transições; ataques delegados à fase vigente.
+// Base para bosses multi-fase. O template cuida da infraestrutura comum do ciclo:
+// pausa, sincronização de fases por limiar de vida, transição (com cancelamento de ataques pendentes),
+// delegação dos ataques à fase vigente e gancho de morte. Cada boss descreve apenas suas fases,
+// ataques e decisões específicas.
 public abstract class BossTemplate extends EnemyTemplate {
 
     private static final String TAG = "BossTemplate";
 
-    protected int faseAtual = 0;
     protected final List<FaseBoss> fases = new ArrayList<>();
+    protected int faseAtual = 0;
 
     // ataqueNormal/ataqueEspecial espelham a fase ativa (ver aplicarAnimacoesFase)
     protected Animation<TextureRegion> ataqueNormal;
@@ -23,30 +27,37 @@ public abstract class BossTemplate extends EnemyTemplate {
     protected Animation<TextureRegion> transicaoFase;
     protected boolean emTransicao = false;
 
+    private ControladorFases controladorFases;
+    private float deltaAtual;
+
     public BossTemplate(int dx, int dy, boolean forte, PlayerTemplate player) {
         super(dx, dy, forte, player);
         definirFases(fases);
         if (fases.isEmpty()) {
             Gdx.app.error(TAG, nome + " foi criado sem nenhuma fase!");
-            return;
+        } else {
+            aplicarAnimacoesFase(fases.get(0));
         }
-        aplicarAnimacoesFase(fases.get(0));
+        controladorFases = new ControladorFases(fases);
     }
 
     // Registra as fases do boss na lista, em ordem (da inicial à final).
     protected abstract void definirFases(List<FaseBoss> fases);
 
-    public abstract void executarAtaqueNormal();
-    public abstract void executarAtaqueEspecial();
-    public abstract void mudarFase(int novaFase);
-    public abstract void atualizarEstado();
-
+    // Ciclo do boss: pausa congela tudo; fases sincronizam pela vida; a transição dura até a animação terminar.
     @Override
     public void update(float delta) {
-        super.update(delta);
-        if (stats.isMorto()) return;
+        if (player != null && player.isPause()) return;
+        if (!stats.isMorto()) verificarTransicaoFase();
 
-        // Durante a transição o boss não age; ela dura até a animação terminar
+        deltaAtual = delta;
+        super.update(delta);
+
+        if (stats.isMorto()) {
+            aoMorrer();
+            return;
+        }
+
         if (emTransicao) {
             if (transicaoFase != null && !transicaoFase.isAnimationFinished(animacao.getStateTime())) {
                 return;
@@ -61,14 +72,46 @@ public abstract class BossTemplate extends EnemyTemplate {
         }
     }
 
-    // Dispara mudarFase quando a vida atinge o vidaLimiar da fase atual.
+    // Dispara mudarFase para cada limiar cruzado pela vida atual (atravessa múltiplos limiares no mesmo frame).
     protected void verificarTransicaoFase() {
-        FaseBoss fase = faseVigente();
-        if (fase == null || faseAtual >= fases.size() - 1) return;
-        if (fase.deveTransicionar(stats.getVida(), stats.getVidaBase())) {
-            mudarFase(faseAtual + 1);
-        }
+        controladorFases.sincronizar(faseAtual, stats.getVida(), stats.getVidaBase(), this::mudarFase);
     }
+
+    // Ataque normal delegado à fase vigente (chamado pelo gancho ataqueBasico da IA herdada).
+    public void executarAtaqueNormal() {
+        FaseBoss fase = faseVigente();
+        if (fase != null) fase.executarAtaqueNormal(this);
+    }
+
+    // Ataque especial delegado à fase vigente (chamado pelo gancho ataqueEspecial da IA herdada).
+    public void executarAtaqueEspecial() {
+        FaseBoss fase = faseVigente();
+        if (fase != null) fase.executarAtaqueEspecial(this);
+    }
+
+    // Ponto de extensão do ciclo; por padrão mantém as fases sincronizadas com a vida.
+    public void atualizarEstado() {
+        verificarTransicaoFase();
+    }
+
+    // Transição de fase: cancela ataques pendentes, aplica as animações da nova fase e toca a transição.
+    public void mudarFase(int novaFase) {
+        if (novaFase <= faseAtual || novaFase >= fases.size()) return;
+        faseAtual = novaFase;
+        aoTransicionarFase(novaFase);
+        aplicarAnimacoesFase(fases.get(novaFase));
+        iniciarTransicao();
+        aposTransicionarFase(novaFase);
+    }
+
+    // Gancho pré-animações: cancelar ataques, limpar efeitos, entrar no estado de transição.
+    protected void aoTransicionarFase(int novaFase) { }
+
+    // Gancho pós-transição: efeitos de entrada da nova fase (regeneração, estado padrão, logs).
+    protected void aposTransicionarFase(int novaFase) { }
+
+    // Gancho de morte: cada boss cancela ataques, efeitos e invocações pendentes.
+    protected void aoMorrer() { }
 
     // Ganchos da IA herdada — viram o ciclo de ataque do boss (bloqueados em transição)
     @Override
@@ -121,6 +164,7 @@ public abstract class BossTemplate extends EnemyTemplate {
     public List<FaseBoss> getFases() { return fases; }
     public boolean isEmTransicao() { return emTransicao; }
     public Animation<TextureRegion> getTransicaoFase() { return transicaoFase; }
+    protected float getDeltaAtual() { return deltaAtual; }
 
     // Fase vigente; null quando a lista está vazia ou o índice é inválido.
     protected FaseBoss faseVigente() {

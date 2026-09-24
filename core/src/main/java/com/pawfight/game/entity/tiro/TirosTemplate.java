@@ -12,6 +12,9 @@ import com.pawfight.game.engine.design.animation.MotorAnimacao;
 import com.pawfight.game.engine.render.Renderizar;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
+import com.pawfight.game.entity.tiro.comportamento.ApresentacaoProjetil;
+import com.pawfight.game.entity.tiro.comportamento.EfeitoImpacto;
+import com.pawfight.game.entity.tiro.comportamento.MovimentoProjetil;
 
 import java.util.List;
 
@@ -23,9 +26,10 @@ public abstract class TirosTemplate implements Pool.Poolable {
     protected Rectangle hitBox;
     protected int dano;
     protected float duracao, cadencia, intervalo;
-    protected float tempoVida = 0f;
-    private boolean ativoParaColisao = true;
-    private float tempoRemocaoVisual = Float.POSITIVE_INFINITY;
+    private final EstadoProjetil estado = new EstadoProjetil();
+    private MovimentoProjetil movimentoProjetil = MovimentoProjetil.PARADO;
+    private EfeitoImpacto efeitoImpacto = EfeitoImpacto.NENHUM;
+    private ApresentacaoProjetil apresentacaoProjetil;
     protected Texture texture;
     protected int tamanhoDraw, tamanho, tamanhoPadrao;
     protected int larguraSprite, alturaSprite;
@@ -42,7 +46,6 @@ public abstract class TirosTemplate implements Pool.Poolable {
     // Animação em loop construída a partir da spritesheet (preparada uma única vez).
     protected Animation<TextureRegion> animacao;
     // Tempo acumulado da animação (avança com delta, independente do movimento).
-    protected float tempoAnimacao = 0f;
     // Textura a partir da qual a animação atual foi construída.
     private Texture texturaAnimacao;
     // Utilitário de animação reutilizado (divide a spritesheet e monta o loop).
@@ -186,20 +189,17 @@ public abstract class TirosTemplate implements Pool.Poolable {
         quantidadeFrames = novosFrames;
         animacao = null;
         texturaAnimacao = null;
-        tempoAnimacao = 0f;
+        estado.reiniciarAnimacao();
     }
 
     // Frame atual da animação do tiro (loop contínuo enquanto o tiro existir).
     public TextureRegion frameAtual() {
         if (animacao == null) return null;
-        return animacao.getKeyFrame(tempoAnimacao, true);
+        return animacao.getKeyFrame(estado.getTempoAnimacao(), true);
     }
 
     protected void reiniciarBase(int x, int y, int dano, int tamanho, PlayerTemplate player) {
-        this.tempoVida = 0f;
-        this.tempoAnimacao = 0f;
-        this.ativoParaColisao = true;
-        this.tempoRemocaoVisual = Float.POSITIVE_INFINITY;
+        estado.reiniciar();
         this.dono = player;
         this.spawnEsquerda = player.isOlhandoEsquerda();
         this.tamanho = tamanho + tamanhoPadrao;
@@ -230,10 +230,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
 
     @Override
     public void reset() {
-        tempoVida = 0f;
-        tempoAnimacao = 0f;
-        ativoParaColisao = true;
-        tempoRemocaoVisual = Float.POSITIVE_INFINITY;
+        estado.reiniciar();
     }
 
     protected abstract int definirTamanhoPadrao();
@@ -250,6 +247,14 @@ public abstract class TirosTemplate implements Pool.Poolable {
     protected abstract float definirDuracao();
 
     public void desenhar(Batch batch) {
+        if (apresentacaoProjetil != null) {
+            apresentacaoProjetil.desenhar(batch);
+            return;
+        }
+        desenharPadrao(batch);
+    }
+
+    protected final void desenharPadrao(Batch batch) {
         garantirAnimacao();
         TextureRegion frame = frameAtual();
         if (frame == null) return;
@@ -271,15 +276,15 @@ public abstract class TirosTemplate implements Pool.Poolable {
     }
 
     public void update(float delta) {
-        tempoVida += delta;
-        tempoAnimacao += delta;
-        if (ativoParaColisao && tempoVida >= duracao) {
+        estado.atualizar(delta);
+        if (estado.isAtivoParaColisao() && estado.getTempoVida() >= duracao) {
             gastar();
         }
+        if (estado.isAtivoParaColisao()) movimentoProjetil.atualizar(delta);
     }
 
     public boolean isExpirado() {
-        return !ativoParaColisao && tempoAnimacao + 0.0001f >= tempoRemocaoVisual;
+        return estado.isExpirado();
     }
 
     // Consome a colisão imediatamente, mas preserva o sprite até concluir o ciclo de animação atual.
@@ -288,17 +293,7 @@ public abstract class TirosTemplate implements Pool.Poolable {
     }
 
     private void gastar() {
-        if (!ativoParaColisao) return;
-        ativoParaColisao = false;
-
-        if (quantidadeFrames <= 1) {
-            tempoRemocaoVisual = tempoAnimacao;
-            return;
-        }
-
-        float duracaoCiclo = quantidadeFrames * duracaoFrame;
-        float ciclosAteRemocao = (float) Math.ceil(Math.max(0f, tempoAnimacao - 0.0001f) / duracaoCiclo);
-        tempoRemocaoVisual = Math.max(duracaoCiclo, ciclosAteRemocao * duracaoCiclo);
+        estado.desativar(quantidadeFrames, duracaoFrame);
     }
 
     // true quando o tiro some após atingir um único inimigo (DanoTiro o expira no primeiro acerto).
@@ -306,11 +301,23 @@ public abstract class TirosTemplate implements Pool.Poolable {
         return false;
     }
 
-    public boolean isAtivoParaColisao() { return ativoParaColisao; }
+    public boolean isAtivoParaColisao() { return estado.isAtivoParaColisao(); }
 
     // Hook chamado por DanoTiro quando o dano é aplicado; subclasses sobrescrevem (queimadura, lentidão, roubo de vida).
     public void aoAcertar(EnemyTemplate inimigo) {
-        // padrão: sem efeito adicional
+        efeitoImpacto.aplicar(inimigo);
+    }
+
+    protected final void configurarMovimento(MovimentoProjetil movimento) {
+        movimentoProjetil = movimento == null ? MovimentoProjetil.PARADO : movimento;
+    }
+
+    protected final void configurarEfeitoImpacto(EfeitoImpacto efeito) {
+        efeitoImpacto = efeito == null ? EfeitoImpacto.NENHUM : efeito;
+    }
+
+    protected final void configurarApresentacao(ApresentacaoProjetil apresentacao) {
+        apresentacaoProjetil = apresentacao;
     }
 
     // Injeta a lista de inimigos vivos da sala (referência compartilhada — nunca copiar nem modificar).
@@ -408,6 +415,9 @@ public abstract class TirosTemplate implements Pool.Poolable {
     public int getAlturaSprite() { return alturaSprite; }
     public float getDuracaoFrame() { return duracaoFrame; }
     public int getQuantidadeTirosPadrao() { return quantidadeTirosPadrao; }
+    float getTempoAnimacao() { return estado.getTempoAnimacao(); }
+    float getTempoVida() { return estado.getTempoVida(); }
+    void setTempoAnimacao(float tempo) { estado.definirTempoAnimacao(tempo); }
 
     void iniciarRajada(int quantidade) {
         totalTirosRajada = Math.max(1, quantidade);

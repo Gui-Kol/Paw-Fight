@@ -60,6 +60,8 @@ public class BlackCat extends PlayerTemplate {
         return "Black Cat";
     }
 
+    @Override public String getId() { return "black_cat"; }
+
     @Override
     public void ataqueBasico(float delta) {
     }

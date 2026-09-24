@@ -15,6 +15,7 @@ import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.Map;
 import java.util.Set;
+import com.pawfight.game.engine.procedural.sala.CoordenadaSala;
 
 import com.pawfight.game.engine.GameConfig;
 
@@ -54,8 +55,8 @@ public class DesenharMiniMapa {
 
         ShapeRenderer shapeRenderer = world.getWorldRenderer().getShapeRenderer();
         Batch batch = world.getBatch();
-        Map<String, Sala> roomMap = world.getRoomManager().getRoomGenerator().getRoomMap();
-        Set<String> salasVisitadas = world.getRoomManager().getSalasVisitadas();
+        Map<CoordenadaSala, Sala> roomMap = world.getRoomManager().getRoomGenerator().getRoomMap();
+        Set<CoordenadaSala> salasVisitadas = world.getRoomManager().getSalasVisitadas();
         OrthographicCamera camera = player.getHud().getHudCamera();
         shapeRenderer.setProjectionMatrix(camera.combined);
         Sala currentRoom = world.getRoomManager().getCurrentRoom();
@@ -69,10 +70,9 @@ public class DesenharMiniMapa {
         int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE;
         int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
 
-        for (String key : salasVisitadas) {
-            String[] coords = key.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
+        for (CoordenadaSala coordenada : salasVisitadas) {
+            int x = coordenada.x();
+            int y = coordenada.y();
             minX = Math.min(minX, x);
             maxX = Math.max(maxX, x);
             minY = Math.min(minY, y);
@@ -94,10 +94,9 @@ public class DesenharMiniMapa {
         shapeRenderer.end();
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        for (String key : salasVisitadas) {
-            String[] coords = key.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
+        for (CoordenadaSala coordenada : salasVisitadas) {
+            int x = coordenada.x();
+            int y = coordenada.y();
 
             float posX = offsetX + x * SEPARACAO;
             float posY = offsetY + y * SEPARACAO;
@@ -105,12 +104,12 @@ public class DesenharMiniMapa {
             float centroX = posX + tamanho / 2f;
             float centroY = posY + tamanho / 2f;
 
-            Sala sala = roomMap.get(key);
+            Sala sala = roomMap.get(coordenada);
             if (sala != null) {
                 shapeRenderer.setColor(Color.WHITE);
 
                 if (sala.hasNorth()) {
-                    String destinoKey = x + "," + (y + 1);
+                    CoordenadaSala destinoKey = new CoordenadaSala(x, y + 1);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + x * SEPARACAO;
                         float destY = offsetY + (y + 1) * SEPARACAO;
@@ -120,7 +119,7 @@ public class DesenharMiniMapa {
                     }
                 }
                 if (sala.hasSouth()) {
-                    String destinoKey = x + "," + (y - 1);
+                    CoordenadaSala destinoKey = new CoordenadaSala(x, y - 1);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + x * SEPARACAO;
                         float destY = offsetY + (y - 1) * SEPARACAO;
@@ -130,7 +129,7 @@ public class DesenharMiniMapa {
                     }
                 }
                 if (sala.hasEast()) {
-                    String destinoKey = (x + 1) + "," + y;
+                    CoordenadaSala destinoKey = new CoordenadaSala(x + 1, y);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + (x + 1) * SEPARACAO;
                         float destY = offsetY + y * SEPARACAO;
@@ -140,7 +139,7 @@ public class DesenharMiniMapa {
                     }
                 }
                 if (sala.hasWest()) {
-                    String destinoKey = (x - 1) + "," + y;
+                    CoordenadaSala destinoKey = new CoordenadaSala(x - 1, y);
                     if (salasVisitadas.contains(destinoKey)) {
                         float destX = offsetX + (x - 1) * SEPARACAO;
                         float destY = offsetY + y * SEPARACAO;
@@ -156,10 +155,9 @@ public class DesenharMiniMapa {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        for (String key : salasVisitadas) {
-            String[] coords = key.split(",");
-            int x = Integer.parseInt(coords[0]);
-            int y = Integer.parseInt(coords[1]);
+        for (CoordenadaSala coordenada : salasVisitadas) {
+            int x = coordenada.x();
+            int y = coordenada.y();
 
             float posX = offsetX + x * SEPARACAO;
             float posY = offsetY + y * SEPARACAO;

@@ -24,6 +24,7 @@ import com.pawfight.game.engine.procedural.sala.InfoGeraObjeto;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.render.RenderizadorCamada;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.content.enemy.DefinicaoInimigo;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
 import java.util.List;
@@ -80,15 +81,25 @@ public abstract class WorldTemplate implements Screen {
         }
         this.player = player;
         if (player != null) {
+            game.getGameSession().definirPlayer(player);
+            game.getGameSession().setMundoAtual(getWorldName());
             // Compartilha a lista viva de inimigos da sala — tiros só nascem com inimigos presentes e miram neles
             player.setFonteInimigos(enemyManager.getListaInimigos());
-            gerenciadorEcs.adicionarEntidade(player.getEntidadeEcs());
+            // A entidade do player é registrada somente enquanto esta tela é a ativa. Um player
+            // herdado de outro mundo durante a transição entra no Engine deste mundo no show().
+            if (game.getScreen() == this) {
+                gerenciadorEcs.adicionarEntidade(player.getEntidadeEcs());
+            }
         }
     }
 
     @Override
     public void show() {
         try {
+            // O player pertence ao Engine apenas da tela ativa (o hide da anterior já o removeu).
+            if (player != null) {
+                gerenciadorEcs.adicionarEntidade(player.getEntidadeEcs());
+            }
             worldPhysics.clearCache();
             map = new TmxMapLoader().load(getMapPath());
             renderizadorCamada = new RenderizadorCamada(map);
@@ -129,17 +140,43 @@ public abstract class WorldTemplate implements Screen {
             return;
         }
 
-        renderLayers();
         if (player != null) {
-            updatePlayer(delta);
-            if (!player.isPause()) {
-                gerenciadorEcs.atualizar(delta);
-            }
-            if (player.isPause()) {
-                pause();
-            }
+            atualizarGameplay(delta);
+        }
+
+        renderizarCena();
+    }
+
+    protected void atualizarGameplay(float delta) {
+        player.update(delta);
+        if (player.isPause()) {
+            pause();
+            return;
+        }
+
+        if (!player.isMorto()) {
+            gerenciadorEcs.atualizar(delta);
+            enemyManager.atualizarInimigos(delta);
+            worldPhysics.resolverColisoes(enemyManager.getListaInimigos());
+            worldPhysics.processarDanoTiro(this, delta);
+            atualizarGameplayEspecifico(delta);
+            checkPortals();
+        }
+
+        player.atualizarCamera();
+        gerenciarMorte(delta);
+    }
+
+    protected void atualizarGameplayEspecifico(float delta) {
+        // Mundos concretos podem acrescentar regras sem misturá-las à renderização.
+    }
+
+    private void renderizarCena() {
+        renderLayers();
+
+        if (player != null) {
+            player.draw(this);
             worldRenderer.renderizarInimigos(this);
-            // Ataques (tiros) renderizados por cima dos inimigos
             player.desenharTiros(this);
         }
 
@@ -150,9 +187,6 @@ public abstract class WorldTemplate implements Screen {
         if (player != null) {
             player.drawHud(batch, worldRenderer.getShapeRenderer(), this);
         }
-        checkPortals();
-        worldPhysics.processarDanoTiro(this);
-
         // Debug: desenha a quadtree quando F3 está ativo
         if (player != null) {
             worldPhysics.drawDebugQuadtree(
@@ -161,12 +195,6 @@ public abstract class WorldTemplate implements Screen {
             );
         }
 
-        gerenciarMorte(delta);
-    }
-
-    protected void updatePlayer(float delta) {
-        player.update(delta);
-        player.draw(this);
     }
 
     // Fluxo de morte: 1) zoom da câmera no player, 2) animação de morte completa, 3) fade to black, 4) retorno ao Home
@@ -222,7 +250,7 @@ public abstract class WorldTemplate implements Screen {
             player.setPause(false);
         }
         Gdx.app.log(getWorldName(), "Voltando ao menu inicial.");
-        ScreenManager.getInstance().fadeToScreen(
+        ScreenManager.getInstance().fadeToScreenEncerrandoSessao(
             new Home(game, camera, viewport), duracaoTransicao, Color.BLACK, false);
     }
 
@@ -236,6 +264,10 @@ public abstract class WorldTemplate implements Screen {
 
     public abstract String getMapPath();
 
+    public String getMapPath(Sala sala) {
+        return getMapPath();
+    }
+
     protected abstract void checkPortals();
 
     public abstract void logRoomInfo(Sala sala);
@@ -248,9 +280,9 @@ public abstract class WorldTemplate implements Screen {
 
     public abstract String getWorldName();
 
-    public abstract List<EnemyTemplate> getInimigosModelo();
+    public abstract List<DefinicaoInimigo> getDefinicoesInimigos();
 
-    public abstract List<EnemyTemplate> getBossesModelo();
+    public abstract List<DefinicaoInimigo> getDefinicoesBosses();
 
     protected abstract boolean deveCarregarMapaCompleto();
 
@@ -277,6 +309,11 @@ public abstract class WorldTemplate implements Screen {
 
     @Override
     public void hide() {
+        // Libera a entidade do player deste Engine antes de ela entrar no da próxima tela —
+        // o Ashley não suporta a mesma Entity registrada em dois Engines ao mesmo tempo.
+        if (player != null) {
+            gerenciadorEcs.removerEntidade(player.getEntidadeEcs());
+        }
         backMusic.stop();
         Gdx.app.log(getWorldName(), "hide — música parada.");
     }
@@ -293,7 +330,6 @@ public abstract class WorldTemplate implements Screen {
         // background e backMusic são gerenciados pelo AssetManager — NÃO dar dispose aqui
         if (map != null) map.dispose();
         if (renderizadorCamada != null) renderizadorCamada.dispose();
-        if (player != null) player.dispose();
         stage.dispose();
         Gdx.app.log(getWorldName(), "foi disposed");
     }

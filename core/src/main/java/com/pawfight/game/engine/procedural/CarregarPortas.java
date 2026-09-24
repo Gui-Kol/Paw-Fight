@@ -10,6 +10,7 @@ import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.engine.procedural.sala.GeradorSalas;
 import com.pawfight.game.engine.procedural.sala.TipoSala;
+import com.pawfight.game.engine.procedural.sala.CoordenadaSala;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.player.PlayerTemplate;
 import com.pawfight.game.world.template.WorldTemplate;
@@ -55,7 +56,7 @@ public class CarregarPortas {
             // SPAWN não tem porta para baixo
             if (dir == Direcao.BAIXO && currentRoom.getType() == TipoSala.SPAWN) continue;
 
-            Sala destino = geradorSalas.getRoomMap().get((currentRoom.getX() + dir.dx) + "," + (currentRoom.getY() + dir.dy));
+            Sala destino = geradorSalas.buscarSala(currentRoom.getX() + dir.dx, currentRoom.getY() + dir.dy);
 
             // só continua se a sala atual realmente tiver conexão nessa direção
             boolean conexaoValida =
@@ -85,43 +86,67 @@ public class CarregarPortas {
     private void moverParaSala(int x, int y, WorldTemplate world) {
         PlayerTemplate player = world.getPlayer();
         TiledMap oldMap = world.getMap();
+        Sala salaAnterior = world.getRoomManager().getCurrentRoom();
+        List<Rectangle> paredesAnteriores = world.getWorldPhysics().getParedes();
         GeradorSalas geradorSalas = world.getRoomManager().getRoomGenerator();
         RenderizadorCamada renderizadorCamada = world.getLayerRenderer();
         String nomeClasseOrigem = world.getWorldName();
 
         player.clearList();
-        Sala sala = geradorSalas.getRoomMap().get(x + "," + y);
+        Sala sala = geradorSalas.buscarSala(x, y);
 
         if (sala == null) {
             Gdx.app.error(nomeClasseOrigem, "Erro: Sala não encontrada em " + x + "," + y);
             return;
         }
 
-        if (oldMap != null) {
-            oldMap.dispose();
-            if (renderizadorCamada != null) renderizadorCamada.dispose();
-        }
-
+        TiledMap newMap = null;
+        RenderizadorCamada novoRenderizador = null;
         try {
-            world.getRoomManager().setCurrentRoom(sala);
-            world.getWorldPhysics().getTilemapHitboxFactory().clearCache();
+            newMap = new TmxMapLoader().load(world.getMapPath(sala));
+            validarMapa(newMap);
+            novoRenderizador = new RenderizadorCamada(newMap);
+            List<Rectangle> novasParedes = world.getWorldPhysics().prepararParedes(newMap);
 
-            TiledMap newMap = new TmxMapLoader().load(world.getMapPath());
+            player.clearList();
             world.setMap(newMap);
-            world.setLayerRenderer(new RenderizadorCamada(newMap));
-
-            // Recarrega paredes a partir do NOVO mapa
-            world.carregarParede();
+            world.setLayerRenderer(novoRenderizador);
+            world.getRoomManager().setCurrentRoom(sala);
+            world.getWorldPhysics().aplicarParedes(player, novasParedes);
 
             moverSalaInimigos(world);
 
-            world.getRoomManager().getSalasVisitadas().add(x + "," + y);
+            world.getRoomManager().addSalaVisitada(new CoordenadaSala(x, y));
             Gdx.app.log(nomeClasseOrigem, "Sala mudada com sucesso para: " + x + "," + y);
             world.logRoomInfo(sala);
 
             world.gerarObjetos();
+
+            if (oldMap != null) {
+                world.getWorldPhysics().getTilemapHitboxFactory().removerMapa(oldMap);
+                oldMap.dispose();
+            }
+            if (renderizadorCamada != null) renderizadorCamada.dispose();
         } catch (Exception e) {
+            if (newMap != null && newMap == world.getMap()) {
+                world.setMap(oldMap);
+                world.setLayerRenderer(renderizadorCamada);
+                world.getRoomManager().setCurrentRoom(salaAnterior);
+                player.clearList();
+                world.getWorldPhysics().aplicarParedes(player, paredesAnteriores);
+            }
+            if (novoRenderizador != null) novoRenderizador.dispose();
+            if (newMap != null) {
+                world.getWorldPhysics().getTilemapHitboxFactory().removerMapa(newMap);
+                newMap.dispose();
+            }
             Gdx.app.error(nomeClasseOrigem, "Erro ao mudar para sala " + x + "," + y + ": " + e.getMessage(), e);
+        }
+    }
+
+    private void validarMapa(TiledMap map) {
+        if (map.getLayers().get("Parede") == null) {
+            throw new IllegalStateException("Mapa sem layer obrigatória 'Parede'.");
         }
     }
 

@@ -34,6 +34,7 @@ public class TiroGelo extends TirosTemplate {
         trocarAnimacao(gelo, FRAMES_VOO);
         posicionarNoPlayer();
         definirDirecaoPara(inimigoMaisProximo());
+        configurarComportamentos();
 
         // Cria o pool apenas no modelo
         pool = new Pool<TiroGelo>(8, 64) {
@@ -48,6 +49,15 @@ public class TiroGelo extends TirosTemplate {
         super(); // inicializa constantes (duracao, cadencia, tamanhoPadrao)
         gelo = Assets.get("entitys/player/ataques/TiroGelo.png", Texture.class);
         explosao = Assets.get("entitys/player/ataques/TiroGeloExplodindo.png", Texture.class);
+        configurarComportamentos();
+    }
+
+    private void configurarComportamentos() {
+        configurarMovimento(delta -> moverNaDirecao(VELOCIDADE_TIRO, delta));
+        configurarEfeitoImpacto(inimigo -> {
+            inimigo.aplicarLentidao(MULTIPLICADOR_LENTIDAO, DURACAO_LENTIDAO, CHANCE_LENTIDAO);
+            trocarAnimacao(explosao, FRAMES_EXPLOSAO);
+        });
     }
 
     @Override
@@ -78,21 +88,8 @@ public class TiroGelo extends TirosTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        super.update(delta);
-        if (!isAtivoParaColisao()) return;
-        moverNaDirecao(VELOCIDADE_TIRO, delta); // retilíneo até expirar
-    }
-
-    @Override
     public boolean isUnicoAlvo() {
         return true;
-    }
-
-    @Override
-    public void aoAcertar(EnemyTemplate inimigo) {
-        inimigo.aplicarLentidao(MULTIPLICADOR_LENTIDAO, DURACAO_LENTIDAO, CHANCE_LENTIDAO);
-        trocarAnimacao(explosao, FRAMES_EXPLOSAO);
     }
 
     @Override

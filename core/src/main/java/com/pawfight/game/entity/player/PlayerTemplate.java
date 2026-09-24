@@ -32,7 +32,7 @@ public abstract class PlayerTemplate implements Entidade {
     protected final CombateComponent combate = new CombateComponent();
     private final List<TirosTemplate> drawSnapshot = new ArrayList<>();
     protected final ColisaoComponent colisao = new ColisaoComponent();
-    protected final RestricaoMovimentoComponent restricaoMovimento = new RestricaoMovimentoComponent();
+    protected final StatusComponent status = new StatusComponent();
     protected final SaveComponent save = new SaveComponent();
     protected final GerenciadorParticulas particulas = new GerenciadorParticulas();
     protected final StatsComponent stats;          // inicializado no construtor (precisa de DadosPlayer)
@@ -63,6 +63,7 @@ public abstract class PlayerTemplate implements Entidade {
     public abstract DadosPlayer dadosPlayer();
     public abstract void updateSpriteDefinitions();
     public abstract String getName();
+    public abstract String getId();
     public abstract void ataqueBasico(float delta);
     public abstract void ataqueEspecial();
     public abstract void usarHabilidadeEspecial();
@@ -80,6 +81,8 @@ public abstract class PlayerTemplate implements Entidade {
         stats = new StatsComponent(dados);
         entidadeEcs.add(stats);
         entidadeEcs.add(combate);
+        status.setAlvo(this);
+        entidadeEcs.add(status);
         entidadeEcs.add(new ReferenciaEntidadeComponent(this));
 
         audio.init(dados);
@@ -125,13 +128,11 @@ public abstract class PlayerTemplate implements Entidade {
             Gdx.app.log(getName(), pause ? "Jogo pausado." : "Jogo retomado.");
         }
         if (pause) {
-            restricaoMovimento.limpar();
             return;
         }
 
         if (!stats.isMorto()) {
-            restricaoMovimento.atualizar(delta);
-            int velocidadeAtual = Math.round(stats.getVelocidade() * restricaoMovimento.getMultiplicador());
+            int velocidadeAtual = Math.round(stats.getVelocidade() * status.getMultiplicadorVelocidade());
             movimento.update(hitBox, velocidadeAtual, delta, input);
             moving = movimento.isMoving();
             olhandoEsquerda = movimento.isOlhandoEsquerda();
@@ -162,7 +163,7 @@ public abstract class PlayerTemplate implements Entidade {
                 dy + hitboxOffsetY
             );
         } else {
-            restricaoMovimento.limpar();
+            status.limparNaoPersistentes();
         }
 
         // Timers rodam mesmo com o player morto
@@ -174,6 +175,9 @@ public abstract class PlayerTemplate implements Entidade {
         // Ajusta dx e dy conforme colisão
         colisao.checarColisao(this);
 
+    }
+
+    public void atualizarCamera() {
         cameraComponent.updateCamera(dx, dy);
     }
 
@@ -294,7 +298,7 @@ public abstract class PlayerTemplate implements Entidade {
     public void clearList() {
         colisao.clearColisores();
         combate.clearTiros();
-        restricaoMovimento.limpar();
+        status.limparNaoPersistentes();
     }
 
     public void adicionarTiro(TirosTemplate tiro) {
@@ -388,16 +392,16 @@ public abstract class PlayerTemplate implements Entidade {
     public void setPause(boolean pause) {
         this.pause = pause;
         this.menuAberto = pause;
-        if (pause) restricaoMovimento.limpar();
     }
 
     public void aplicarRestricaoMovimento(float multiplicador, float duracao) {
-        if (!stats.isMorto()) restricaoMovimento.aplicar(multiplicador, duracao);
+        if (!stats.isMorto()) status.aplicarLentidao(multiplicador, duracao, 1f);
     }
 
-    public void removerRestricaoMovimento() { restricaoMovimento.limpar(); }
-    public boolean isMovimentoRestrito() { return restricaoMovimento.isAtiva(); }
-    public float getMultiplicadorMovimento() { return restricaoMovimento.getMultiplicador(); }
+    public void removerRestricaoMovimento() { status.remover("lentidao"); }
+    public boolean isMovimentoRestrito() { return status.isLento(); }
+    public float getMultiplicadorMovimento() { return status.getMultiplicadorVelocidade(); }
+    public StatusComponent getStatus() { return status; }
 
     // Morte finalizada (esconde o sprite após a animação tocar 1 vez)
     public boolean isMorteFinalizada() { return morteFinalizada; }

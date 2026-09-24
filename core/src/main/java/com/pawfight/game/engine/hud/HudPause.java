@@ -171,8 +171,7 @@ public class HudPause {
                         // Despausa o player e para a música antes da transição
                         mundo.getPlayer().setPause(false);
                         mundo.getBackMusic().stop();
-                        dispose();
-                        ScreenManager.getInstance().fadeToScreen(
+                        ScreenManager.getInstance().fadeToScreenEncerrandoSessao(
                             new Home(mundo.getGame(), mundo.getCamera(), mundo.getViewport()),
                             1.5f, Color.BLACK, false);
                     }

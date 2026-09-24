@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 // RoomManager real carrega fontes via Gdx.files (DesenharMiniMapa); o mock captura rooms, currentRoom e salasVisitadas sem gráficos.
@@ -27,7 +26,7 @@ class GeradorSalasTest {
 
     private final AtomicReference<List<Sala>> rooms = new AtomicReference<>();
     private final AtomicReference<Sala> currentRoom = new AtomicReference<>();
-    private final Set<String> salasVisitadas = new HashSet<>();
+    private final Set<CoordenadaSala> salasVisitadas = new HashSet<>();
 
     @BeforeAll
     static void initGdx() {
@@ -53,7 +52,7 @@ class GeradorSalasTest {
             .when(roomManager).setCurrentRoom(any());
         when(roomManager.getCurrentRoom()).thenAnswer(inv -> currentRoom.get());
         doAnswer(inv -> { salasVisitadas.add(inv.getArgument(0)); return null; })
-            .when(roomManager).addSalasVisitadas(anyString());
+            .when(roomManager).addSalaVisitada(any(CoordenadaSala.class));
 
         WorldTemplate world = mock(WorldTemplate.class);
         when(world.getRoomManager()).thenReturn(roomManager);
@@ -82,7 +81,7 @@ class GeradorSalasTest {
     void salaAtualVisitada() {
         Sala atual = currentRoom.get();
         assertNotNull(atual);
-        assertTrue(salasVisitadas.contains(atual.getX() + "," + atual.getY()));
+        assertTrue(salasVisitadas.contains(CoordenadaSala.de(atual)));
     }
 
     @Test

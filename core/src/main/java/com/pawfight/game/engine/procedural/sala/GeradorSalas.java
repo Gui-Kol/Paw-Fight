@@ -7,7 +7,7 @@ import java.util.*;
 
 public class GeradorSalas {
     private final Random random = new Random();
-    private final Map<String, Sala> roomMap = new HashMap<>();
+    private final Map<CoordenadaSala, Sala> roomMap = new HashMap<>();
     private int tentativasMax;
 
     public void gerarRooms(WorldTemplate world) {
@@ -18,7 +18,7 @@ public class GeradorSalas {
                 throw new RuntimeException("Erro: Nenhuma sala foi gerada.");
             }
             world.getRoomManager().setCurrentRoom(world.getRoomManager().getRooms().get(0));
-            world.getRoomManager().addSalasVisitadas(world.getRoomManager().getCurrentRoom().getX() + "," + world.getRoomManager().getCurrentRoom().getY());
+            world.getRoomManager().addSalaVisitada(CoordenadaSala.de(world.getRoomManager().getCurrentRoom()));
             Gdx.app.log(world.getWorldName(), "Salas geradas com sucesso: " + world.getRoomManager().getRooms().size());
         } catch (Exception e) {
             Gdx.app.error(world.getWorldName(), "Erro ao gerar salas: " + e.getMessage(), e);
@@ -130,7 +130,7 @@ public class GeradorSalas {
         List<Sala> rooms = new ArrayList<>();
         Sala spawn = new Sala(0, 0, TipoSala.SPAWN);
         rooms.add(spawn);
-        roomMap.put("0,0", spawn);
+        roomMap.put(new CoordenadaSala(0, 0), spawn);
 
         // cadeia principal
         for (int i = 1; i < numRooms; i++) {
@@ -151,7 +151,7 @@ public class GeradorSalas {
                     case WEST -> nx--;
                 }
 
-                String key = nx + "," + ny;
+                CoordenadaSala key = new CoordenadaSala(nx, ny);
                 if (!roomMap.containsKey(key)) {
                     next = new Sala(nx, ny, type);
                     conectar(base, next, dir);
@@ -189,7 +189,7 @@ public class GeradorSalas {
                 case WEST -> nx--;
             }
 
-            String key = nx + "," + ny;
+            CoordenadaSala key = new CoordenadaSala(nx, ny);
             if (!roomMap.containsKey(key)) {
                 treasure = new Sala(nx, ny, TipoSala.TESOURO);
                 conectar(boss, treasure, dir);
@@ -222,7 +222,7 @@ public class GeradorSalas {
                     case WEST -> nx--;
                 }
 
-                String key = nx + "," + ny;
+                CoordenadaSala key = new CoordenadaSala(nx, ny);
                 if (!roomMap.containsKey(key)) {
                     TipoSala type = tipos[random.nextInt(tipos.length)];
                     next = new Sala(nx, ny, type);
@@ -240,7 +240,11 @@ public class GeradorSalas {
         return rooms;
     }
 
-    public Map<String, Sala> getRoomMap() {
-        return new HashMap<>(roomMap); // Retorna cópia para segurança
+    public Sala buscarSala(int x, int y) {
+        return roomMap.get(new CoordenadaSala(x, y));
+    }
+
+    public Map<CoordenadaSala, Sala> getRoomMap() {
+        return Collections.unmodifiableMap(roomMap);
     }
 }

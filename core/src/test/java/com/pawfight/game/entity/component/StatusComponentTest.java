@@ -116,4 +116,45 @@ class StatusComponentTest {
         assertFalse(status.isQueimando());
         assertFalse(status.isLento());
     }
+
+    @Test
+    @DisplayName("Delta grande processa todos os ticks vencidos")
+    void deltaGrandeProcessaMultiplosTicks() {
+        status.aplicarQueimadura(3, 3f, 1f);
+        assertEquals(9, status.update(1.5f));
+    }
+
+    @Test
+    @DisplayName("Efeito mais forte de lentidão prevalece")
+    void lentidaoMaisFortePrevalece() {
+        status.aplicarLentidao(0.7f, 2f, 1f);
+        status.aplicarLentidao(0.4f, 1f, 1f);
+        assertEquals(0.4f, status.getMultiplicadorVelocidade());
+        status.aplicarLentidao(0.8f, 4f, 1f);
+        assertEquals(0.4f, status.getMultiplicadorVelocidade());
+    }
+
+    @Test
+    @DisplayName("Política único por fonte mantém fontes independentes")
+    void fontesIndependentes() {
+        Object fonteA = new Object();
+        Object fonteB = new Object();
+        status.aplicar(new EfeitoStatus("marca", fonteA, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.UNICO_POR_FONTE, false));
+        status.aplicar(new EfeitoStatus("marca", fonteB, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.UNICO_POR_FONTE, false));
+        assertEquals(2, status.getEfeitos().size());
+    }
+
+    @Test
+    @DisplayName("Limpeza de troca de sala preserva apenas efeitos persistentes")
+    void limpaNaoPersistentes() {
+        status.aplicar(new EfeitoStatus("temporario", this, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.SUBSTITUIR, false));
+        status.aplicar(new EfeitoStatus("persistente", this, 2f, 1f, 1, 0f,
+            PoliticaAcumuloStatus.SUBSTITUIR, true));
+        status.limparNaoPersistentes();
+        assertFalse(status.possui("temporario"));
+        assertTrue(status.possui("persistente"));
+    }
 }

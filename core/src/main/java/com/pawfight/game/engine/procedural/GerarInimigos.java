@@ -7,6 +7,8 @@ import com.pawfight.game.engine.fisica.TilemapHitboxFactory;
 import com.pawfight.game.engine.procedural.sala.Sala;
 import com.pawfight.game.entity.bosses.BossTemplate;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
+import com.pawfight.game.content.enemy.ContextoSpawn;
+import com.pawfight.game.content.enemy.DefinicaoInimigo;
 import com.pawfight.game.world.template.WorldTemplate;
 
 import java.util.ArrayList;
@@ -24,11 +26,11 @@ public class GerarInimigos {
         random = new Random();
     }
 
-    private List<EnemyTemplate> inimigos(List<EnemyTemplate> modelosDisponiveis, boolean forte,
+    private List<EnemyTemplate> inimigos(WorldTemplate world, List<DefinicaoInimigo> definicoes, boolean forte,
                                         int qntMax, int qntMin, List<Rectangle> regioesSpawn) {
         List<EnemyTemplate> novosInimigos = new ArrayList<>();
 
-        if (modelosDisponiveis == null || modelosDisponiveis.isEmpty() || regioesSpawn == null || regioesSpawn.isEmpty()) {
+        if (definicoes == null || definicoes.isEmpty() || regioesSpawn == null || regioesSpawn.isEmpty()) {
             return novosInimigos;
         }
 
@@ -42,10 +44,10 @@ public class GerarInimigos {
         int quantidade = qntMin + random.nextInt(qntMax - qntMin + 1);
 
         while (novosInimigos.size() < quantidade) {
-            EnemyTemplate modelo = modelosDisponiveis.get(random.nextInt(modelosDisponiveis.size()));
+            DefinicaoInimigo definicao = definicoes.get(random.nextInt(definicoes.size()));
 
             // Tamanho do sprite do inimigo (para não ultrapassar a área)
-            int tamanho = modelo.getTamanho();
+            int tamanho = definicao.tamanho();
 
             Rectangle regiao = regioesSpawn.get(random.nextInt(regioesSpawn.size()));
 
@@ -56,10 +58,10 @@ public class GerarInimigos {
             int x = (int) (regiao.x + random.nextFloat() * spawnWidth);
             int y = (int) (regiao.y + random.nextFloat() * spawnHeight);
 
-            EnemyTemplate novoInimigo = modelo.cloneEnemy();
-            novoInimigo.setLocation(x, y);
+            ContextoSpawn contexto = new ContextoSpawn(world.getPlayer(), x, y, forte, 1,
+                world.getWorldPhysics().getParedes(), world.getEnemyManager().getListaInimigos(), random);
+            EnemyTemplate novoInimigo = definicao.criar(contexto);
             if (forte) {
-                novoInimigo.setForte(true);
                 listaInimigosFortes.add(novoInimigo);
             }
 
@@ -89,16 +91,16 @@ public class GerarInimigos {
         }
         List<EnemyTemplate> inimigosGerados = new ArrayList<>();
 
-        List<EnemyTemplate> listarModeloEnemy = world.getInimigosModelo();
+        List<DefinicaoInimigo> definicoesInimigos = world.getDefinicoesInimigos();
         switch (currentRoom.getType()) {
             case INIMIGOS -> {
-                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, false, 50, 10, regiaoSpawn));
+                inimigosGerados.addAll(gerarInimigos.inimigos(world, definicoesInimigos, false, 50, 10, regiaoSpawn));
             }
             case INIMIGOS_FORTES -> {
-                inimigosGerados.addAll(gerarInimigos.inimigos(listarModeloEnemy, true, 7, 3, regiaoSpawn));
+                inimigosGerados.addAll(gerarInimigos.inimigos(world, definicoesInimigos, true, 7, 3, regiaoSpawn));
             }
             case BOSS -> {
-                inimigosGerados.addAll(gerarInimigos.inimigos(world.getBossesModelo(), false, 1, 1, regiaoSpawn));
+                inimigosGerados.addAll(gerarInimigos.inimigos(world, world.getDefinicoesBosses(), false, 1, 1, regiaoSpawn));
             }
         }
         return inimigosGerados;

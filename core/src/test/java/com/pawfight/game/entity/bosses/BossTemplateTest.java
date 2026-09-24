@@ -8,6 +8,7 @@ import com.pawfight.game.HeadlessGdx;
 import com.pawfight.game.entity.enemy.DadosInimigo;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.component.StatsComponent;
+import com.pawfight.game.entity.player.PlayerTemplate;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +47,10 @@ class BossTemplateTest {
 
         BossFake() {
             super(0, 0, false, null);
+        }
+
+        BossFake(PlayerTemplate player) {
+            super(0, 0, false, player);
         }
 
         @Override
@@ -231,6 +236,26 @@ class BossTemplateTest {
         assertEquals(1, boss.getFaseAtual());
         assertEquals(1, boss.mudancasFase);
         assertEquals(1, boss.atualizacoesEstado);
+    }
+
+    @Test
+    @DisplayName("Pause durante a transição não avança timers nem encerra a transição")
+    void pauseDuranteTransicao() {
+        PlayerTemplate playerPausado = mock(PlayerTemplate.class);
+        when(playerPausado.isPause()).thenReturn(true);
+        BossFake pausado = new BossFake(playerPausado);
+
+        @SuppressWarnings("unchecked")
+        Animation<TextureRegion> animacao = mock(Animation.class);
+        when(animacao.isAnimationFinished(anyFloat())).thenReturn(false);
+        pausado.transicaoFase = animacao;
+        pausado.mudarFase(1);
+        assertTrue(pausado.isEmTransicao());
+
+        pausado.update(10f);
+
+        assertTrue(pausado.isEmTransicao());
+        assertEquals(0, pausado.atualizacoesEstado);
     }
 
     @Test

@@ -8,14 +8,16 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.pawfight.game.engine.design.DefinirSprite;
 import com.pawfight.game.engine.loading.Assets;
+import com.pawfight.game.entity.bosses.infra.AtaqueComAviso;
+import com.pawfight.game.entity.bosses.infra.ControladorCooldown;
+import com.pawfight.game.entity.bosses.infra.ControladorInvocacoes;
+import com.pawfight.game.entity.bosses.infra.MaquinaEstadosBoss;
 import com.pawfight.game.entity.enemy.DadosInimigo;
 import com.pawfight.game.entity.enemy.EnemyTemplate;
 import com.pawfight.game.entity.enemy.MoverDirecaoPlayer;
 import com.pawfight.game.entity.enemy.Skeleton;
 import com.pawfight.game.entity.player.PlayerTemplate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class MumiaAreia extends BossTemplate {
@@ -62,17 +64,16 @@ public class MumiaAreia extends BossTemplate {
     private static final int MAX_INVOCACOES = 2;
 
     private final MoverDirecaoPlayer mover = new MoverDirecaoPlayer();
-    private final List<EnemyTemplate> invocacoesAtivas = new ArrayList<>(MAX_INVOCACOES);
-    private final List<EnemyTemplate> invocacoesPendentes = new ArrayList<>(MAX_INVOCACOES);
+    private final MaquinaEstadosBoss<Estado> maquina = new MaquinaEstadosBoss<>(Estado.APROXIMACAO);
+    private final ControladorCooldown cooldownGolpe = new ControladorCooldown(COOLDOWN_GOLPE, false);
+    private final ControladorCooldown cooldownFaixa = new ControladorCooldown(COOLDOWN_FAIXA, false);
+    private final ControladorCooldown cooldownMaldicao = new ControladorCooldown(COOLDOWN_MALDICAO, false);
+    private final ControladorCooldown cooldownInvocacao = new ControladorCooldown(COOLDOWN_INVOCACAO, true);
+    private final ControladorInvocacoes invocacoes = new ControladorInvocacoes(MAX_INVOCACOES);
+    private final AtaqueComAviso golpe = new AtaqueComAviso(ANTECIPACAO_GOLPE);
+    private final AtaqueComAviso faixa = new AtaqueComAviso(ANTECIPACAO_FAIXA);
+    private final AtaqueComAviso maldicao = new AtaqueComAviso(ANTECIPACAO_MALDICAO);
 
-    private Estado estado = Estado.APROXIMACAO;
-    private float timerEstado;
-    private float cooldownGolpe;
-    private float cooldownFaixa;
-    private float cooldownMaldicao;
-    private float cooldownInvocacao = COOLDOWN_INVOCACAO;
-    private boolean danoAplicadoNaJanela;
-    private boolean faixaAplicadaNaExecucao;
     private boolean regeneracaoUsada;
 
     public MumiaAreia(int dx, int dy, boolean forte, PlayerTemplate player) {
@@ -130,34 +131,22 @@ public class MumiaAreia extends BossTemplate {
     }
 
     @Override
-    public void update(float delta) {
-        if (player != null && player.isPause()) return;
-        if (!stats.isMorto()) sincronizarFaseComVida();
-        super.update(delta);
-        if (stats.isMorto()) {
-            cancelarAtaque(Estado.MORTE);
-            invocacoesPendentes.clear();
-            liberarFaixa();
-        }
-    }
-
-    @Override
     public void executarIA(float delta) {
         if (stats.isMorto() || player == null || player.isMorto()) {
             moving = false;
             liberarFaixa();
             return;
         }
-        if (estado == Estado.TRANSICAO && !emTransicao) estado = Estado.APROXIMACAO;
-        if (emTransicao || estado == Estado.TRANSICAO) return;
+        if (maquina.is(Estado.TRANSICAO) && !emTransicao) maquina.mudar(Estado.APROXIMACAO);
+        if (emTransicao || maquina.is(Estado.TRANSICAO)) return;
 
-        cooldownGolpe = Math.max(0f, cooldownGolpe - delta);
-        cooldownFaixa = Math.max(0f, cooldownFaixa - delta);
-        cooldownMaldicao = Math.max(0f, cooldownMaldicao - delta);
-        cooldownInvocacao = Math.max(0f, cooldownInvocacao - delta);
-        limparInvocacoesMortas();
+        cooldownGolpe.atualizar(delta);
+        cooldownFaixa.atualizar(delta);
+        cooldownMaldicao.atualizar(delta);
+        cooldownInvocacao.atualizar(delta);
+        invocacoes.removerMortas();
 
-        switch (estado) {
+        switch (maquina.getEstado()) {
             case APROXIMACAO -> processarAproximacao(delta);
             case AVISO_GOLPE -> processarAvisoGolpe(delta);
             case ATAQUE -> iniciarRecuperacao();
@@ -172,92 +161,87 @@ public class MumiaAreia extends BossTemplate {
 
     private void processarAproximacao(float delta) {
         executarAtaqueEspecial();
-        if (estado != Estado.APROXIMACAO) return;
+        if (!maquina.is(Estado.APROXIMACAO)) return;
 
         if (calcularDistanciaAoPlayer() > ALCANCE_GOLPE) {
             mover.mover(this, delta);
         } else {
             moving = false;
-            if (cooldownGolpe <= 0f) executarAtaqueNormal();
+            if (cooldownGolpe.pronto()) executarAtaqueNormal();
         }
     }
 
     private void iniciarGolpe() {
-        if (estado != Estado.APROXIMACAO || cooldownGolpe > 0f) return;
-        estado = Estado.AVISO_GOLPE;
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownGolpe.pronto()) return;
+        maquina.mudar(Estado.AVISO_GOLPE);
+        golpe.iniciarAviso();
         moving = false;
     }
 
     private void processarAvisoGolpe(float delta) {
-        timerEstado += delta;
-        if (timerEstado < ANTECIPACAO_GOLPE) return;
-        estado = Estado.ATAQUE;
-        if (!danoAplicadoNaJanela && calcularDistanciaAoPlayer() <= ALCANCE_GOLPE) {
-            player.dano(stats.getForca());
-            danoAplicadoNaJanela = true;
-        }
+        maquina.avancar(delta);
+        if (!golpe.avisoConcluido(maquina.getTimer())) return;
+        maquina.mudar(Estado.ATAQUE);
+        golpe.aplicarUmaVez(() -> {
+            if (calcularDistanciaAoPlayer() <= ALCANCE_GOLPE) {
+                player.dano(stats.getForca());
+            }
+        });
         atacando = true;
-        cooldownGolpe = COOLDOWN_GOLPE;
+        cooldownGolpe.disparar();
         animacao.resetStateTime();
     }
 
     private void iniciarFaixa() {
-        if (estado != Estado.APROXIMACAO || cooldownFaixa > 0f
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownFaixa.pronto()
             || calcularDistanciaAoPlayer() > ALCANCE_FAIXA) return;
-        estado = Estado.AVISO_FAIXA;
-        timerEstado = 0f;
-        faixaAplicadaNaExecucao = false;
+        maquina.mudar(Estado.AVISO_FAIXA);
+        faixa.iniciarAviso();
         moving = false;
     }
 
     private void processarAvisoFaixa(float delta) {
-        timerEstado += delta;
-        if (timerEstado < ANTECIPACAO_FAIXA) return;
-        estado = Estado.FAIXA;
-        if (!faixaAplicadaNaExecucao && calcularDistanciaAoPlayer() <= ALCANCE_FAIXA) {
-            player.aplicarRestricaoMovimento(MULTIPLICADOR_FAIXA, DURACAO_FAIXA);
-            faixaAplicadaNaExecucao = true;
-        }
-        cooldownFaixa = COOLDOWN_FAIXA;
+        maquina.avancar(delta);
+        if (!faixa.avisoConcluido(maquina.getTimer())) return;
+        maquina.mudar(Estado.FAIXA);
+        faixa.aplicarUmaVez(() -> {
+            if (calcularDistanciaAoPlayer() <= ALCANCE_FAIXA) {
+                player.aplicarRestricaoMovimento(MULTIPLICADOR_FAIXA, DURACAO_FAIXA);
+            }
+        });
+        cooldownFaixa.disparar();
         atacandoEspecial = true;
     }
 
     private void iniciarMaldicao() {
-        if (estado != Estado.APROXIMACAO || cooldownMaldicao > 0f
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownMaldicao.pronto()
             || calcularDistanciaAoPlayer() > RAIO_MALDICAO) return;
-        estado = Estado.AVISO_MALDICAO;
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
+        maquina.mudar(Estado.AVISO_MALDICAO);
+        maldicao.iniciarAviso();
         moving = false;
     }
 
     private void processarAvisoMaldicao(float delta) {
-        timerEstado += delta;
-        if (timerEstado < ANTECIPACAO_MALDICAO) return;
-        estado = Estado.MALDICAO;
-        if (!danoAplicadoNaJanela && calcularDistanciaAoPlayer() <= RAIO_MALDICAO) {
-            player.dano(DANO_MALDICAO);
-            danoAplicadoNaJanela = true;
-        }
-        cooldownMaldicao = COOLDOWN_MALDICAO;
+        maquina.avancar(delta);
+        if (!maldicao.avisoConcluido(maquina.getTimer())) return;
+        maquina.mudar(Estado.MALDICAO);
+        maldicao.aplicarUmaVez(() -> {
+            if (calcularDistanciaAoPlayer() <= RAIO_MALDICAO) {
+                player.dano(DANO_MALDICAO);
+            }
+        });
+        cooldownMaldicao.disparar();
         atacandoEspecial = true;
     }
 
     private void invocarServos() {
-        if (estado != Estado.APROXIMACAO || cooldownInvocacao > 0f
-            || quantidadeInvocacoesVivas() >= MAX_INVOCACOES) return;
-        int faltantes = MAX_INVOCACOES - quantidadeInvocacoesVivas();
+        if (!maquina.is(Estado.APROXIMACAO) || !cooldownInvocacao.pronto()
+            || invocacoes.quantidadeVivas() >= MAX_INVOCACOES) return;
+        int faltantes = MAX_INVOCACOES - invocacoes.quantidadeVivas();
         for (int i = 0; i < faltantes; i++) {
-            EnemyTemplate invocacao = criarInvocacao(i);
-            invocacao.setInvocador(this);
-            invocacao.setEnemiesList(enemiesList);
-            invocacao.setParedesColisores(paredesColisores);
-            invocacoesAtivas.add(invocacao);
-            invocacoesPendentes.add(invocacao);
+            invocacoes.registrar(this, criarInvocacao(i));
         }
-        cooldownInvocacao = COOLDOWN_INVOCACAO;
+        cooldownInvocacao.disparar();
         atacandoEspecial = true;
         iniciarRecuperacao();
     }
@@ -268,32 +252,26 @@ public class MumiaAreia extends BossTemplate {
     }
 
     private void processarRecuperacao(float delta) {
-        timerEstado += delta;
-        if (timerEstado < RECUPERACAO) return;
-        estado = Estado.APROXIMACAO;
+        maquina.avancar(delta);
+        if (maquina.getTimer() < RECUPERACAO) return;
+        maquina.mudar(Estado.APROXIMACAO);
         atacando = false;
         atacandoEspecial = false;
     }
 
     private void iniciarRecuperacao() {
-        estado = Estado.RECUPERACAO;
-        timerEstado = 0f;
+        maquina.mudar(Estado.RECUPERACAO);
     }
 
+    // Cancela o ataque em andamento: as janelas fecham e nenhum efeito tardio é aplicado.
     private void cancelarAtaque(Estado novoEstado) {
-        estado = novoEstado;
-        timerEstado = 0f;
-        danoAplicadoNaJanela = false;
-        faixaAplicadaNaExecucao = false;
+        maquina.mudar(novoEstado);
+        golpe.cancelar();
+        faixa.cancelar();
+        maldicao.cancelar();
         atacando = false;
         atacandoEspecial = false;
         moving = false;
-    }
-
-    private void sincronizarFaseComVida() {
-        while (faseAtual < fases.size() - 1 && faseVigente().deveTransicionar(stats.getVida(), stats.getVidaBase())) {
-            mudarFase(faseAtual + 1);
-        }
     }
 
     private void regenerarUmaVez() {
@@ -307,51 +285,28 @@ public class MumiaAreia extends BossTemplate {
         if (player != null) player.removerRestricaoMovimento();
     }
 
-    private void limparInvocacoesMortas() {
-        Iterator<EnemyTemplate> iterator = invocacoesAtivas.iterator();
-        while (iterator.hasNext()) {
-            if (iterator.next().isMorto()) iterator.remove();
-        }
+    @Override
+    protected void aoTransicionarFase(int novaFase) {
+        liberarFaixa();
+        cancelarAtaque(Estado.TRANSICAO);
     }
 
-    private int quantidadeInvocacoesVivas() {
-        limparInvocacoesMortas();
-        return invocacoesAtivas.size();
+    @Override
+    protected void aposTransicionarFase(int novaFase) {
+        if (novaFase == 2) regenerarUmaVez();
+        if (!emTransicao) maquina.mudar(Estado.APROXIMACAO);
+    }
+
+    @Override
+    protected void aoMorrer() {
+        cancelarAtaque(Estado.MORTE);
+        invocacoes.cancelarPendentes();
+        liberarFaixa();
     }
 
     @Override
     public void drenarInvocacoes(List<EnemyTemplate> destino) {
-        destino.addAll(invocacoesPendentes);
-        invocacoesPendentes.clear();
-    }
-
-    @Override
-    public void executarAtaqueNormal() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueNormal(this);
-    }
-
-    @Override
-    public void executarAtaqueEspecial() {
-        FaseBoss fase = faseVigente();
-        if (fase != null) fase.executarAtaqueEspecial(this);
-    }
-
-    @Override
-    public void mudarFase(int novaFase) {
-        if (novaFase <= faseAtual || novaFase >= fases.size()) return;
-        faseAtual = novaFase;
-        liberarFaixa();
-        cancelarAtaque(Estado.TRANSICAO);
-        aplicarAnimacoesFase(fases.get(novaFase));
-        iniciarTransicao();
-        if (faseAtual == 2) regenerarUmaVez();
-        if (!emTransicao) estado = Estado.APROXIMACAO;
-    }
-
-    @Override
-    public void atualizarEstado() {
-        sincronizarFaseComVida();
+        invocacoes.drenar(destino);
     }
 
     @Override
@@ -371,13 +326,13 @@ public class MumiaAreia extends BossTemplate {
     @Override
     public void extraDraw(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (shapeRenderer.isDrawing()) return;
-        if (estado == Estado.AVISO_FAIXA && player != null) {
+        if (maquina.is(Estado.AVISO_FAIXA) && player != null) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             shapeRenderer.setColor(Color.ORANGE);
             shapeRenderer.line(getDx() + HITBOX / 2f, getDy() + HITBOX / 2f,
                 player.getDx() + player.getHitboxSize() / 2f, player.getDy() + player.getHitboxSize() / 2f);
             shapeRenderer.end();
-        } else if (estado == Estado.AVISO_MALDICAO) {
+        } else if (maquina.is(Estado.AVISO_MALDICAO)) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             shapeRenderer.setColor(Color.PURPLE);
             shapeRenderer.circle(getDx() + HITBOX / 2f, getDy() + HITBOX / 2f, RAIO_MALDICAO);
@@ -385,8 +340,8 @@ public class MumiaAreia extends BossTemplate {
         }
     }
 
-    public Estado getEstado() { return estado; }
-    public int getQuantidadeInvocacoesAtivas() { return quantidadeInvocacoesVivas(); }
+    public Estado getEstado() { return maquina.getEstado(); }
+    public int getQuantidadeInvocacoesAtivas() { return invocacoes.quantidadeVivas(); }
     public boolean isRegeneracaoUsada() { return regeneracaoUsada; }
 
     private static class FaseGuardiaDoTumulo extends FaseBoss {
@@ -411,8 +366,8 @@ public class MumiaAreia extends BossTemplate {
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
             MumiaAreia mumia = (MumiaAreia) boss;
-            if (mumia.cooldownFaixa <= 0f) mumia.iniciarFaixa();
-            if (mumia.estado == Estado.APROXIMACAO && mumia.cooldownMaldicao <= 0f) mumia.iniciarMaldicao();
+            if (mumia.cooldownFaixa.pronto()) mumia.iniciarFaixa();
+            if (mumia.maquina.is(Estado.APROXIMACAO) && mumia.cooldownMaldicao.pronto()) mumia.iniciarMaldicao();
         }
     }
 
@@ -428,12 +383,12 @@ public class MumiaAreia extends BossTemplate {
         @Override
         public void executarAtaqueEspecial(BossTemplate boss) {
             MumiaAreia mumia = (MumiaAreia) boss;
-            if (mumia.cooldownInvocacao <= 0f && mumia.quantidadeInvocacoesVivas() < MAX_INVOCACOES) {
+            if (mumia.cooldownInvocacao.pronto() && mumia.invocacoes.quantidadeVivas() < MAX_INVOCACOES) {
                 mumia.invocarServos();
                 return;
             }
-            if (mumia.cooldownFaixa <= 0f) mumia.iniciarFaixa();
-            if (mumia.estado == Estado.APROXIMACAO && mumia.cooldownMaldicao <= 0f) mumia.iniciarMaldicao();
+            if (mumia.cooldownFaixa.pronto()) mumia.iniciarFaixa();
+            if (mumia.maquina.is(Estado.APROXIMACAO) && mumia.cooldownMaldicao.pronto()) mumia.iniciarMaldicao();
         }
     }
 }

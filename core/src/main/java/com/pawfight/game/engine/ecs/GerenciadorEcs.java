@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.pawfight.game.entity.system.SistemaCombate;
 import com.pawfight.game.entity.system.SistemaStats;
+import com.pawfight.game.entity.system.SistemaStatus;
 
 public class GerenciadorEcs {
     private final Engine engine = new Engine();
@@ -12,6 +13,7 @@ public class GerenciadorEcs {
 
     public GerenciadorEcs() {
         engine.addSystem(new SistemaStats());
+        engine.addSystem(new SistemaStatus());
         engine.addSystem(new SistemaCombate());
     }
 

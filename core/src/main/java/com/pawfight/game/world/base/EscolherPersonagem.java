@@ -9,12 +9,12 @@ import com.pawfight.game.engine.loading.Assets;
 import com.pawfight.game.engine.input.GameAction;
 import com.pawfight.game.engine.input.GerenciadorInput;
 import com.pawfight.game.entity.component.SaveComponent;
-import com.pawfight.game.entity.player.BlackBird;
-import com.pawfight.game.entity.player.BlackCat;
-import com.pawfight.game.entity.player.OrangeCat;
 import com.pawfight.game.entity.player.PlayerTemplate;
-import com.pawfight.game.entity.player.Dove;
+import com.pawfight.game.content.player.ContextoCriacaoPlayer;
+import com.pawfight.game.content.player.DefinicaoPlayer;
+import com.pawfight.game.content.player.RegistroPersonagens;
 
+import java.util.List;
 import java.util.Random;
 
 import com.pawfight.game.engine.GameConfig;
@@ -25,6 +25,7 @@ public class EscolherPersonagem {
     private final ExibirDadosPersonagem exibirDadosPersonagem;
     private PlayerTemplate personagemPreview;
     private final Texture[] personagens;
+    private final List<DefinicaoPlayer> definicoes;
     private int personagemAtual;
     private final SpriteBatch batch;
     private final Texture backGroud;
@@ -50,12 +51,10 @@ public class EscolherPersonagem {
         batch = game.getBatch();
         viewport = new FitViewport(LARGURA_TELA_BASE, ALTURA_TELA_BASE);
 
-        personagens = new Texture[]{
-            Assets.get("entitys/player/selecao/black_cat.png", Texture.class),
-            Assets.get("entitys/player/selecao/orange_cat.png", Texture.class),
-            Assets.get("entitys/player/selecao/black_bird.png", Texture.class),
-            Assets.get("entitys/player/selecao/blue_bird.png", Texture.class)
-        };
+        definicoes = RegistroPersonagens.listar();
+        personagens = definicoes.stream()
+            .map(definicao -> Assets.get(definicao.assetSelecao(), Texture.class))
+            .toArray(Texture[]::new);
 
         backGroud = Assets.get("world/base/nuvens/back.png", Texture.class);
         nuvem = Assets.get("world/base/nuvens/4.png", Texture.class);
@@ -65,12 +64,10 @@ public class EscolherPersonagem {
         random = new Random();
 
         SaveComponent saveComponent = new SaveComponent();
-        previews = new PlayerTemplate[] {
-            saveComponent.loadSaveData(new BlackCat(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
-            saveComponent.loadSaveData(new OrangeCat(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
-            saveComponent.loadSaveData(new BlackBird(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
-            saveComponent.loadSaveData(new Dove(33, 2335, 3200, 1280, 2400, 720, 0.5f)),
-        };
+        ContextoCriacaoPlayer contexto = new ContextoCriacaoPlayer(33, 2335, 3200, 1280, 2400, 720, 0.5f);
+        previews = definicoes.stream()
+            .map(definicao -> saveComponent.loadSaveData(definicao.criar(contexto)))
+            .toArray(PlayerTemplate[]::new);
 
         // Desativa o input do menu de pausa dos previews; o selecionado é reativado ao entrar no jogo
         for (PlayerTemplate preview : previews) {

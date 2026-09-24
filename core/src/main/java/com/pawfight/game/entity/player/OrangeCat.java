@@ -60,6 +60,8 @@ public class OrangeCat extends PlayerTemplate {
         return "Orange Cat";
     }
 
+    @Override public String getId() { return "orange_cat"; }
+
     @Override
     public void ataqueBasico(float delta) {
     }

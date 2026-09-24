@@ -8,10 +8,6 @@ import java.util.List;
 public class MoverDirecaoPlayer {
     private final Rectangle tempHitBox = new Rectangle();
 
-    public void mover(EnemyTemplate enemy) {
-        mover(enemy, com.badlogic.gdx.Gdx.graphics.getDeltaTime());
-    }
-
     public void mover(EnemyTemplate enemy, float delta) {
         PlayerTemplate player = enemy.player;
         if (player == null) return;
